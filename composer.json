@@ -1,0 +1,50 @@
+{
+	"name" : "ntlab/ntreport",
+	"type" : "library",
+	"description" : "PHP Report Library",
+	"keywords" : [
+		"ntreport",
+		"report",
+		"excel",
+		"csv",
+		"rtf"
+	],
+	"homepage" : "https://github.com/tohenk/php-ntreport",
+	"license" : "MIT",
+	"authors" : [{
+			"name" : "Toha",
+			"email" : "tohenk@yahoo.com",
+			"role" : "Developer"
+		}
+	],
+	"autoload" : {
+		"psr-0" : {
+			"NTLAB\\Report\\" : "src/"
+		}
+	},
+	"require" : {
+		"php" : ">=5.3.0",
+		"ntlab/common": "dev-master",
+		"ntlab/ntscript": "dev-master",
+		"ntlab/rtf-tree": "dev-master",
+		"phpoffice/phpexcel": "dev-develop"
+	},
+	"require-dev" : {
+		"phpunit/phpunit" : "4.1.*",
+		"propel/propel1" : "1.7.*@dev"
+	},
+	"repositories": [
+		{
+			"type": "vcs",
+			"url":  "https://github.com/tohenk/php-rtf-tree"
+		},
+		{
+			"type": "vcs",
+			"url":  "https://github.com/tohenk/php-common"
+		},
+		{
+			"type": "vcs",
+			"url":  "https://github.com/tohenk/php-ntscript"
+		}
+	]
+}
