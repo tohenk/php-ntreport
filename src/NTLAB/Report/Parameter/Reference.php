@@ -42,13 +42,12 @@ class Reference extends Parameter
         if (null == $this->values) {
             $this->values = array();
             try {
-                if (($value = $this->getDefaultValue()) && (is_array($value) || is_a($value, 'ArrayObject'))) {
+                if (($value = $this->getDefaultValue()) && (is_array($value) || is_a($value, \ArrayObject::class))) {
                     foreach ($value as $ref) {
                         if ($handler = Manager::getContextHandler($ref)) {
                             if (null !== ($pair = $handler->getKeyValuePair($ref))) {
                                 list($k, $v) = $pair;
                                 $this->values[$k] = $v;
-                                break;
                             }
                         }
                     }

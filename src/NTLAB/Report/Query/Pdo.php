@@ -62,13 +62,6 @@ class Pdo
         return $this->connection;
     }
 
-    protected function checkConnection()
-    {
-        if (null === $this->connection) {
-            throw new \RuntimeException('PDO connection not assigned.');
-        }
-    }
-
     /**
      * Set PDO connection.
      *
@@ -80,6 +73,13 @@ class Pdo
         $this->connection = $connection;
 
         return $this;
+    }
+
+    protected function checkConnection()
+    {
+        if (null === $this->connection) {
+            throw new \RuntimeException('PDO connection not assigned.');
+        }
     }
 
     /**
