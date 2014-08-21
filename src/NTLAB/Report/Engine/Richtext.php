@@ -57,10 +57,17 @@ class Richtext extends Report
 
     protected function configureColumns(\DOMNode $node)
     {
+        // do nothing
     }
 
     protected function build()
     {
-        return RtfFiler::getInstance()->build($this->templateContent, $this->result);
+        $objects = $this->result;
+        // is build for single content?
+        if ($objects && $this->single) {
+            $objects = array($objects[0]);
+        }
+
+        return RtfFiler::getInstance()->build($this->templateContent, $objects);
     }
 }

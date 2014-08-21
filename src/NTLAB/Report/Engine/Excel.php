@@ -31,7 +31,14 @@ use NTLAB\Report\Util\ExcelFiler;
 
 class Excel extends Report
 {
+    /**
+     * @var NTLAB\Report\Util\ExcelFiler
+     */
     protected $filer = null;
+
+    /**
+     * @var string
+     */
     protected $extension = '.xls';
 
     protected function configure(\DOMNodeList $nodes)

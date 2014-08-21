@@ -36,10 +36,29 @@ class ExcelFiler
     const BAND_FOOTER = 'footer';
     const BAND_SUMMARY = 'summary';
 
+    /**
+     * @var string
+     */
     protected $template = null;
+
+    /**
+     * @var string
+     */
     protected $sheet = null;
+
+    /**
+     * @var array
+     */
     protected $bands = array();
+
+    /**
+     * @var array
+     */
     protected $datas = array();
+
+    /**
+     * @var array
+     */
     protected $allBands = array(
         self::BAND_TITLE,
         self::BAND_HEADER,
@@ -53,11 +72,34 @@ class ExcelFiler
      */
     protected $script = null;
 
+    /**
+     * @var array
+     */
     protected $objects = null;
+
+    /**
+     * @var string
+     */
     protected $fieldSign = '$';
+
+    /**
+     * @var boolean
+     */
     protected $autoFit = true;
+
+    /**
+     * @var float
+     */
     protected $rowHeight = null;
+
+    /**
+     * @var string
+     */
     protected $defaultWriter = null;
+
+    /**
+     * @var array
+     */
     protected $dataCells = array();
 
     /**
@@ -107,7 +149,7 @@ class ExcelFiler
     }
 
     /**
-     * Get field dignature.
+     * Get field signature.
      *
      * @return string
      */
@@ -132,7 +174,7 @@ class ExcelFiler
     /**
      * Get auto fit data row.
      *
-     * @return bool
+     * @return boolean
      */
     public function getAutoFit()
     {
@@ -142,7 +184,7 @@ class ExcelFiler
     /**
      * Set data row autofit.
      *
-     * @param bool $value  Auto fit value
+     * @param boolean $value  Auto fit value
      * @return \NTLAB\Report\Util\ExcelFiler
      */
     public function setAutoFit($value)
@@ -155,7 +197,7 @@ class ExcelFiler
     /**
      * Get data row height.
      *
-     * @return double
+     * @return float
      */
     public function getRowHeight()
     {
@@ -165,7 +207,7 @@ class ExcelFiler
     /**
      * Set data row height.
      *
-     * @param double $value  The row height
+     * @param float $value  The row height
      * @return \NTLAB\Report\Util\ExcelFiler
      */
     public function setRowHeight($value)
@@ -176,7 +218,7 @@ class ExcelFiler
     }
 
     /**
-     * Get Excel default writer.
+     * Get output writer.
      *
      * @return string
      */
@@ -186,7 +228,7 @@ class ExcelFiler
     }
 
     /**
-     * Set Excel default writer.
+     * Set output writer.
      *
      * @param string $value  The writer class
      * @return \NTLAB\Report\Util\ExcelFiler
@@ -282,8 +324,8 @@ class ExcelFiler
     protected function getCellMerged(\PHPExcel_Worksheet $sheet, $cell)
     {
         foreach ($sheet->getMergeCells() as $key => $range) {
-            list($range_start, $range_end) = explode(':', $key);
-            if ($range_start == $cell) {
+            list($rangeStart, $rangeEnd) = explode(':', $key);
+            if ($rangeStart == $cell) {
                 return $range;
             }
         }
@@ -300,10 +342,10 @@ class ExcelFiler
      */
     protected function mergeCells(\PHPExcel_Worksheet $sheet, $cell, $width, $height)
     {
-        list($range_start, $range_end) = \PHPExcel_Cell::rangeBoundaries($cell);
-        $range_end[0] = (int) $range_start[0] + $width - 1;
-        $range_end[1] = (int) $range_start[1] + $height - 1;
-        $range = \PHPExcel_Cell::stringFromColumnIndex($range_start[0] - 1).$range_start[1].':'.\PHPExcel_Cell::stringFromColumnIndex($range_end[0] - 1).$range_end[1];
+        list($rangeStart, $rangeEnd) = \PHPExcel_Cell::rangeBoundaries($cell);
+        $rangeEnd[0] = (int) $rangeStart[0] + $width - 1;
+        $rangeEnd[1] = (int) $rangeStart[1] + $height - 1;
+        $range = \PHPExcel_Cell::stringFromColumnIndex($rangeStart[0] - 1).$rangeStart[1].':'.\PHPExcel_Cell::stringFromColumnIndex($rangeEnd[0] - 1).$rangeEnd[1];
         $sheet->mergeCells($range);
 
         return $this;
@@ -338,15 +380,15 @@ class ExcelFiler
      */
     protected function copyRange(\PHPExcel_Worksheet $source, \PHPExcel_Worksheet $dest, $range, &$anchor, $replaceTag = true)
     {
-        list($range_start, $range_end) = \PHPExcel_Cell::rangeBoundaries($range);
+        list($rangeStart, $rangeEnd) = \PHPExcel_Cell::rangeBoundaries($range);
         if (null == $anchor) {
-            $anchor = $range_start;
+            $anchor = $rangeStart;
         }
-        $cols = $range_end[0] - $range_start[0];
-        $rows = $range_end[1] - $range_start[1];
+        $cols = $rangeEnd[0] - $rangeStart[0];
+        $rows = $rangeEnd[1] - $rangeStart[1];
         for ($row = 0; $row <= $rows; $row++) {
             for ($col = 0; $col <= $cols; $col++) {
-                $scell = $source->getCellByColumnAndRow($range_start[0] + $col - 1, $range_start[1] + $row);
+                $scell = $source->getCellByColumnAndRow($rangeStart[0] + $col - 1, $rangeStart[1] + $row);
                 $dcell = $dest->getCellByColumnAndRow($anchor[0] + $col - 1, $anchor[1] + $row);
                 // copy value, ignore empty cell
                 if ($svalue = $scell->getValue()) {
@@ -457,14 +499,14 @@ class ExcelFiler
     {
         // callback parameters (cell, data, value)
         if ($callback && is_callable($callback)) {
-            $range_start = $ranges[0];
-            $range_end = $ranges[1];
-            $cols = $range_end[0] - $range_start[0];
-            $rows = $range_end[1] - $range_start[1];
+            $rangeStart = $ranges[0];
+            $rangeEnd = $ranges[1];
+            $cols = $rangeEnd[0] - $rangeStart[0];
+            $rows = $rangeEnd[1] - $rangeStart[1];
             for ($row = 0; $row <= $rows; $row++) {
                 for ($col = 0; $col <= $cols; $col++) {
-                    $colindex = $range_start[0] + $col - 1;
-                    $rowindex = $range_start[1] + $row;
+                    $colindex = $rangeStart[0] + $col - 1;
+                    $rowindex = $rangeStart[1] + $row;
                     $cell = $sheet->getCellByColumnAndRow($colindex, $rowindex);
                     // cell has value and prefixed with field signature
                     if (($value = $cell->getValue()) && (0 === strpos($value, $this->getFieldSign()))) {
@@ -501,9 +543,9 @@ class ExcelFiler
         if (empty($this->bands)) {
             $rows = $sheet->getHighestDataRow();
             $cols = \PHPExcel_Cell::columnIndexFromString($sheet->getHighestDataColumn());
-            $fsign_found = false;
-            $fsign_start = null;
-            $fsign_end = null;
+            $fsignFound = false;
+            $fsignStart = null;
+            $fsignEnd = null;
             $row = 1;
             while ($row <= $rows) {
                 // check if row contain field sign
@@ -517,27 +559,27 @@ class ExcelFiler
                 }
                 // master data band found in the row
                 if ($has_sign) {
-                    $fsign_found = true;
-                    if (null === $fsign_start) {
-                        $fsign_start = $row;
+                    $fsignFound = true;
+                    if (null === $fsignStart) {
+                        $fsignStart = $row;
                     }
-                    $fsign_end = $row;
+                    $fsignEnd = $row;
                 } else {
                     // stop if field sign has previously found
-                    if ($fsign_found) {
+                    if ($fsignFound) {
                         break;
                     }
                 }
                 $row++;
             }
             // bands found
-            if ($fsign_found) {
+            if ($fsignFound) {
                 // title band
-                $this->bands[self::BAND_TITLE] = sprintf('A1:%s%d', \PHPExcel_Cell::stringFromColumnIndex($cols - 1), $fsign_start - 1);
+                $this->bands[self::BAND_TITLE] = sprintf('A1:%s%d', \PHPExcel_Cell::stringFromColumnIndex($cols - 1), $fsignStart - 1);
                 // master data band
-                $this->bands[self::BAND_MASTER_DATA] = sprintf('A%d:%s%d', $fsign_start, \PHPExcel_Cell::stringFromColumnIndex($cols - 1), $fsign_end);
+                $this->bands[self::BAND_MASTER_DATA] = sprintf('A%d:%s%d', $fsignStart, \PHPExcel_Cell::stringFromColumnIndex($cols - 1), $fsignEnd);
                 // summary band
-                $this->bands[self::BAND_SUMMARY] = sprintf('A%d:%s%d', $fsign_end + 1, \PHPExcel_Cell::stringFromColumnIndex($cols - 1), $rows);
+                $this->bands[self::BAND_SUMMARY] = sprintf('A%d:%s%d', $fsignEnd + 1, \PHPExcel_Cell::stringFromColumnIndex($cols - 1), $rows);
             }
         }
 
@@ -582,6 +624,13 @@ class ExcelFiler
         return $excel;
     }
 
+    /**
+     * Process report bands.
+     *
+     * @param \PHPExcel_Worksheet $insheet  Input worksheet
+     * @param \PHPExcel_Worksheet $outsheet  Output worksheet
+     * @return \NTLAB\Report\Util\ExcelFiler
+     */
     protected function processBands($insheet, $outsheet)
     {
         $anchor = null;
@@ -612,6 +661,8 @@ class ExcelFiler
                     break;
             }
         }
+
+        return $this;
     }
 
     /**
@@ -621,11 +672,14 @@ class ExcelFiler
      * @param \PHPExcel_Worksheet $outsheet  Output sheet
      * @param string $band  Band range address
      * @param array $anchor  Anchor range
+     * @return \NTLAB\Report\Util\ExcelFiler
      */
     public function buildMasterData($insheet, $outsheet, $band, &$anchor)
     {
         $ranges = $this->copyRange($insheet, $outsheet, $band, $anchor, false);
         $this->fillRange($outsheet, $ranges, array($this, 'fillData'), true);
+
+        return $this;
     }
 
     /**
