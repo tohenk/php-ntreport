@@ -26,16 +26,15 @@
 
 namespace NTLAB\Report\Util;
 
-use NTLAB\Common\Terbilang;
 use NTLAB\Script\Core\Script;
-use NTLAB\RtfTree\Node\Node;
 use NTLAB\RtfTree\Node\Tree;
+use NTLAB\RtfTree\Node\Node;
+use NTLAB\Report\Util\Extractor\Extractor;
+use NTLAB\Report\Util\Extractor\Paragraph as ParagraphExtractor;
+use NTLAB\Report\Util\Extractor\Table as TableExtractor;
 
 class RtfFiler
 {
-    const TAG_SIGN = '%';
-    const RTF_PARAGRAPH = 'pard';
-
     /**
      * @var \NTLAB\Report\Util\RtfFiler
      */
@@ -45,11 +44,6 @@ class RtfFiler
      * @var \NTLAB\Script\Core\Script
      */
     protected $script = null;
-
-    /**
-     * @var string
-     */
-    protected $tagRe = null;
 
     /**
      * Get the instance.
@@ -93,49 +87,6 @@ class RtfFiler
     }
 
     /**
-     * Get the enclosing tag signs.
-     * The result is an array which contains
-     * the opening and closing tag sign array(opening, closing).
-     *
-     * @return array
-     */
-    public function getTags()
-    {
-        $stag = substr(self::TAG_SIGN, 0, 1);
-        $etag = strlen(self::TAG_SIGN) > 1 ? substr(self::TAG_SIGN, 1, 1) : $stag;
-
-        return array($stag, $etag);
-    }
-
-    /**
-     * Get tag regular expression pattern.
-     *
-     * @return string
-     */
-    public function getTagRegex()
-    {
-        if (null == $this->tagRe) {
-            $tags = $this->getTags();
-            $this->tagRe = sprintf('/%1$s([^%1$s]+)%2$s/', $tags[0], $tags[1]);
-        }
-
-        return $this->tagRe;
-    }
-
-    /**
-     * Create a tag.
-     *
-     * @param string $tag  The tag
-     * @return string
-     */
-    public function createTag($tag)
-    {
-        $tags = $this->getTags();
-
-        return $tags[0].$tag.$tags[1];
-    }
-
-    /**
      * Load rtf tree from template.
      *
      * @param string $template  Richtext content
@@ -152,184 +103,6 @@ class RtfFiler
     }
 
     /**
-     * Create rtf tree.
-     *
-     * @return \NTLAB\RtfTree\Node\Tree
-     */
-    protected function createTree()
-    {
-        $tree = new Tree();
-        $tree->addMainGroup();
-
-        return $tree;
-    }
-
-    /**
-     * Find tag in the tree.
-     *
-     * @param \NTLAB\Rtf\Node\Tree $tree  The tree 
-     * @param string $tag  Tag to find
-     * @param int $size  The nodes size found for matched tag
-     * @param int $start  Start position
-     * @return int
-     */
-    protected function findTag(Tree $tree, $tag, &$size, $start = null)
-    {
-        $tag = $this->createTag($tag);
-        if (!is_int($start)) {
-            $start = 0;
-        }
-        $text = null;
-        for ($i = $start; $i < count($tree->getMainGroup()->getChildren()); $i++) {
-            if (!($node = $tree->getMainGroup()->getChildAt($i))) {
-                continue;
-            }
-            $plain = $node->getPlainText();
-            // tag found in single node
-            if (false !== mb_strpos($plain, $tag)) {
-                $size = 1;
-                return $i;
-            }
-            // check for combined text
-            $text .= $plain;
-            if (false !== mb_strpos($text, $tag)) {
-                $text = $plain;
-                $size = 1;
-                while (true) {
-                    $i--;
-                    if ($i <= $start) {
-                        break;
-                    }
-                    $size++;
-                    $text = $tree->getMainGroup()->getChildAt($i)->getPlainText().$text;
-                    if (false !== mb_strpos($text, $tag)) {
-                        return $i;
-                    }
-                }
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Extract template for begin and end mark. If begin or ending mark is not
-     * found, return all paragraphs within template.
-     *
-     * @param \NTLAB\Rtf\Node\Tree $tree  Template tree
-     * @param int $bpos  Begin mark position found
-     * @param int $epos  End mark position found
-     * @param string $bmark  Begining mark
-     * @param string $emark  Ending mark
-     * @return \NTLAB\RtfTree\Node\Tree
-     * @throws \InvalidArgumentException
-     */
-    public function extract(Tree $tree, &$bpos, &$epos, $bmark = 'BEGIN', $emark = 'END')
-    {
-        if (!($node = $tree->getMainGroup()->selectSingleNode(static::RTF_PARAGRAPH))) {
-            throw new \InvalidArgumentException('No paragraph found.');
-        }
-        $start = $node->getNodeIndex();
-        $result = $this->createTree();
-        $bpos = $this->findTag($tree, $bmark, $ssize, $start);
-        $epos = $this->findTag($tree, $emark, $esize, $bpos);
-        // begin and end mark found
-        if (false !== $bpos && false !== $epos) {
-            $oldBpos = $bpos;
-            // ensure first match contain pard
-            while (true) {
-                if ($bpos === $start) {
-                    break;
-                }
-                $node = $tree->getMainGroup()->getChildAt($bpos);
-                if ($node->isEquals(static::RTF_PARAGRAPH)) {
-                    break;
-                }
-                $bpos--;
-            }
-            $epos += $esize - 1;
-            for ($i = $bpos; $i <= $epos; $i++) {
-                $result->getMainGroup()->appendChild($tree->getMainGroup()->getChildAt($i)->cloneNode());
-            }
-            // remove begin and end mark
-            $result->getMainGroup()->replaceTextEx($this->createTag($bmark), '');
-            $result->getMainGroup()->replaceTextEx($this->createTag($emark), '');
-        } else {
-            $bpos = $start;
-            $epos = count($tree->getMainGroup()->getChildren()) - 1;
-            // append all paragraph
-            for ($i = $bpos; $i <= $epos; $i++) {
-                $result->getMainGroup()->appendChild($tree->getMainGroup()->getChildAt($i)->cloneNode());
-            }
-        }
-
-        return $result;
-    }
-
-    /**
-     * Find prefix in the matches tags.
-     *
-     * @param array $matches  The matches
-     * @param string $prefix  Tag prefix
-     * @return int
-     */
-    protected function findMatch($matches, $prefix)
-    {
-        for ($i = 0; $i < count($matches[0]); $i++) {
-            $match = $matches[0][$i];
-            $tag = $matches[1][$i];
-            if (0 === mb_strpos($tag, $prefix)) {
-                return $i;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Extract region from tree.
-     *
-     * @param \NTLAB\RtfTree\Node\Tree $tree  The tree to extract
-     * @param string $region
-     * @return array
-     */
-    protected function extractRegion(Tree $tree, $region)
-    {
-        $result = array();
-        while (true) {
-            preg_match_all($this->getTagRegex(), $tree->getText(), $matches, PREG_PATTERN_ORDER);
-            // check region start e.g. %REGION:TEST:EXPR%
-            if (false !== ($s = $this->findMatch($matches, $region.':'))) {
-                $smatch = $matches[1][$s];
-                $parts = explode(':', $smatch, 3);
-                $id = $parts[1];
-                $expr = $parts[2];
-                // check region end e.g. %REGIONE:TEST%
-                if (false !== ($e = $this->findMatch($matches, $region.'E:'.$id))) {
-                    $ematch = $matches[1][$e];
-                    // extract region
-                    $rtree = $this->extract($tree, $bpos, $epos, $smatch, $ematch);
-                    // region found
-                    if (false !== $bpos && false !== $epos) {
-                        $regionId = $region.'_'.$id;
-                        // remove matched range
-                        $tree->getMainGroup()->getChildren()->removeAt($bpos, $epos - $bpos + 1);
-                        // insert placeholder
-                        $tree->getMainGroup()->insertChild($bpos, Node::create(Node::TEXT, $this->createTag($regionId)));
-                        // add the result
-                        $result[$regionId] = array($expr, $rtree);
-
-                        continue;
-                    }
-                }
-            }
-            break;
-        }
-
-        return $result;
-    }
-
-    /**
      * Build and parse template tree.
      *
      * @param \NTLAB\RtfTree\Node\Tree $tree  Template tree
@@ -338,33 +111,29 @@ class RtfFiler
      */
     protected function doBuild(Tree $tree, $objects)
     {
-        $result = $this->createTree();
+        $body = ParagraphExtractor::getBody($tree);
+        $each = ParagraphExtractor::getRegion($body->getResult(), 'EACH');
+        $table = TableExtractor::getTable($body->getResult());
 
-        $body = $this->extract($tree, $bpos, $epos);
-        $eachs = $this->extractRegion($body, 'EACH');
-        $tables = $this->extractRegion($body, 'TBL');
+        $result = Extractor::createTree();
         // include header
-        for ($i = 0; $i < $bpos; $i++) {
-            $result->getMainGroup()->appendChild($tree->getMainGroup()->getChildAt($i)->cloneNode());
-        }
+        Extractor::copyTree($result, $tree, 0, $body->getBeginPos() - 1);
         // process body
         $this->getScript()
             ->setObjects($objects)
-            ->each(function(Script $script, RtfFiler $_this) use ($result, $body, $eachs, $tables) {
-                $clone = $body->cloneTree();
+            ->each(function(Script $script, RtfFiler $_this) use ($result, $body, $each, $table) {
+                $clone = $body->getResult()->cloneTree();
                 $_this
-                    ->replaceTags($clone, array_merge(array_keys($eachs), array_keys($tables)))
-                    ->replaceEachs($clone, $eachs)
-                    ->replaceTables($clone, $tables)
-                    ->appendTree($result, $clone)
+                    ->replaceTag($clone, array_merge(array_keys($each->getRegions()), array_keys($table->getRegions())))
+                    ->replaceRegion($clone, $each->getRegions(), 'par')
+                    ->replaceRegion($clone, $table->getRegions(), 'pard')
                 ;
+                Extractor::appendTree($result, $clone);
                 unset($clone);
             })
         ;
         // include footer
-        for ($i = $epos + 1; $i < count($tree->getMainGroup()->getChildren()); $i++) {
-            $result->getMainGroup()->appendChild($tree->getMainGroup()->getChildAt($i)->cloneNode());
-        }
+        Extractor::copyTree($result, $tree, $body->getEndPos() + 1, count($tree->getMainGroup()->getChildren()) - 1);
 
         return $result;
     }
@@ -376,10 +145,10 @@ class RtfFiler
      * @param array $ignores  Ignore tags
      * @return \NTLAB\Report\Util\RtfFiler
      */
-    public function replaceTags(Tree $tree, $ignores = array())
+    public function replaceTag(Tree $tree, $ignores = array())
     {
         $caches = array();
-        preg_match_all($this->getTagRegex(), $tree->getText(), $matches, PREG_PATTERN_ORDER);
+        preg_match_all(Extractor::getTagRegex(), $tree->getText(), $matches, PREG_PATTERN_ORDER);
         for ($i = 0; $i < count($matches[0]); $i++) {
             $tag = $matches[1][$i];
             // check for ignore
@@ -402,88 +171,39 @@ class RtfFiler
     }
 
     /**
-     * Replace each region.
+     * Replace region.
      *
      * @param \NTLAB\RtfTree\Node\Tree $tree  Result tree
-     * @param array $eachs  Each data
+     * @param array $regions  Region data
+     * @param string $eolKey  Eol keyword used to separate each item
      * @return \NTLAB\Report\Util\RtfFiler
      */
-    public function replaceEachs(Tree $tree, $eachs = array())
+    public function replaceRegion(Tree $tree, $regions = array(), $eolKey)
     {
-        foreach ($eachs as $tag => $data) {
+        foreach ($regions as $tag => $data) {
             list($expr, $body) = $data;
-            $index = $this->findTag($tree, $tag, $size);
+            $index = Extractor::findTag($tree, $tag, $size);
             if ($objects = $this->getScript()->evaluate($expr)) {
-                $result = $this->createTree();
+                $result = Extractor::createTree();
                 $this->getScript()
                     ->pushContext()
                     ->setObjects($objects)
-                    ->each(function(Script $script, RtfFiler $_this) use ($result, $body) {
+                    ->each(function(Script $script, RtfFiler $_this) use ($result, $body, $eolKey) {
                         $clone = $body->cloneTree();
-                        $_this->replaceTags($clone);
-                        $_this->appendTree($result, $clone);
+                        $_this->replaceTag($clone);
+                        Extractor::appendTree($result, $clone);
                         if ($script->getIterator()->getRecNo() < $script->getIterator()->getRecCount()) {
-                            $result->getMainGroup()->appendChild(Node::create(Node::KEYWORD, 'par'));
+                            $result->getMainGroup()->appendChild(Node::create(Node::KEYWORD, $eolKey));
                         }
                         unset($clone);
                     }, false)
                     ->popContext()
                 ;
-                $this->insertTree($tree, $result, $index + 1);
+                Extractor::insertTree($tree, $result, $index + 1);
                 unset($result);
             }
             // remove tag
             $tree->getMainGroup()->removeChildAt($index);
-        }
-
-        return $this;
-    }
-
-    /**
-     * Replace table region.
-     *
-     * @param \NTLAB\RtfTree\Node\Tree $tree  Result tree
-     * @param array $tables  Table data
-     * @return \NTLAB\Report\Util\RtfFiler
-     */
-    
-    public function replaceTables(Tree $tree, $tables = array())
-    {
-        // TODO: implement table
-
-        return $this;
-    }
-
-    /**
-     * Append tree nodes to another tree.
-     * 
-     * @param \NTLAB\RtfTree\Node\Tree $dest  Destination tree
-     * @param \NTLAB\RtfTree\Node\Tree $source  Source tree
-     * @return \NTLAB\Report\Util\RtfFiler
-     */
-    public function appendTree(Tree $dest, Tree $source)
-    {
-        foreach ($source->getMainGroup()->getChildren() as $node) {
-            $dest->getMainGroup()->appendChild($node->cloneNode());
-        }
-
-        return $this;
-    }
-
-    /**
-     * Append tree nodes to another tree by inserting at specified
-     * position.
-     * 
-     * @param \NTLAB\RtfTree\Node\Tree $dest  Destination tree
-     * @param \NTLAB\RtfTree\Node\Tree $source  Source tree
-     * @param int $position  Start position
-     * @return \NTLAB\Report\Util\RtfFiler
-     */
-    public function insertTree(Tree $dest, Tree $source, $position)
-    {
-        foreach ($source->getMainGroup()->getChildren() as $node) {
-            $dest->getMainGroup()->insertChild($position, $node);
-            $position++;
         }
 
         return $this;
