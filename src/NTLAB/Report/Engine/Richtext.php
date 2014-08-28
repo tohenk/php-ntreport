@@ -28,14 +28,22 @@ namespace NTLAB\Report\Engine;
 
 use NTLAB\Report\Report;
 use NTLAB\Report\Util\RtfFiler;
+use NTLAB\Report\Util\RtfFilerLegacy;
 
 class Richtext extends Report
 {
+    /**
+     * @var boolean
+     */
     protected $single = null;
+
+    /**
+     * @var boolean
+     */
+    protected static $legacy = true;
 
     protected function configure(\DOMNodeList $nodes)
     {
-        RtfFiler::getInstance()->setScript($this->getScript());
         foreach ($nodes as $node) {
             switch (strtolower($node->nodeName)) {
                 case 'template':
@@ -68,6 +76,18 @@ class Richtext extends Report
             $objects = array($objects[0]);
         }
 
-        return RtfFiler::getInstance()->build($this->templateContent, $objects);
+        if (static::$legacy) {
+            $filer = RtfFilerLegacy::getInstance();
+            if ($filer
+                ->setScript($this->getScript())
+                ->build($this->templateContent, $objects)) {
+                return (string) $filer;
+            }
+        } else {
+            return RtfFiler::getInstance()
+                ->setScript($this->getScript())
+                ->build($this->templateContent, $objects)
+            ;
+        }
     }
 }
