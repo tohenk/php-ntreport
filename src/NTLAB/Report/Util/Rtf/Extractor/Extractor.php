@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-namespace NTLAB\Report\Util\Extractor;
+namespace NTLAB\Report\Util\Rtf\Extractor;
 
 use NTLAB\RtfTree\Node\Tree;
 use NTLAB\RtfTree\Node\Node;

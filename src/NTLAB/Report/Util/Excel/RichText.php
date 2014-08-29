@@ -24,9 +24,9 @@
  * SOFTWARE.
  */
 
-namespace NTLAB\Report\Util;
+namespace NTLAB\Report\Util\Excel;
 
-class ExcelRichText
+class RichText
 {
     const TAG_BOLD = 'b';
     const TAG_ITALIC = 'i';

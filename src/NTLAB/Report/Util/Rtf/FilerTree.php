@@ -24,19 +24,19 @@
  * SOFTWARE.
  */
 
-namespace NTLAB\Report\Util;
+namespace NTLAB\Report\Util\Rtf;
 
 use NTLAB\Script\Core\Script;
 use NTLAB\RtfTree\Node\Tree;
 use NTLAB\RtfTree\Node\Node;
-use NTLAB\Report\Util\Extractor\Extractor;
-use NTLAB\Report\Util\Extractor\Paragraph as ParagraphExtractor;
-use NTLAB\Report\Util\Extractor\Table as TableExtractor;
+use NTLAB\Report\Util\Rtf\Extractor\Extractor;
+use NTLAB\Report\Util\Rtf\Extractor\Paragraph as ParagraphExtractor;
+use NTLAB\Report\Util\Rtf\Extractor\Table as TableExtractor;
 
-class RtfFiler
+class FilerTree implements FilerInterface
 {
     /**
-     * @var \NTLAB\Report\Util\RtfFiler
+     * @var \NTLAB\Report\Util\Rtf\FilerTree
      */
     protected static $instance = null;
 
@@ -48,7 +48,7 @@ class RtfFiler
     /**
      * Get the instance.
      *
-     * @return \NTLAB\Report\Util\RtfFiler
+     * @return \NTLAB\Report\Util\Rtf\FilerTree
      */
     public static function getInstance()
     {
@@ -60,9 +60,8 @@ class RtfFiler
     }
 
     /**
-     * Get script object.
-     *
-     * @return \NTLAB\Script\Core\Script
+     * (non-PHPdoc)
+     * @see \NTLAB\Report\Util\Rtf\FilerInterface::getScript()
      */
     public function getScript()
     {
@@ -74,10 +73,8 @@ class RtfFiler
     }
 
     /**
-     * Set the script object.
-     *
-     * @param \NTLAB\Script\Core\Script $script  The script object
-     * @return \NTLAB\Report\Util\RtfFiler
+     * (non-PHPdoc)
+     * @see \NTLAB\Report\Util\Rtf\FilerInterface::setScript()
      */
     public function setScript(Script $script)
     {
@@ -121,7 +118,7 @@ class RtfFiler
         // process body
         $this->getScript()
             ->setObjects($objects)
-            ->each(function(Script $script, RtfFiler $_this) use ($result, $body, $each, $table) {
+            ->each(function(Script $script, Rtf\FilerTree $_this) use ($result, $body, $each, $table) {
                 $clone = $body->getResult()->cloneTree();
                 $_this
                     ->replaceTag($clone, array_merge(array_keys($each->getRegions()), array_keys($table->getRegions())))
@@ -143,7 +140,7 @@ class RtfFiler
      *
      * @param \NTLAB\RtfTree\Node\Tree $tree  The template body tree
      * @param array $ignores  Ignore tags
-     * @return \NTLAB\Report\Util\RtfFiler
+     * @return \NTLAB\Report\Util\Rtf\FilerTree
      */
     public function replaceTag(Tree $tree, $ignores = array())
     {
@@ -176,7 +173,7 @@ class RtfFiler
      * @param \NTLAB\RtfTree\Node\Tree $tree  Result tree
      * @param array $regions  Region data
      * @param string $eolKey  Eol keyword used to separate each item
-     * @return \NTLAB\Report\Util\RtfFiler
+     * @return \NTLAB\Report\Util\Rtf\FilerTree
      */
     public function replaceRegion(Tree $tree, $regions = array(), $eolKey)
     {
@@ -188,7 +185,7 @@ class RtfFiler
                 $this->getScript()
                     ->pushContext()
                     ->setObjects($objects)
-                    ->each(function(Script $script, RtfFiler $_this) use ($result, $body, $eolKey) {
+                    ->each(function(Script $script, FilerTree $_this) use ($result, $body, $eolKey) {
                         $clone = $body->cloneTree();
                         $_this->replaceTag($clone);
                         Extractor::appendTree($result, $clone);
@@ -210,11 +207,8 @@ class RtfFiler
     }
 
     /**
-     * Build the template.
-     *
-     * @param string $template  Tree template
-     * @param mixed $objects  The objects
-     * @return string
+     * (non-PHPdoc)
+     * @see \NTLAB\Report\Util\Rtf\FilerInterface::build()
      */
     public function build($template, $objects)
     {

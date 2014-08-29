@@ -24,9 +24,9 @@
  * SOFTWARE.
  */
 
-namespace NTLAB\Report\Util;
+namespace NTLAB\Report\Util\Excel;
 
-class ExcelStyle
+class Style
 {
     protected static $properties = array(
         'PHPExcel_Style' => array(

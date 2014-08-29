@@ -24,17 +24,16 @@
  * SOFTWARE.
  */
 
-namespace NTLAB\Report\Util;
+namespace NTLAB\Report\Util\Rtf;
 
 use NTLAB\Script\Core\Script;
 
-class RtfFilerLegacy
+class FilerLegacy implements FilerInterface
 {
-
     const TAG_SIGN = '%';
 
     /**
-     * @var \NTLAB\Report\Util\RtfFilerLegacy
+     * @var \NTLAB\Report\Util\Rtf\FilerLegacy
      */
     protected static $instance = null;
 
@@ -111,7 +110,7 @@ class RtfFilerLegacy
     /**
      * Get the instance.
      *
-     * @return \NTLAB\Report\Util\RtfFilerLegacy
+     * @return \NTLAB\Report\Util\Rtf\FilerLegacy
      */
     public static function getInstance()
     {
@@ -123,9 +122,8 @@ class RtfFilerLegacy
     }
 
     /**
-     * Get script object.
-     *
-     * @return \NTLAB\Script\Core\Script
+     * (non-PHPdoc)
+     * @see \NTLAB\Report\Util\Rtf\FilerInterface::getScript()
      */
     public function getScript()
     {
@@ -137,10 +135,8 @@ class RtfFilerLegacy
     }
 
     /**
-     * Set the script object.
-     *
-     * @param \NTLAB\Script\Core\Script $script  The script object
-     * @return \NTLAB\Report\Util\RtfFilerLegacy
+     * (non-PHPdoc)
+     * @see \NTLAB\Report\Util\Rtf\FilerInterface::setScript()
      */
     public function setScript(Script $script)
     {
@@ -158,8 +154,8 @@ class RtfFilerLegacy
      */
     public function getTags()
     {
-        $stag = substr(self::TAG_SIGN, 0, 1);
-        $etag = strlen(self::TAG_SIGN) > 1 ? substr(self::TAG_SIGN, 1, 1) : $stag;
+        $stag = substr(static::TAG_SIGN, 0, 1);
+        $etag = strlen(static::TAG_SIGN) > 1 ? substr(static::TAG_SIGN, 1, 1) : $stag;
 
         return array($stag, $etag);
     }
@@ -187,8 +183,8 @@ class RtfFilerLegacy
     public function getPartRegex()
     {
         if (null == $this->partRe) {
-            $allowed_chars = 'A-Za-z0-9\.\_';
-            $this->partRe = sprintf('/(?P<VALUE>[%1$s]+)(\%2$s(?P<SUBTYPE>[%1$s\(\)]+))?(\%3$s(?P<OPTIONS>[%1$s\%4$s]+))?(\%5$s(?P<CASE>[%1$s]+))?/x', $allowed_chars, self::TAG_SUBTYPE_DELIM, self::TAG_OPTIONS_DELIM, self::TAG_OPTIONS_SPLIT, self::TAG_CASE_DELIM);
+            $allowedChars = 'A-Za-z0-9\.\_';
+            $this->partRe = sprintf('/(?P<VALUE>[%1$s]+)(\%2$s(?P<SUBTYPE>[%1$s\(\)]+))?(\%3$s(?P<OPTIONS>[%1$s\%4$s]+))?(\%5$s(?P<CASE>[%1$s]+))?/x', $allowedChars, self::TAG_SUBTYPE_DELIM, self::TAG_OPTIONS_DELIM, self::TAG_OPTIONS_SPLIT, self::TAG_CASE_DELIM);
         }
 
         return $this->partRe;
@@ -257,9 +253,7 @@ class RtfFilerLegacy
         if ($cache && array_key_exists($tag, $this->caches)) {
             return $this->caches[$tag];
         }
-        $tags = array(
-            $tag
-        );
+        $tags = array($tag);
         if (preg_match_all($this->getPartRegex(), $tag, $matches)) {
             foreach (array(
                 0 => 'VALUE',
@@ -286,7 +280,7 @@ class RtfFilerLegacy
     /**
      * Clear the caches.
      *
-     * @return \NTLAB\Report\Util\RtfFilerLegacy
+     * @return \NTLAB\Report\Util\Rtf\FilerLegacy
      */
     public function clear()
     {
@@ -304,9 +298,8 @@ class RtfFilerLegacy
      */
     protected function parseTag($tag)
     {
-      $tag = $this->clean($tag);
-      if (!$this->getScript()->getVar($value, $tag, $this->getScript()->getContext()))
-        {
+        $tag = $this->clean($tag);
+        if (!$this->getScript()->getVar($value, $tag, $this->getScript()->getContext())) {
             $value = $this->getScript()->evaluate($tag);
         }
 
@@ -459,9 +452,7 @@ class RtfFilerLegacy
                     $objects = $this->getScript()->evaluate($params['expr']);
                     $filer = new self();
                     $filer->setScript($this->getScript());
-                    if ($filer->build($params['content'], $objects, true)) {
-                        $content = (string) $filer;
-                    }
+                    $content = $filer->build($params['content'], $objects, true);
                     $this->getScript()->popContext();
                 }
                 $template = str_replace('%%EACH:'.$tag.'%%', $content, $template);
@@ -474,9 +465,7 @@ class RtfFilerLegacy
                     $objects = $this->getScript()->evaluate($params['expr']);
                     $filer = new self();
                     $filer->setScript($this->getScript());
-                    if ($filer->build($params['content'], $objects, true, "\n")) {
-                        $content = (string) $filer;
-                    }
+                    $content = $filer->build($params['content'], $objects, true, "\n");
                     $this->getScript()->popContext();
                 }
                 $template = str_replace('%%TBL:'.$tag.'%%', $content, $template);
@@ -598,7 +587,7 @@ class RtfFilerLegacy
     /**
      * Begin document creation.
      *
-     * @return \NTLAB\Report\Util\RtfFilerLegacy
+     * @return \NTLAB\Report\Util\Rtf\FilerLegacy
      */
     public function beginDoc()
     {
@@ -610,7 +599,7 @@ class RtfFilerLegacy
     /**
      * End document creation.
      *
-     * @return \NTLAB\Report\Util\RtfFilerLegacy
+     * @return \NTLAB\Report\Util\Rtf\FilerLegacy
      */
     public function endDoc()
     {
@@ -624,7 +613,7 @@ class RtfFilerLegacy
      *
      * @param bool $new  True to add a page break
      * @param string $type  Break type
-     * @return \NTLAB\Report\Util\RtfFilerLegacy
+     * @return \NTLAB\Report\Util\Rtf\FilerLegacy
      */
     public function newPage($new, $break = '\page')
     {
@@ -638,7 +627,7 @@ class RtfFilerLegacy
     /**
      * Create a page and build and replace tags.
      *
-     * @return \NTLAB\Report\Util\RtfFilerLegacy
+     * @return \NTLAB\Report\Util\Rtf\FilerLegacy
      */
     public function createPage()
     {
@@ -654,7 +643,7 @@ class RtfFilerLegacy
      * @param array $objects  The template objects
      * @param bool $child  True to build child objects
      * @param string $separator  Child new page separator
-     * @return bool
+     * @return string
      */
     public function build($template, $objects, $child = false, $separator = null)
     {
@@ -665,7 +654,7 @@ class RtfFilerLegacy
             $this->beginDoc();
             $this->getScript()
                 ->setObjects($objects)
-                ->each(function(Script $script, RtfFilerLegacy $_this) use ($child, $separator) {
+                ->each(function(Script $script, FilerLegacy $_this) use ($child, $separator) {
                     $_this
                         ->newPage($script->getIterator()->getRecNo() > 1, $child ? (null !== $separator ? $separator : '\par') : null)
                         ->createPage();
@@ -673,10 +662,8 @@ class RtfFilerLegacy
             ;
             $this->endDoc();
 
-            return true;
+            return $this->content;
         }
-
-        return false;
     }
 
     /**

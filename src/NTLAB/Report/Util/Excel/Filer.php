@@ -24,11 +24,11 @@
  * SOFTWARE.
  */
 
-namespace NTLAB\Report\Util;
+namespace NTLAB\Report\Util\Excel;
 
 use NTLAB\Script\Core\Script;
 
-class ExcelFiler
+class Filer
 {
     const BAND_TITLE = 'title';
     const BAND_HEADER = 'header';
@@ -116,7 +116,7 @@ class ExcelFiler
      * Set excel template.
      *
      * @param string $value  Template filename
-     * @return \NTLAB\Report\Util\ExcelFiler
+     * @return \NTLAB\Report\Util\Excel\Filer
      */
     public function setTemplate($value)
     {
@@ -139,7 +139,7 @@ class ExcelFiler
      * Set template sheet name.
      *
      * @param string $value  Sheet name
-     * @return \NTLAB\Report\Util\ExcelFiler
+     * @return \NTLAB\Report\Util\Excel\Filer
      */
     public function setSheet($value)
     {
@@ -162,7 +162,7 @@ class ExcelFiler
      * Set field signature.
      *
      * @param string $signature  The signature
-     * @return \NTLAB\Report\Util\ExcelFiler
+     * @return \NTLAB\Report\Util\Excel\Filer
      */
     public function setFieldSign($signature)
     {
@@ -185,7 +185,7 @@ class ExcelFiler
      * Set data row autofit.
      *
      * @param boolean $value  Auto fit value
-     * @return \NTLAB\Report\Util\ExcelFiler
+     * @return \NTLAB\Report\Util\Excel\Filer
      */
     public function setAutoFit($value)
     {
@@ -208,7 +208,7 @@ class ExcelFiler
      * Set data row height.
      *
      * @param float $value  The row height
-     * @return \NTLAB\Report\Util\ExcelFiler
+     * @return \NTLAB\Report\Util\Excel\Filer
      */
     public function setRowHeight($value)
     {
@@ -231,7 +231,7 @@ class ExcelFiler
      * Set output writer.
      *
      * @param string $value  The writer class
-     * @return \NTLAB\Report\Util\ExcelFiler
+     * @return \NTLAB\Report\Util\Excel\Filer
      */
     public function setDefaultWriter($value)
     {
@@ -245,7 +245,7 @@ class ExcelFiler
      *
      * @param string $band  The band name
      * @param string $range  The range
-     * @return \NTLAB\Report\Util\ExcelFiler
+     * @return \NTLAB\Report\Util\Excel\Filer
      */
     public function addBand($band, $range)
     {
@@ -261,7 +261,7 @@ class ExcelFiler
      *
      * @param string $field  The field name
      * @param string $expression  Value expression
-     * @return \NTLAB\Report\Util\ExcelFiler
+     * @return \NTLAB\Report\Util\Excel\Filer
      */
     public function addData($field, $expression)
     {
@@ -288,7 +288,7 @@ class ExcelFiler
      * Set the script object.
      *
      * @param \NTLAB\Script\Core\Script $script  The script object
-     * @return \NTLAB\Report\Util\ExcelFiler
+     * @return \NTLAB\Report\Util\Excel\Filer
      */
     public function setScript(Script $script)
     {
@@ -302,7 +302,7 @@ class ExcelFiler
      *
      * @param \PHPExcel_Worksheet $source  Source worksheet
      * @param \PHPExcel_Worksheet $dest  Destination worksheet
-     * @return \NTLAB\Report\Util\ExcelFiler
+     * @return \NTLAB\Report\Util\Excel\Filer
      */
     protected function copySheetProp(\PHPExcel_Worksheet $source, \PHPExcel_Worksheet $dest)
     {
@@ -338,7 +338,7 @@ class ExcelFiler
      * @param string $cell  The origin cell
      * @param int $width  The number of columns from origin to merge
      * @param int $height  The number of rows from origin to merge
-     * @return \NTLAB\Report\Util\ExcelFiler
+     * @return \NTLAB\Report\Util\Excel\Filer
      */
     protected function mergeCells(\PHPExcel_Worksheet $sheet, $cell, $width, $height)
     {
@@ -396,7 +396,7 @@ class ExcelFiler
                 }
                 // copy style
                 $dest->getStyle($dcell->getCoordinate())
-                    ->applyFromArray(ExcelStyle::styleToArray($source->getStyle($scell->getCoordinate())));
+                    ->applyFromArray(Style::styleToArray($source->getStyle($scell->getCoordinate())));
                 // merge cells
                 if ($merged = $this->getCellMerged($source, $scell->getCoordinate())) {
                     $dim = \PHPExcel_Cell::rangeDimension($merged);
@@ -448,7 +448,7 @@ class ExcelFiler
         }
         // apply rich text to value, it's usable only for Excel2007 writer
         if ($value) {
-            $value = ExcelRichText::create($value);
+            $value = RichText::create($value);
         }
         // assign data cell dimension for summary
         if (!array_key_exists($name, $this->dataCells)) {
@@ -493,7 +493,7 @@ class ExcelFiler
      *
      * @param \PHPExcel_Worksheet $sheet  The worksheet
      * @param array $ranges  The data ranges
-     * @return \NTLAB\Report\Util\ExcelFiler
+     * @return \NTLAB\Report\Util\Excel\Filer
      */
     protected function fillRange(\PHPExcel_Worksheet $sheet, $ranges = array(), $callback = null, $adjustRow = false)
     {
@@ -536,7 +536,7 @@ class ExcelFiler
      * Find and detect bands position from Worksheet.
      *
      * @param \PHPExcel_Worksheet $sheet  The target sheet
-     * @return \NTLAB\Report\Util\ExcelFiler
+     * @return \NTLAB\Report\Util\Excel\Filer
      */
     protected function findBands($sheet)
     {
@@ -629,7 +629,7 @@ class ExcelFiler
      *
      * @param \PHPExcel_Worksheet $insheet  Input worksheet
      * @param \PHPExcel_Worksheet $outsheet  Output worksheet
-     * @return \NTLAB\Report\Util\ExcelFiler
+     * @return \NTLAB\Report\Util\Excel\Filer
      */
     protected function processBands($insheet, $outsheet)
     {
@@ -643,7 +643,7 @@ class ExcelFiler
                 case static::BAND_MASTER_DATA:
                     $this->dataCells = array();
                     $this->getScript()
-                        ->each(function(Script $script, ExcelFiler $_this) use ($insheet, $outsheet, &$anchor, $bandData) {
+                        ->each(function(Script $script, Filer $_this) use ($insheet, $outsheet, &$anchor, $bandData) {
                             $_this->buildMasterData($insheet, $outsheet, $bandData, $anchor);
                         })
                     ;
@@ -672,7 +672,7 @@ class ExcelFiler
      * @param \PHPExcel_Worksheet $outsheet  Output sheet
      * @param string $band  Band range address
      * @param array $anchor  Anchor range
-     * @return \NTLAB\Report\Util\ExcelFiler
+     * @return \NTLAB\Report\Util\Excel\Filer
      */
     public function buildMasterData($insheet, $outsheet, $band, &$anchor)
     {

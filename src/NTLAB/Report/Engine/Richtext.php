@@ -27,20 +27,36 @@
 namespace NTLAB\Report\Engine;
 
 use NTLAB\Report\Report;
-use NTLAB\Report\Util\RtfFiler;
-use NTLAB\Report\Util\RtfFilerLegacy;
+use NTLAB\Report\Util\Rtf\FilerInterface;
+use NTLAB\Report\Util\Rtf\FilerLegacy;
+use NTLAB\Report\Util\Rtf\FilerTree;
 
 class Richtext extends Report
 {
+    /**
+     * @var \NTLAB\Report\Util\Rtf\FilerInterface
+     */
+    protected $filer = null;
+
     /**
      * @var boolean
      */
     protected $single = null;
 
     /**
-     * @var boolean
+     * @var string
      */
-    protected static $legacy = true;
+    protected static $defaultFiler = null;
+
+    /**
+     * Set rich text default filer.
+     *
+     * @param string $class  Filer class name
+     */
+    public static function setDefaultFiler($class)
+    {
+        static::$defaultFiler = $class;
+    }
 
     protected function configure(\DOMNodeList $nodes)
     {
@@ -68,6 +84,24 @@ class Richtext extends Report
         // do nothing
     }
 
+    /**
+     * Get rich text filer.
+     *
+     * @return \NTLAB\Report\Util\Rtf\FilerInterface
+     */
+    protected function getFiler()
+    {
+        if (null === $this->filer) {
+            if (null === static::$defaultFiler) {
+                static::$defaultFiler = FilerLegacy::class;
+            }
+            $this->filer = new static::$defaultFiler();
+            $this->filer->setScript($this->getScript());
+        }
+
+        return $this->filer;
+    }
+
     protected function build()
     {
         $objects = $this->result;
@@ -76,18 +110,6 @@ class Richtext extends Report
             $objects = array($objects[0]);
         }
 
-        if (static::$legacy) {
-            $filer = RtfFilerLegacy::getInstance();
-            if ($filer
-                ->setScript($this->getScript())
-                ->build($this->templateContent, $objects)) {
-                return (string) $filer;
-            }
-        } else {
-            return RtfFiler::getInstance()
-                ->setScript($this->getScript())
-                ->build($this->templateContent, $objects)
-            ;
-        }
+        return $this->getFiler()->build($this->templateContent, $objects);
     }
 }

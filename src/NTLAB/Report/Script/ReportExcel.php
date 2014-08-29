@@ -27,7 +27,7 @@
 namespace NTLAB\Report\Script;
 
 use NTLAB\Script\Core\Module;
-use NTLAB\Report\Util\ExcelRichText;
+use NTLAB\Report\Util\Excel\RichText;
 
 /**
  * Excel report functions.
@@ -47,7 +47,7 @@ class ReportExcel extends Module
     public function f_XlsRtBold($text)
     {
         if ($text) {
-            $text = ExcelRichText::tag(ExcelRichText::TAG_BOLD, $text);
+            $text = RichText::tag(RichText::TAG_BOLD, $text);
         }
 
         return $text;
@@ -63,7 +63,7 @@ class ReportExcel extends Module
     public function f_XlsRtItalic($text)
     {
         if ($text) {
-            $text = ExcelRichText::tag(ExcelRichText::TAG_ITALIC, $text);
+            $text = RichText::tag(RichText::TAG_ITALIC, $text);
         }
 
         return $text;
@@ -79,7 +79,7 @@ class ReportExcel extends Module
     public function f_XlsRtUnderline($text)
     {
         if ($text) {
-            $text = ExcelRichText::tag(ExcelRichText::TAG_UNDERLINE, $text);
+            $text = RichText::tag(RichText::TAG_UNDERLINE, $text);
         }
 
         return $text;
@@ -95,7 +95,7 @@ class ReportExcel extends Module
     public function f_XlsRtStrikethrough($text)
     {
         if ($text) {
-            $text = ExcelRichText::tag(ExcelRichText::TAG_STRIKETHROUGH, $text);
+            $text = RichText::tag(RichText::TAG_STRIKETHROUGH, $text);
         }
 
         return $text;
@@ -110,7 +110,7 @@ class ReportExcel extends Module
     public function f_XlsRtSubscript($text)
     {
         if ($text) {
-            $text = ExcelRichText::tag(ExcelRichText::TAG_SUBSCRIPT, $text);
+            $text = RichText::tag(RichText::TAG_SUBSCRIPT, $text);
         }
 
         return $text;
@@ -126,7 +126,7 @@ class ReportExcel extends Module
     public function f_XlsRtSuperscript($text)
     {
         if ($text) {
-            $text = ExcelRichText::tag(ExcelRichText::TAG_SUPERSCRIPT, $text);
+            $text = RichText::tag(RichText::TAG_SUPERSCRIPT, $text);
         }
         
         return $text;
@@ -144,7 +144,7 @@ class ReportExcel extends Module
     public function f_XlsRtSize($text, $size)
     {
         if ($text) {
-            $text = ExcelRichText::tag(ExcelRichText::TAG_SIZE, $text, $size);
+            $text = RichText::tag(RichText::TAG_SIZE, $text, $size);
         }
 
         return $text;
@@ -161,7 +161,7 @@ class ReportExcel extends Module
     public function f_XlsRtColor($text, $color)
     {
         if ($text) {
-            $text = ExcelRichText::tag(ExcelRichText::TAG_COLOR, $text, $color);
+            $text = RichText::tag(RichText::TAG_COLOR, $text, $color);
         }
 
         return $text;

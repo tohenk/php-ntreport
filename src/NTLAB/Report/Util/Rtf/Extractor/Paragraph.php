@@ -24,69 +24,66 @@
  * SOFTWARE.
  */
 
-namespace NTLAB\Report\Util\Extractor;
+namespace NTLAB\Report\Util\Rtf\Extractor;
 
 use NTLAB\RtfTree\Node\Tree;
-use NTLAB\RtfTree\Node\Node;
 
-class Table extends Extractor
+class Paragraph extends Extractor
 {
-    const TROWD = 'trowd';
-    const ROW = 'row';
+    const PARAGRAPH = 'pard';
 
     /**
-     * Extract table region.
+     * Extract body.
      *
      * @param \NTLAB\RtfTree\Node\Tree $tree  Input tree
      * @return \NTLAB\Report\Util\Extractor\Paragraph
      */
-    public static function getTable(Tree $tree)
+    public static function getBody(Tree $tree)
     {
         $extractor = new self();
-        $extractor->regions = $extractor->extractRegion($tree, 'TBL');
+        $extractor->result = $extractor->extract($tree);
+
+        return $extractor;
+    }
+
+    /**
+     * Extract region.
+     *
+     * @param \NTLAB\RtfTree\Node\Tree $tree  Input tree
+     * @param string $region  Region name
+     * @return \NTLAB\Report\Util\Extractor\Paragraph
+     */
+    public static function getRegion(Tree $tree, $region)
+    {
+        $extractor = new self();
+        $extractor->regions = $extractor->extractRegion($tree, $region);
 
         return $extractor;
     }
 
     /**
      * Constructor.
+     *
+     * @param string $beginMark  Begin mark
+     * @param string $endMark  End mark
      */
-    public function __construct()
+    public function __construct($beginMark = 'BEGIN', $endMark = 'END')
     {
-        $this->beginKey = static::TROWD;
-        $this->endKey = static::ROW;
+        $this->beginKey = static::PARAGRAPH;
+        $this->beginMark = $beginMark;
+        $this->endMark = $endMark;
     }
 
     /**
      * (non-PHPdoc)
-     * @see \NTLAB\Report\Util\Extractor\Extractor::isMatchEndKey()
+     * @see \NTLAB\Report\Util\Extractor\Extractor::getStartIndex()
      */
-    protected function isMatchEndKey(Node $node)
+    protected function getStartIndex(Tree $tree)
     {
-        if ($node->is(Node::GROUP)) {
-            if ($node = $node->selectSingleChildNode($this->endKey)) {
-                return true;
-            }
+        if (!($node = $tree->getMainGroup()->selectSingleNode(static::PARAGRAPH))) {
+            throw new \InvalidArgumentException('No paragraph found.');
         }
 
-        return false;
-    }
-
-    /**
-     * (non-PHPdoc)
-     * @see \NTLAB\Report\Util\Extractor\Extractor::ensureEndKey()
-     */
-    protected function ensureEndKey(Tree $tree, &$position)
-    {
-        parent::ensureEndKey($tree, $position);
-        if ($node = $tree->getMainGroup()->getChildAt($position)) {
-            if ($this->isMatchEndKey($node) &&
-                ($nextNode = $tree->getMainGroup()->getChildAt($position + 1)) &&
-                $nextNode->isEquals(Paragraph::PARAGRAPH)) {
-                $position++;
-            }
-        }
-
-        return $this;
+        return $node->getNodeIndex();
     }
 }

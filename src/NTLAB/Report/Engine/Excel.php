@@ -27,12 +27,12 @@
 namespace NTLAB\Report\Engine;
 
 use NTLAB\Report\Report;
-use NTLAB\Report\Util\ExcelFiler;
+use NTLAB\Report\Util\Excel\Filer;
 
 class Excel extends Report
 {
     /**
-     * @var NTLAB\Report\Util\ExcelFiler
+     * @var \NTLAB\Report\Util\Excel\Filer
      */
     protected $filer = null;
 
@@ -43,7 +43,7 @@ class Excel extends Report
 
     protected function configure(\DOMNodeList $nodes)
     {
-        $this->filer = new ExcelFiler();
+        $this->filer = new Filer();
         $this->filer->setScript($this->getScript());
         foreach ($nodes as $node) {
             switch (strtolower($node->nodeName)) {
