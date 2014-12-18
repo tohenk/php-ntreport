@@ -773,7 +773,10 @@ abstract class Report
             if ($this->hasTemplate() && !$this->templateContent) {
                 $this->errorCode = static::ERR_TEMPLATE;
             } else {
-                return $this->build();
+                if (null !== ($content = $this->build())) {
+                    return $content;
+                }
+                $this->errorCode = static::ERR_INTERNAL;
             }
         } else {
             $this->errorCode = static::ERR_DATA;
