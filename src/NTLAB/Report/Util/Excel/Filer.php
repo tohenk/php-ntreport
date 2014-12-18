@@ -512,6 +512,10 @@ class Filer
                     if (($value = $cell->getValue()) && (0 === strpos($value, $this->getFieldSign()))) {
                         $data = substr($value, strlen($this->getFieldSign()));
                         $value = call_user_func($callback, $cell, $data, $value);
+                        // convert value if it is an object
+                        if (is_object($value)) {
+                            $value = (string) $value;
+                        }
                         // set cell value back
                         $cell->setValue($value);
                     }
