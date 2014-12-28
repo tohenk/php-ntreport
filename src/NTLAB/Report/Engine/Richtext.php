@@ -93,7 +93,7 @@ class Richtext extends Report
     {
         if (null === $this->filer) {
             if (null === static::$defaultFiler) {
-                static::$defaultFiler = FilerLegacy::class;
+                static::$defaultFiler = get_class(new FilerLegacy());
             }
             $this->filer = new static::$defaultFiler();
             $this->filer->setScript($this->getScript());
