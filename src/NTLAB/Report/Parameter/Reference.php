@@ -42,7 +42,7 @@ class Reference extends Parameter
         if (null == $this->values) {
             $this->values = array();
             try {
-                if (($value = $this->getDefaultValue()) && (is_array($value) || is_a($value, \ArrayObject::class))) {
+                if (($value = $this->getDefaultValue()) && (is_array($value) || ($value instanceof ArrayObject))) {
                     foreach ($value as $ref) {
                         if ($handler = Manager::getContextHandler($ref)) {
                             if (null !== ($pair = $handler->getKeyValuePair($ref))) {

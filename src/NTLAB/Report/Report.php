@@ -28,19 +28,9 @@ namespace NTLAB\Report;
 
 use NTLAB\Report\Config\Config;
 use NTLAB\Report\Data\Data;
-use NTLAB\Report\Data\Propel;
-use NTLAB\Report\Data\Pdo;
-use NTLAB\Report\Engine\Csv;
-use NTLAB\Report\Engine\Excel;
-use NTLAB\Report\Engine\Richtext;
 use NTLAB\Report\Form\FormBuilder;
 use NTLAB\Report\Listener\ListenerInterface;
 use NTLAB\Report\Parameter\Parameter;
-use NTLAB\Report\Parameter\Bool;
-use NTLAB\Report\Parameter\Checklist;
-use NTLAB\Report\Parameter\Date;
-use NTLAB\Report\Parameter\Reference;
-use NTLAB\Report\Parameter\Statix;
 use NTLAB\Report\Validator\Validator;
 use NTLAB\Report\Script\ProviderReport;
 use NTLAB\Report\Script\ReportCore;
@@ -48,20 +38,20 @@ use NTLAB\Script\Core\Script;
 use NTLAB\Script\Core\Manager;
 
 // register base engines
-Report::addEngine('csv', Csv::class);
-Report::addEngine('excel', Excel::class);
-Report::addEngine('richtext', Richtext::class);
+Report::addEngine('csv', 'NTLAB\Report\Engine\Csv');
+Report::addEngine('excel', 'NTLAB\Report\Engine\Excel');
+Report::addEngine('richtext', 'NTLAB\Report\Engine\Richtext');
 
 // register report data
-Data::register(Pdo::class);
-Data::register(Propel::class);
+Data::register('NTLAB\Report\Data\Pdo');
+Data::register('NTLAB\Report\Data\Propel');
 
 // register parameters
-Parameter::addHandler('bool', Bool::class);
-Parameter::addHandler('checklist', Checklist::class);
-Parameter::addHandler('date', Date::class);
-Parameter::addHandler('ref', Reference::class);
-Parameter::addHandler('static', Statix::class);
+Parameter::addHandler('bool', 'NTLAB\Report\Parameter\Bool');
+Parameter::addHandler('checklist', 'NTLAB\Report\Parameter\Checklist');
+Parameter::addHandler('date', 'NTLAB\Report\Parameter\Date');
+Parameter::addHandler('ref', 'NTLAB\Report\Parameter\Reference');
+Parameter::addHandler('static', 'NTLAB\Report\Parameter\Statix');
 
 // register report script
 Manager::addProvider(ProviderReport::getInstance());
