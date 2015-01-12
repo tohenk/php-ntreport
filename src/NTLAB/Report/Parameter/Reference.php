@@ -27,6 +27,7 @@
 namespace NTLAB\Report\Parameter;
 
 use NTLAB\Script\Core\Manager;
+use NTLAB\Script\Context\ArrayVar;
 
 class Reference extends Parameter
 {
@@ -42,7 +43,7 @@ class Reference extends Parameter
         if (null == $this->values) {
             $this->values = array();
             try {
-                if (($value = $this->getDefaultValue()) && (is_array($value) || ($value instanceof \ArrayObject))) {
+                if (($value = $this->getDefaultValue()) && (is_array($value) || ($value instanceof \ArrayObject) || ($value instanceof ArrayVar))) {
                     foreach ($value as $ref) {
                         if ($handler = Manager::getContextHandler($ref)) {
                             if (null !== ($pair = $handler->getKeyValuePair($ref))) {
