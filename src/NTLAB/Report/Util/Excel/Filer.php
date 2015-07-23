@@ -83,6 +83,11 @@ class Filer
     protected $fieldSign = '$';
 
     /**
+     * @var string
+     */
+    protected $aggregateSign = '=';
+
+    /**
      * @var boolean
      */
     protected $autoFit = true;
@@ -167,6 +172,29 @@ class Filer
     public function setFieldSign($signature)
     {
         $this->fieldSign = $signature;
+
+        return $this;
+    }
+
+    /**
+     * Get aggregate signature.
+     *
+     * @return string
+     */
+    public function getAggregateSign()
+    {
+        return $this->aggregateSign;
+    }
+
+    /**
+     * Set aggregate signature.
+     *
+     * @param string $signature  The signature
+     * @return \NTLAB\Report\Util\Excel\Filer
+     */
+    public function setAggregateSign($signature)
+    {
+        $this->aggregateSign = $signature;
 
         return $this;
     }
@@ -474,12 +502,13 @@ class Filer
      */
     protected function fillSummary(\PHPExcel_Cell $cell, $name, $value)
     {
-        preg_match_all('/([a-zA-Z]+)\((\w+)\)/', $name, $matches);
+        $value = $name;
+        preg_match_all('/([a-zA-Z]+)\(([a-zA-Z0-9_]+)\)/', $name, $matches);
         for ($i = 0; $i < count($matches[0]); $i++) {
             $func = $matches[1][$i];
             $data = $matches[2][$i];
-            if (array_key_exists($data, $this->dataCells)) {
-                $value = sprintf('=%1$s(%2$s%3$d:%2$s%4$d)', $func, $this->dataCells[$data]['column'], $this->dataCells[$data]['rowStart'], $this->dataCells[$data]['rowEnd']);
+            if (in_array(strtoupper($func), array('SUM', 'AVG', 'AVERAGE')) && array_key_exists($data, $this->dataCells)) {
+                $value = str_replace($matches[0][$i], sprintf('%1$s(%2$s%3$d:%2$s%4$d)', $func, $this->dataCells[$data]['column'], $this->dataCells[$data]['rowStart'], $this->dataCells[$data]['rowEnd']), $value);
             }
         }
 
@@ -556,7 +585,8 @@ class Filer
                 $has_sign = false;
                 for ($col = 1; $col <= $cols; $col++) {
                     $cell = $sheet->getCellByColumnAndRow($col - 1, $row);
-                    if (($value = $cell->getValue()) && (0 === strpos($value, $this->getFieldSign()))) {
+                    // ignore aggregate sign
+                    if (($value = $cell->getValue()) && (0 === strpos($value, $this->getFieldSign())) && $this->aggregateSign != substr($value, 1, 1)) {
                         $has_sign = true;
                         break;
                     }
