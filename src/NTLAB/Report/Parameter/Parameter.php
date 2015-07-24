@@ -79,6 +79,11 @@ abstract class Parameter
     /**
      * @var string
      */
+    protected $label = null;
+
+    /**
+     * @var string
+     */
     protected $onValue = null;
 
     /**
@@ -163,6 +168,10 @@ abstract class Parameter
 
                 case 'operator':
                     $this->operator = $v;
+                    break;
+
+                case 'label':
+                    $this->label = $v;
                     break;
 
                 case 'is_default':
@@ -263,6 +272,16 @@ abstract class Parameter
     }
 
     /**
+     * Get label.
+     *
+     * @return string
+     */
+    public function getLabel()
+    {
+        return $this->label;
+    }
+
+    /**
      * Get default include state.
      *
      * @return bool
@@ -317,7 +336,7 @@ abstract class Parameter
     }
 
     /**
-     * Check if parameter has suport of form widget.
+     * Check if parameter has support of form widget.
      *
      * @return bool
      */
@@ -414,13 +433,13 @@ abstract class Parameter
     }
 
     /**
-     * Get evaluated parameter value.
+     * Get evaluated value.
      *
      * @return string
      */
-    public function getCurrentValue()
+    protected function evalValue($value)
     {
-        if (($value = $this->getValue()) && strlen($this->onValue)) {
+        if (strlen($value) && strlen($this->onValue)) {
             $script = $this->report->getScript();
             $var = new ArrayVar(array('value' => $value));
             $script->setContext($var);
@@ -428,6 +447,16 @@ abstract class Parameter
         }
 
         return $value;
+    }
+
+    /**
+     * Get evaluated parameter value.
+     *
+     * @return string
+     */
+    public function getCurrentValue()
+    {
+        return $this->evalValue($this->getValue());
     }
 
     public function __toString()

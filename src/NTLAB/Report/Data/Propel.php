@@ -203,6 +203,34 @@ class Propel extends Data
     }
 
     /**
+     * Format a date as Propel Criteria.
+     *
+     * @param string $column  Column name
+     * @param string $dateType  Date type
+     * @param int $dateValue  Date timestamp value
+     * @param string $operator  Criteria operator
+     * @return string
+     */
+    protected function formatDate($column, $dateType, $dateValue, $operator = null)
+    {
+        $adapter = \Propel::getDB();
+        if (Date::DATE === $dateType) {
+            $dateValue = date($adapter->getDateFormatter(), $dateValue);
+        } else if (Date::MONTH === $dateType) {
+            $dateValue = date('Y-m', $dateValue);
+        } else if (Date::YEAR === $dateType) {
+            $dateValue = date('Y', $dateValue);
+        }
+
+        return sprintf('%1$s %2$s %4$s%3$s%4$s',
+            $adapter->subString($column, 1, strlen($dateValue)),
+            $operator ? $operator : \Criteria::EQUAL,
+            $dateValue,
+            $adapter->getStringDelimiter()
+        );
+    }
+
+    /**
      * (non-PHPdoc)
      * @see \NTLAB\Report\Data\Data::doConvert()
      */
@@ -225,21 +253,15 @@ class Propel extends Data
                 break;
 
             case 'date':
-                $rcolumn = $parameter->getRealColumn();
-                $dateType = $parameter->getDateTypeValue();
-                $adapter = \Propel::getDB();
-                if (Date::DATE === $dateType) {
-                    $value = date($adapter->getDateFormatter(), $value);
-                } else if (Date::MONTH === $dateType) {
-                    $value = date('Y-m', $value);
-                } else if (Date::YEAR === $dateType) {
-                    $value = date('Y', $value);
-                }
-                $value = sprintf('%1$s %2$s %4$s%3$s%4$s',
-                    $adapter->subString($rcolumn, 1, strlen($value)),
-                    $operator ? $operator : \Criteria::EQUAL,
-                    $value,
-                    $adapter->getStringDelimiter()
+            case 'dateonly':
+                $value = $this->formatDate($parameter->getRealColumn(), $parameter->getDateTypeValue(), $value, $operator);
+                $operator = \Criteria::CUSTOM;
+                break;
+
+            case 'daterange':
+                $value = sprintf('(%s AND %s)',
+                    $this->formatDate($parameter->getRealColumn(), $parameter->getDateTypeValue(), $value, '>='),
+                    $this->formatDate($parameter->getRealColumn(), $parameter->getDateTypeValue(), $parameter->getCurrentValue2(), '<=')
                 );
                 $operator = \Criteria::CUSTOM;
                 break;

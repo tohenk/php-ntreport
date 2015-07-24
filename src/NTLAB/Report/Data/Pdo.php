@@ -118,6 +118,33 @@ class Pdo extends Data
     }
 
     /**
+     * Format a date as PDO statement query.
+     *
+     * @param string $column  Column name
+     * @param string $dateType  Date type
+     * @param int $dateValue  Date timestamp value
+     * @param string $operator  Condition operator
+     * @return string
+     */
+    protected function formatDate($column, $dateType, $dateValue, $operator = null)
+    {
+        if (Date::DATE === $dateType) {
+            $dateValue = date('Y-m-d', $dateValue);
+        } else if (Date::MONTH === $dateType) {
+            $dateValue = date('Y-m', $dateValue);
+        } else if (Date::YEAR === $dateType) {
+            $dateValue = date('Y', $dateValue);
+        }
+
+        return sprintf('%1$s %2$s %4$s%3$s%4$s',
+            sprintf('SUBSTRING(%s, %d, %d)', $column, 1, strlen($dateValue)),
+            $operator ? $operator : '=',
+            $dateValue,
+            '"'
+        );
+    }
+
+    /**
      * (non-PHPdoc)
      * @see \NTLAB\Report\Data\Data::doConvert()
      */
@@ -143,20 +170,16 @@ class Pdo extends Data
                 break;
 
             case 'date':
-                $rcolumn = $parameter->getRealColumn();
-                $dateType = $parameter->getDateTypeValue();
-                if (Date::DATE === $dateType) {
-                    $value = date('Y-m-d', $value);
-                } else if (Date::MONTH === $dateType) {
-                    $value = date('Y-m', $value);
-                } else if (Date::YEAR === $dateType) {
-                    $value = date('Y', $value);
-                }
-                $value = sprintf('%1$s %2$s %4$s%3$s%4$s',
-                    sprintf('SUBSTRING(%s, %d, %d)', $rcolumn, 1, strlen($value)),
-                    $operator ? $operator : '=',
-                    $value,
-                    '"'
+            case 'dateonly':
+                $column = $this->formatDate($parameter->getRealColumn(), $parameter->getDateTypeValue(), $value, $operator);
+                $operator = null;
+                $value = null;
+                break;
+
+            case 'daterange':
+                $column = sprintf('(%s AND %s)',
+                    $this->formatDate($parameter->getRealColumn(), $parameter->getDateTypeValue(), $value, '>='),
+                    $this->formatDate($parameter->getRealColumn(), $parameter->getDateTypeValue(), $parameter->getCurrentValue2(), '<=')
                 );
                 $operator = null;
                 $value = null;

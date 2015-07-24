@@ -50,6 +50,8 @@ Data::register('NTLAB\Report\Data\Propel');
 Parameter::addHandler('bool', 'NTLAB\Report\Parameter\Bool');
 Parameter::addHandler('checklist', 'NTLAB\Report\Parameter\Checklist');
 Parameter::addHandler('date', 'NTLAB\Report\Parameter\Date');
+Parameter::addHandler('dateonly', 'NTLAB\Report\Parameter\DateOnly');
+Parameter::addHandler('daterange', 'NTLAB\Report\Parameter\DateRange');
 Parameter::addHandler('ref', 'NTLAB\Report\Parameter\Reference');
 Parameter::addHandler('static', 'NTLAB\Report\Parameter\Statix');
 
@@ -410,6 +412,9 @@ abstract class Report
         );
         if ($operator = $this->nodeAttr($node, 'operator')) {
             $options['operator'] = $operator;
+        }
+        if ($label = $this->nodeAttr($node, 'label')) {
+            $options['label'] = $label;
         }
         if ($onValue = $this->nodeAttr($node, 'getvalue')) {
             $options['on_value'] = $onValue;
