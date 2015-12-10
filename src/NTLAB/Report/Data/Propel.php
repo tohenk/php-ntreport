@@ -26,6 +26,7 @@
 
 namespace NTLAB\Report\Data;
 
+use NTLAB\Report\Report;
 use NTLAB\Report\Parameter\Parameter;
 use NTLAB\Report\Parameter\Date;
 
@@ -90,11 +91,23 @@ class Propel extends Data
      * (non-PHPdoc)
      * @see \NTLAB\Report\Data\Data::addOrder()
      */
-    public function addOrder($column, $direction)
+    public function addOrder($column, $direction, $format = null)
     {
         $this->items = array();
         $query = $this->getQuery();
-        $this->applyQuery($query, $column, 'orderBy%s', array($direction));
+        if ($format) {
+            switch ($direction) {
+                case Report::ORDER_ASC:
+                    $this->applyQuery($query, $column, 'addAscendingOrderByColumn', array(), $format, true);
+                    break;
+
+                case Report::ORDER_DESC:
+                    $this->applyQuery($query, $column, 'addDescendingOrderByColumn', array(), $format, true);
+                    break;
+            }
+        } else {
+            $this->applyQuery($query, $column, 'orderBy%s', array($direction));
+        }
         $this->endQueryUses();
     }
 
@@ -145,17 +158,32 @@ class Propel extends Data
      * @param string $column  The column name, can be nested using MyModel.MyOtherModel.MyMethod
      * @param string $method_format  The method format to be called
      * @param array $args  The method arguments
+     * @param string $column_format  The format to be applied to column
+     * @param bool $translate  Perform column name translation
      * @throws \RuntimeException
      * @return \NTLAB\Report\Data\Propel
      */
-    protected function applyQuery($query, $column, $method_format, $args)
+    protected function applyQuery($query, $column, $method_format, $args, $column_format = null, $translate = null)
     {
         $extra = null;
         if (false !== strpos($column, self::COLUMN_CONCATENATOR)) {
             list ($column, $extra) = explode(self::COLUMN_CONCATENATOR, $column, 2);
             $method = 'use'.$column.'Query';
-        } else {
+        } else if (false !== strpos($method_format, '%s')) {
             $method = sprintf($method_format, $column);
+        } else {
+            $method = $method_format;
+            if ($translate) {
+                foreach (array(\BasePeer::TYPE_PHPNAME, \BasePeer::TYPE_FIELDNAME) as $type) {
+                    try {
+                        $translatedColumn = \BasePeer::translateFieldname($query->getModelName(), $column, $type, \BasePeer::TYPE_COLNAME);
+                        $column = $translatedColumn;
+                        break;
+                    } catch (\Exception $e) {
+                    }
+                }
+            }
+            array_unshift($args, $this->applyFormat($column_format, $column));
         }
         if (!is_callable(array($query, $method))) {
             throw new \RuntimeException('Method "'.$method.'" doesn\'t exist in "'.get_class($query).'".');
@@ -165,7 +193,7 @@ class Propel extends Data
             if (!in_array($subquery, $this->items)) {
                 $this->items[] = $subquery;
             }
-            $this->applyQuery($subquery, $extra, $method_format, $args);
+            $this->applyQuery($subquery, $extra, $method_format, $args, $column_format, $translate);
         } else {
             call_user_func_array(array($query, $method), $args);
         }

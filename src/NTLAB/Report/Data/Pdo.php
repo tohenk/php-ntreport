@@ -97,9 +97,9 @@ class Pdo extends Data
      * (non-PHPdoc)
      * @see \NTLAB\Report\Data\Data::addOrder()
      */
-    public function addOrder($column, $direction)
+    public function addOrder($column, $direction, $format = null)
     {
-        $this->orders[] = trim($column.' '.$direction);
+        $this->orders[] = trim($this->applyFormat($format, $column).' '.$direction);
     }
 
     /**

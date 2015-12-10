@@ -434,7 +434,8 @@ abstract class Report
     {
         $column = $this->nodeAttr($node, 'name');
         $dir = $this->nodeAttr($node, 'dir', static::ORDER_ASC);
-        $this->orders[$column] = $dir;
+        $format = $this->nodeAttr($node, 'fmt');
+        $this->orders[] = array($column, $dir, $format);
     }
 
     /**
@@ -686,8 +687,8 @@ abstract class Report
                 $data->addCondition($param);
             }
             // apply sorting
-            foreach ($this->getOrders() as $column => $dir) {
-                $data->addOrder($column, $dir);
+            foreach ($this->getOrders() as $order) {
+                $data->addOrder($order[0], $order[1], $order[2]);
             }
             $data->setDistinct($this->distinct);
 

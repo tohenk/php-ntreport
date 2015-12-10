@@ -104,8 +104,9 @@ abstract class Data
      *
      * @param string $column  The column name to order
      * @param string $direction  The order direction
+     * @param string $format  Custom order formatter
      */
-    abstract public function addOrder($column, $direction);
+    abstract public function addOrder($column, $direction, $format = null);
 
     /**
      * Fetch report data.
@@ -222,4 +223,20 @@ abstract class Data
      * @param array $result  Result array
      */
     abstract protected function doConvert(Parameter $parameter, &$result);
+
+    /**
+     * Apply formatting to value.
+     *
+     * @param string $format  Formatter
+     * @param string $column  Column name
+     * @return string
+     */
+    protected function applyFormat($format, $value)
+    {
+        if ($format && (false != strpos($format, '%s') || false != strpos($format, '%1$s'))) {
+            $value = sprintf($format, $value);
+        }
+
+        return $value;
+    }
 }
