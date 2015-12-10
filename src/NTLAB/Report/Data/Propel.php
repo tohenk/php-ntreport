@@ -77,11 +77,13 @@ class Propel extends Data
      */
     public function addCondition(Parameter $parameter)
     {
+        $this->items = array();
         $query = $this->getQuery();
         foreach ($this->convertParameter($parameter) as $params) {
             list($column, $operator, $value) = $params;
             $this->applyQuery($query, $column, 'filterBy%s', array($value, $operator));
         }
+        $this->endQueryUses();
     }
 
     /**
@@ -90,8 +92,10 @@ class Propel extends Data
      */
     public function addOrder($column, $direction)
     {
+        $this->items = array();
         $query = $this->getQuery();
         $this->applyQuery($query, $column, 'orderBy%s', array($direction));
+        $this->endQueryUses();
     }
 
     /**
@@ -101,13 +105,6 @@ class Propel extends Data
     public function fetch()
     {
         $query = $this->getQuery();
-        // merge subqueries
-        for ($i = count($this->items); $i > 0; $i--) {
-            $subquery = $this->items[$i - 1];
-            if ($subquery != $query) {
-                $subquery->endUse();
-            }
-        }
         // set distinct
         if ($this->isDistinct()) {
             $query->setDistinct();
@@ -174,6 +171,25 @@ class Propel extends Data
         }
 
         return $this;
+    }
+
+    /**
+     * End all sub query uses and merge with main query.
+     *
+     * @return \ModelCriteria
+     */
+    protected function endQueryUses()
+    {
+        $query = $this->getQuery();
+        // merge subqueries
+        for ($i = count($this->items); $i > 0; $i--) {
+            $subquery = $this->items[$i - 1];
+            if ($subquery != $query) {
+                $subquery->endUse();
+            }
+        }
+
+        return $query;
     }
 
     /**
