@@ -205,8 +205,7 @@ class Style
             self::copyBorder($source->getTop(), $dest->getTop());
             self::copyBorder($source->getBottom(), $dest->getBottom());
             self::copyBorder($source->getDiagonal(), $dest->getDiagonal());
-            if ($dest->getDiagonalDirection() !== $source->getDiagonalDirection());
-            {
+            if ($dest->getDiagonalDirection() !== $source->getDiagonalDirection()) {
                 $dest->setDiagonalDirection($source->getDiagonalDirection());
             }
             /*
