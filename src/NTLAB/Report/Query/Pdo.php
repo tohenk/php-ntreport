@@ -26,6 +26,8 @@
 
 namespace NTLAB\Report\Query;
 
+use Propel\Runtime\Connection\ConnectionInterface;
+
 class Pdo
 {
     /**
@@ -68,9 +70,13 @@ class Pdo
      * @param \PDO $connection  The connection
      * @return \NTLAB\Report\Query\Pdo
      */
-    public function setConnection(\PDO $connection)
+    public function setConnection($connection)
     {
-        $this->connection = $connection;
+        if ($connection instanceof \PDO || $connection instanceof ConnectionInterface) {
+            $this->connection = $connection;
+        } else {
+            throw new \InvalidArgumentException('Connection must be an instance of PDO or Propel\Runtime\Connection\ConnectionInterface.');
+        }
 
         return $this;
     }

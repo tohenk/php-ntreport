@@ -45,6 +45,7 @@ Report::addEngine('richtext', 'NTLAB\Report\Engine\Richtext');
 // register report data
 Data::register('NTLAB\Report\Data\Pdo');
 Data::register('NTLAB\Report\Data\Propel');
+Data::register('NTLAB\Report\Data\Propel2');
 
 // register parameters
 Parameter::addHandler('bool', 'NTLAB\Report\Parameter\Bool');

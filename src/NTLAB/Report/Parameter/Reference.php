@@ -28,6 +28,7 @@ namespace NTLAB\Report\Parameter;
 
 use NTLAB\Script\Core\Manager;
 use NTLAB\Script\Context\ArrayVar;
+use Propel\Runtime\DataFetcher\DataFetcherInterface;
 
 class Reference extends Parameter
 {
@@ -43,7 +44,14 @@ class Reference extends Parameter
         if (null == $this->values) {
             $this->values = array();
             try {
-                if (($value = $this->getDefaultValue()) && (is_array($value) || ($value instanceof \ArrayObject) || ($value instanceof ArrayVar))) {
+                if (($value = $this->getDefaultValue()) &&
+                    (
+                        is_array($value) ||
+                        ($value instanceof \ArrayObject) ||
+                        ($value instanceof \ArrayAccess) ||
+                        ($value instanceof ArrayVar) ||
+                        ($value instanceof DataFetcherInterface)
+                    )) {
                     foreach ($value as $ref) {
                         if ($handler = Manager::getContextHandler($ref)) {
                             if (null !== ($pair = $handler->getKeyValuePair($ref))) {
