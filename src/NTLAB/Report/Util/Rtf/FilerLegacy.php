@@ -441,6 +441,9 @@ class FilerLegacy implements FilerInterface
                     continue;
                 }
                 if (false !== ($tag = $this->parseTag($tag))) {
+                    if ($tag instanceof \DateTime) {
+                        $tag = $tag->format(\DateTime::ISO8601);
+                    }
                     $template = str_replace($match, $tag, $template);
                 }
             }

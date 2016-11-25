@@ -279,7 +279,7 @@ class Propel2 extends Data
     protected function formatDate($column, $dateType, $dateValue, $operator = null)
     {
         $tableMap = $this->getTableMap();
-        $adapter = Propel\Runtime\Propel::getAdapter($tableMap::DATABASE_NAME);
+        $adapter = \Propel\Runtime\Propel::getAdapter($tableMap::DATABASE_NAME);
         if (Date::DATE === $dateType) {
             $dateValue = date($adapter->getDateFormatter(), $dateValue);
         } else if (Date::MONTH === $dateType) {
