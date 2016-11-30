@@ -28,6 +28,8 @@ namespace NTLAB\Report\Parameter;
 
 class Date extends Parameter
 {
+    const ID = 'date';
+
     const DATE = 'date';
     const MONTH = 'month';
     const YEAR = 'year';

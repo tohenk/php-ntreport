@@ -52,14 +52,24 @@ abstract class Data
     protected $distinct = false;
 
     /**
+     * Create instance.
+     *
+     * @return \NTLAB\Report\Data\Data
+     */
+    public static function create()
+    {
+        return new static();
+    }
+
+    /**
      * Register report data handler.
      *
      * @param string $class  The handler class
      */
-    public static function register($class)
+    public static function addHandler($class)
     {
-        if (!in_array($class, self::$handlers)) {
-            self::$handlers[] = $class;
+        if (!in_array($class, static::$handlers)) {
+            static::$handlers[] = $class;
         }
     }
 
@@ -71,7 +81,7 @@ abstract class Data
      */
     public static function getHandler($source)
     {
-        foreach (self::$handlers as $handlerClass) {
+        foreach (static::$handlers as $handlerClass) {
             $handler = new $handlerClass();
             if ($handler->canHandle($source)) {
                 $handler->source = $source;
@@ -82,6 +92,14 @@ abstract class Data
         }
 
         return false;
+    }
+
+    /**
+     * Register report data handler.
+     */
+    public function register()
+    {
+        $this->addHandler(get_class($this));
     }
 
     /**

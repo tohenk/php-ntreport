@@ -28,6 +28,8 @@ namespace NTLAB\Report\Parameter;
 
 class DateOnly extends Date
 {
+    const ID = 'dateonly';
+
     /**
      * (non-PHPdoc)
      * @see \NTLAB\Report\Parameter\Date::getDateTypeValue()

@@ -28,9 +28,22 @@ namespace NTLAB\Report;
 
 use NTLAB\Report\Config\Config;
 use NTLAB\Report\Data\Data;
+use NTLAB\Report\Data\Pdo as PdoData;
+use NTLAB\Report\Data\Propel as PropelData;
+use NTLAB\Report\Data\Propel2 as Propel2Data;
+use NTLAB\Report\Engine\Csv as CsvEngine;
+use NTLAB\Report\Engine\Excel as ExcelEngine;
+use NTLAB\Report\Engine\Richtext as RichtextEngine;
 use NTLAB\Report\Form\FormBuilder;
 use NTLAB\Report\Listener\ListenerInterface;
 use NTLAB\Report\Parameter\Parameter;
+use NTLAB\Report\Parameter\Bool as BoolParameter;
+use NTLAB\Report\Parameter\Checklist as ChecklistParameter;
+use NTLAB\Report\Parameter\Date as DateParameter;
+use NTLAB\Report\Parameter\DateOnly as DateOnlyParameter;
+use NTLAB\Report\Parameter\DateRange as DateRangeParameter;
+use NTLAB\Report\Parameter\Reference as ReferenceParameter;
+use NTLAB\Report\Parameter\Statix as StaticParameter;
 use NTLAB\Report\Validator\Validator;
 use NTLAB\Report\Script\ProviderReport;
 use NTLAB\Report\Script\ReportCore;
@@ -38,29 +51,31 @@ use NTLAB\Script\Core\Script;
 use NTLAB\Script\Core\Manager;
 
 // register base engines
-Report::addEngine('csv', 'NTLAB\Report\Engine\Csv');
-Report::addEngine('excel', 'NTLAB\Report\Engine\Excel');
-Report::addEngine('richtext', 'NTLAB\Report\Engine\Richtext');
+CsvEngine::create()->register();
+ExcelEngine::create()->register();
+RichtextEngine::create()->register();
 
 // register report data
-Data::register('NTLAB\Report\Data\Pdo');
-Data::register('NTLAB\Report\Data\Propel');
-Data::register('NTLAB\Report\Data\Propel2');
+PdoData::create()->register();
+PropelData::create()->register();
+Propel2Data::create()->register();
 
 // register parameters
-Parameter::addHandler('bool', 'NTLAB\Report\Parameter\Bool');
-Parameter::addHandler('checklist', 'NTLAB\Report\Parameter\Checklist');
-Parameter::addHandler('date', 'NTLAB\Report\Parameter\Date');
-Parameter::addHandler('dateonly', 'NTLAB\Report\Parameter\DateOnly');
-Parameter::addHandler('daterange', 'NTLAB\Report\Parameter\DateRange');
-Parameter::addHandler('ref', 'NTLAB\Report\Parameter\Reference');
-Parameter::addHandler('static', 'NTLAB\Report\Parameter\Statix');
+BoolParameter::create()->register();
+ChecklistParameter::create()->register();
+DateParameter::create()->register();
+DateOnlyParameter::create()->register();
+DateRangeParameter::create()->register();
+ReferenceParameter::create()->register();
+StaticParameter::create()->register();
 
 // register report script
 Manager::addProvider(ProviderReport::getInstance());
 
 abstract class Report
 {
+    const ID = 'none';
+
     const ORDER_ASC = 'ASC';
     const ORDER_DESC = 'DESC';
 
@@ -267,10 +282,31 @@ abstract class Report
             if ($nodes = $xpath->query("//NTReport/Params/Param[@name='type']")) {
                 $type = $nodes->item(0)->attributes->getNamedItem('value')->nodeValue;
                 if (($class = static::getEngine($type)) && class_exists($class)) {
-                    return new $class($doc, $xpath);
+                    $report = new $class();
+                    $report->initialize($doc, $xpath);
+
+                    return $report;
                 }
             }
         }
+    }
+
+    /**
+     * Create instance.
+     *
+     * @return \NTLAB\Report\Report
+     */
+    public static function create()
+    {
+        return new static();
+    }
+
+    /**
+     * Register report engine.
+     */
+    public function register()
+    {
+        $this->addEngine(static::ID, get_class($this));
     }
 
     /**
@@ -279,12 +315,12 @@ abstract class Report
      * @param \DOMDocument $doc  The report document
      * @param \DOMXPath $xpath  The xpath object
      */
-    public function __construct(\DOMDocument $doc, \DOMXPath $xpath)
+    public function initialize(\DOMDocument $doc, \DOMXPath $xpath)
     {
         $this->doc = $doc;
         $this->xpath = $xpath;
         // initialize report
-        $this->initialize();
+        $this->doInitialize();
         // report base parameter
         $nodes = $this->xpath->query('//NTReport/Params/Param');
         foreach ($nodes as $node) {
@@ -327,7 +363,7 @@ abstract class Report
     /**
      * Report initialization.
      */
-    protected function initialize()
+    protected function doInitialize()
     {
     }
 
@@ -423,7 +459,9 @@ abstract class Report
         if (($parent = $this->nodeAttr($node, 'parent')) && isset($this->parameters[$parent])) {
             $options['parent'] = $this->parameters[$parent];
         }
-        $this->parameters[$name] = new $class($type, $this, $options);
+        $parameter = new $class();
+        $parameter->initialize($type, $this, $options);
+        $this->parameters[$name] = $parameter;
     }
 
     /**

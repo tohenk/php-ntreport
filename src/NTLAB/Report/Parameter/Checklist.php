@@ -28,6 +28,8 @@ namespace NTLAB\Report\Parameter;
 
 class Checklist extends Reference
 {
+    const ID = 'checklist';
+
     protected function getDefaultTitle()
     {
         $titles = array();

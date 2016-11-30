@@ -33,6 +33,8 @@ use NTLAB\Report\Util\Rtf\FilerTree;
 
 class Richtext extends Report
 {
+    const ID = 'richtext';
+
     /**
      * @var \NTLAB\Report\Util\Rtf\FilerInterface
      */

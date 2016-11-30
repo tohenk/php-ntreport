@@ -28,6 +28,8 @@ namespace NTLAB\Report\Parameter;
 
 class Statix extends Parameter
 {
+    const ID = 'static';
+
     protected function configure()
     {
         $this->supportForm = false;

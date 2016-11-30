@@ -28,7 +28,10 @@ namespace NTLAB\Report\Data;
 
 use NTLAB\Report\Report;
 use NTLAB\Report\Parameter\Parameter;
-use NTLAB\Report\Parameter\Date;
+use NTLAB\Report\Parameter\Date as DateParameter;
+use NTLAB\Report\Parameter\DateOnly as DateOnlyParameter;
+use NTLAB\Report\Parameter\DateRange as DateRangeParameter;
+use NTLAB\Report\Parameter\Statix as StaticParameter;
 
 class Propel extends Data
 {
@@ -258,11 +261,11 @@ class Propel extends Data
     protected function formatDate($column, $dateType, $dateValue, $operator = null)
     {
         $adapter = \Propel::getDB();
-        if (Date::DATE === $dateType) {
+        if (DateParameter::DATE === $dateType) {
             $dateValue = date($adapter->getDateFormatter(), $dateValue);
-        } else if (Date::MONTH === $dateType) {
+        } else if (DateParameter::MONTH === $dateType) {
             $dateValue = date('Y-m', $dateValue);
-        } else if (Date::YEAR === $dateType) {
+        } else if (DateParameter::YEAR === $dateType) {
             $dateValue = date('Y', $dateValue);
         }
 
@@ -286,7 +289,7 @@ class Propel extends Data
 
         switch ($parameter->getType())
         {
-            case 'static':
+            case StaticParameter::ID:
                 if ($value === 'NULL') {
                     $operator = \Criteria::ISNULL;
                     $value = null;
@@ -296,13 +299,13 @@ class Propel extends Data
                 }
                 break;
 
-            case 'date':
-            case 'dateonly':
+            case DateParameter::ID:
+            case DateOnlyParameter::ID:
                 $value = $this->formatDate($parameter->getRealColumn(), $parameter->getDateTypeValue(), $value, $operator);
                 $operator = \Criteria::CUSTOM;
                 break;
 
-            case 'daterange':
+            case DateRangeParameter::ID:
                 $value = sprintf('(%s AND %s)',
                     $this->formatDate($parameter->getRealColumn(), $parameter->getDateTypeValue(), $value, '>='),
                     $this->formatDate($parameter->getRealColumn(), $parameter->getDateTypeValue(), $parameter->getCurrentValue2(), '<=')

@@ -28,6 +28,8 @@ namespace NTLAB\Report\Parameter;
 
 class Bool extends Parameter
 {
+    const ID = 'bool';
+
     protected function configure()
     {
         $this->field = $this->fieldCheck;

@@ -31,6 +31,8 @@ use NTLAB\Report\Util\Excel\Filer;
 
 class Excel extends Report
 {
+    const ID = 'excel';
+
     /**
      * @var \NTLAB\Report\Util\Excel\Filer
      */

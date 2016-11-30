@@ -32,6 +32,8 @@ use Propel\Runtime\DataFetcher\DataFetcherInterface;
 
 class Reference extends Parameter
 {
+    const ID = 'ref';
+
     protected $values = null;
 
     /**

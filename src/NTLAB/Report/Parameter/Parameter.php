@@ -31,6 +31,8 @@ use NTLAB\Script\Context\ArrayVar;
 
 abstract class Parameter
 {
+    const ID = 'none';
+
     /**
      * @var \NTLAB\Report\Report
      */
@@ -138,13 +140,23 @@ abstract class Parameter
     }
 
     /**
+     * Create instance.
+     *
+     * @return \NTLAB\Report\Parameter\Parameter
+     */
+    public static function create()
+    {
+        return new static();
+    }
+
+    /**
      * Constructor.
      *
      * @param string $type  Parameter type
      * @param \NTLAB\Report\Report $report  The report
      * @param array $options  Parameter options
      */
-    public function __construct($type, $report, $options = array())
+    public function initialize($type, $report, $options = array())
     {
         $this->type = $type;
         $this->report = $report;
@@ -197,6 +209,24 @@ abstract class Parameter
      */
     protected function configure()
     {
+    }
+
+    /**
+     * Get parameter identifier.
+     *
+     * @return string
+     */
+    public function getId()
+    {
+        return static::ID;
+    }
+
+    /**
+     * Register parameter handler.
+     */
+    public function register()
+    {
+        $this->addHandler($this->getId(), get_class($this));
     }
 
     /**

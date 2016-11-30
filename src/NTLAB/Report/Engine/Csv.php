@@ -31,6 +31,8 @@ use NTLAB\Script\Core\Script;
 
 class Csv extends Report
 {
+   const ID = 'csv';
+
     /**
      * @var array
      */
@@ -56,7 +58,7 @@ class Csv extends Report
      */
     protected $header = null;
 
-    protected function initialize()
+    protected function doInitialize()
     {
         $this->hasTemplate = false;
     }
