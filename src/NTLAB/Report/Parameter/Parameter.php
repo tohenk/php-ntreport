@@ -27,7 +27,9 @@
 namespace NTLAB\Report\Parameter;
 
 use NTLAB\Report\Report;
+use NTLAB\Script\Core\Manager;
 use NTLAB\Script\Context\ArrayVar;
+use Propel\Runtime\DataFetcher\DataFetcherInterface;
 
 abstract class Parameter
 {
@@ -107,6 +109,11 @@ abstract class Parameter
      * @var array
      */
     protected $widgets = array();
+
+    /**
+     * @var array
+     */
+    protected $values = null;
 
     /**
      * @var array
@@ -487,6 +494,40 @@ abstract class Parameter
     public function getCurrentValue()
     {
         return $this->evalValue($this->getValue());
+    }
+
+    /**
+     * Get list of values of default value.
+     *
+     * @return array
+     */
+    public function getValues()
+    {
+        if (null == $this->values) {
+            $this->values = array();
+            try {
+                if (($value = $this->getDefaultValue()) &&
+                    (
+                        is_array($value) ||
+                        ($value instanceof \ArrayObject) ||
+                        ($value instanceof \ArrayAccess) ||
+                        ($value instanceof ArrayVar) ||
+                        ($value instanceof DataFetcherInterface)
+                    )) {
+                    foreach ($value as $ref) {
+                        if ($handler = Manager::getContextHandler($ref)) {
+                            if (null !== ($pair = $handler->getKeyValuePair($ref))) {
+                                list($k, $v) = $pair;
+                                $this->values[$k] = $v;
+                            }
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+            }
+        }
+
+        return $this->values;
     }
 
     public function __toString()

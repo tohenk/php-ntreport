@@ -37,11 +37,13 @@ use NTLAB\Report\Engine\Richtext as RichtextEngine;
 use NTLAB\Report\Form\FormBuilder;
 use NTLAB\Report\Listener\ListenerInterface;
 use NTLAB\Report\Parameter\Parameter;
-use NTLAB\Report\Parameter\Bool as BoolParameter;
+use NTLAB\Report\Parameter\Boolean as BooleanParameter;
 use NTLAB\Report\Parameter\Checklist as ChecklistParameter;
 use NTLAB\Report\Parameter\Date as DateParameter;
 use NTLAB\Report\Parameter\DateOnly as DateOnlyParameter;
 use NTLAB\Report\Parameter\DateRange as DateRangeParameter;
+use NTLAB\Report\Parameter\DateMonth as DateMonthParameter;
+use NTLAB\Report\Parameter\DateYear as DateYearParameter;
 use NTLAB\Report\Parameter\Reference as ReferenceParameter;
 use NTLAB\Report\Parameter\Statix as StaticParameter;
 use NTLAB\Report\Validator\Validator;
@@ -61,11 +63,13 @@ PropelData::create()->register();
 Propel2Data::create()->register();
 
 // register parameters
-BoolParameter::create()->register();
+BooleanParameter::create()->register();
 ChecklistParameter::create()->register();
 DateParameter::create()->register();
 DateOnlyParameter::create()->register();
 DateRangeParameter::create()->register();
+DateMonthParameter::create()->register();
+DateYearParameter::create()->register();
 ReferenceParameter::create()->register();
 StaticParameter::create()->register();
 

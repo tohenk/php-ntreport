@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2016 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -26,40 +26,41 @@
 
 namespace NTLAB\Report\Parameter;
 
-use NTLAB\Script\Core\Manager;
-use NTLAB\Script\Context\ArrayVar;
-use Propel\Runtime\DataFetcher\DataFetcherInterface;
-
-class Reference extends Parameter
+class DateMonth extends Date
 {
-    const ID = 'ref';
+    const ID = 'month';
 
     /**
-     * Get reference value.
-     *
-     * @param string $value  The reference value
-     * @return string
+     * (non-PHPdoc)
+     * @see \NTLAB\Report\Parameter\Date::getDateTypeValue()
      */
-    public function getText($value)
+    public function getDateTypeValue()
     {
-        $values = $this->getValues();
-        if (array_key_exists($value, $values)) {
-            return $values[$value];
-        }
+        return static::MONTH;
+    }
+
+    public function getFieldName()
+    {
+        return parent::getFieldName().'_yr';
+    }
+
+    public function getFieldName2()
+    {
+        return parent::getFieldName().'_mo';
     }
 
     public function getValue()
     {
-        if (null == ($value = parent::getValue()) && count($values = $this->getValues())) {
-            $keys = array_keys($values);
-            $value = array_shift($keys);
+        if (null == ($year = $this->getFormValue($this->getFieldName())) && count($years = $this->getValues())) {
+            $keys = array_keys($years);
+            $year = array_shift($keys);
         }
-
-        return $value;
-    }
-
-    protected function getDefaultTitle()
-    {
-        return $this->getText($this->getValue());
+        if (null == ($month = $this->getFormValue($this->getFieldName2()))) {
+            $month = date('m');
+        }
+        // create datetime from original value
+        if (is_numeric($year) && is_numeric($month)) {
+            return mktime(0, 0, 0, (int) $month, 1, (int) $year);
+        }
     }
 }

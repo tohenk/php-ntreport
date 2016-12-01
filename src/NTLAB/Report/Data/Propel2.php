@@ -31,6 +31,8 @@ use NTLAB\Report\Parameter\Parameter;
 use NTLAB\Report\Parameter\Date as DateParameter;
 use NTLAB\Report\Parameter\DateOnly as DateOnlyParameter;
 use NTLAB\Report\Parameter\DateRange as DateRangeParameter;
+use NTLAB\Report\Parameter\DateMonth as DateMonthParameter;
+use NTLAB\Report\Parameter\DateYear as DateYearParameter;
 use NTLAB\Report\Parameter\Statix as StaticParameter;
 use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
@@ -324,6 +326,8 @@ class Propel2 extends Data
 
             case DateParameter::ID:
             case DateOnlyParameter::ID:
+            case DateMonthParameter::ID:
+            case DateYearParameter::ID:
                 $value = $this->formatDate($parameter->getRealColumn(), $parameter->getDateTypeValue(), $value, $operator);
                 $operator = Criteria::CUSTOM;
                 break;

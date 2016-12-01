@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2016 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -26,17 +26,34 @@
 
 namespace NTLAB\Report\Parameter;
 
-class Bool extends Parameter
-{
-    const ID = 'bool';
+use NTLAB\Script\Core\Manager;
+use NTLAB\Script\Context\ArrayVar;
+use Propel\Runtime\DataFetcher\DataFetcherInterface;
 
-    protected function configure()
+class DateYear extends Date
+{
+    const ID = 'year';
+
+    /**
+     * (non-PHPdoc)
+     * @see \NTLAB\Report\Parameter\Date::getDateTypeValue()
+     */
+    public function getDateTypeValue()
     {
-        $this->field = $this->fieldCheck;
+        return static::YEAR;
     }
 
-    public function isSelected()
+    public function getValue()
     {
-        return true;
+        if (null == ($value = $this->getFormValue($this->field)) && count($years = $this->getValues())) {
+            $keys = array_keys($years);
+            $value = array_shift($keys);
+        }
+        // create datetime from original value
+        if (null != $value && is_numeric($value)) {
+            $value = mktime(0, 0, 0, 1, 1, (int) $value);
+        }
+
+        return $value;
     }
 }

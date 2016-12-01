@@ -26,40 +26,17 @@
 
 namespace NTLAB\Report\Parameter;
 
-use NTLAB\Script\Core\Manager;
-use NTLAB\Script\Context\ArrayVar;
-use Propel\Runtime\DataFetcher\DataFetcherInterface;
-
-class Reference extends Parameter
+class Boolean extends Parameter
 {
-    const ID = 'ref';
+    const ID = 'bool';
 
-    /**
-     * Get reference value.
-     *
-     * @param string $value  The reference value
-     * @return string
-     */
-    public function getText($value)
+    protected function configure()
     {
-        $values = $this->getValues();
-        if (array_key_exists($value, $values)) {
-            return $values[$value];
-        }
+        $this->field = $this->fieldCheck;
     }
 
-    public function getValue()
+    public function isSelected()
     {
-        if (null == ($value = parent::getValue()) && count($values = $this->getValues())) {
-            $keys = array_keys($values);
-            $value = array_shift($keys);
-        }
-
-        return $value;
-    }
-
-    protected function getDefaultTitle()
-    {
-        return $this->getText($this->getValue());
+        return true;
     }
 }

@@ -30,6 +30,8 @@ use NTLAB\Report\Parameter\Parameter;
 use NTLAB\Report\Parameter\Date as DateParameter;
 use NTLAB\Report\Parameter\DateOnly as DateOnlyParameter;
 use NTLAB\Report\Parameter\DateRange as DateRangeParameter;
+use NTLAB\Report\Parameter\DateMonth as DateMonthParameter;
+use NTLAB\Report\Parameter\DateYear as DateYearParameter;
 use NTLAB\Report\Parameter\Statix as StaticParameter;
 use NTLAB\Report\Query\Pdo as PdoQuery;
 
@@ -174,6 +176,8 @@ class Pdo extends Data
 
             case DateParameter::ID:
             case DateOnlyParameter::ID:
+            case DateMonthParameter::ID:
+            case DateYearParameter::ID:
                 $column = $this->formatDate($parameter->getRealColumn(), $parameter->getDateTypeValue(), $value, $operator);
                 $operator = null;
                 $value = null;
