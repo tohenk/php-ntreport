@@ -134,11 +134,11 @@ class Pdo extends Data
     protected function formatDate($column, $dateType, $dateValue, $operator = null)
     {
         if (DateParameter::DATE === $dateType) {
-            $dateValue = date('Y-m-d', strtotime($dateValue));
+            $dateValue = date('Y-m-d', $dateValue);
         } else if (DateParameter::MONTH === $dateType) {
-            $dateValue = date('Y-m', strtotime($dateValue));
+            $dateValue = date('Y-m', $dateValue);
         } else if (DateParameter::YEAR === $dateType) {
-            $dateValue = date('Y', strtotime($dateValue));
+            $dateValue = date('Y', $dateValue);
         }
 
         return sprintf('%1$s %2$s %4$s%3$s%4$s',
