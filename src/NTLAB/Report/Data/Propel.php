@@ -264,11 +264,11 @@ class Propel extends Data
     {
         $adapter = \Propel::getDB();
         if (DateParameter::DATE === $dateType) {
-            $dateValue = date($adapter->getDateFormatter(), $dateValue);
+            $dateValue = date($adapter->getDateFormatter(), strtotime($dateValue));
         } else if (DateParameter::MONTH === $dateType) {
-            $dateValue = date('Y-m', $dateValue);
+            $dateValue = date('Y-m', strtotime($dateValue));
         } else if (DateParameter::YEAR === $dateType) {
-            $dateValue = date('Y', $dateValue);
+            $dateValue = date('Y', strtotime($dateValue));
         }
 
         return sprintf('%1$s %2$s %4$s%3$s%4$s',
