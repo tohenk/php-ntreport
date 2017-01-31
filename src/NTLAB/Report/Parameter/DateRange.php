@@ -47,7 +47,7 @@ class DateRange extends DateOnly
      */
     public function getValue2()
     {
-        return $this->getFormValue($this->getFieldName2());
+        return @strtotime($this->getFormValue($this->getFieldName2()));
     }
 
     /**
