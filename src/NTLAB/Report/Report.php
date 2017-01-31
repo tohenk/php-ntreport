@@ -452,7 +452,7 @@ abstract class Report
             'is_changeable' => (bool) $this->nodeAttr($node, 'change', true)
         );
         if ($operator = $this->nodeAttr($node, 'operator')) {
-            $options['operator'] = $operator;
+            $options['operator'] = sprintf(' %s ', trim($operator));
         }
         if ($label = $this->nodeAttr($node, 'label')) {
             $options['label'] = $label;
@@ -482,7 +482,7 @@ abstract class Report
     }
 
     /**
-     * Build model paramteres.
+     * Build model parameters.
      *
      * @param \DOMNodeList $nodes  The node list
      */
