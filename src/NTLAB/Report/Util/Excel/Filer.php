@@ -27,6 +27,10 @@
 namespace NTLAB\Report\Util\Excel;
 
 use NTLAB\Script\Core\Script;
+use PhpOffice\PhpSpreadsheet\IOFactory as XlIOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet as XlSpreadsheet;
+use PhpOffice\PhpSpreadsheet\Worksheet as XlWorksheet;
+use PhpOffice\PhpSpreadsheet\Cell as XlCell;
 
 class Filer
 {
@@ -328,11 +332,11 @@ class Filer
     /**
      * Copy worksheet property.
      *
-     * @param \PHPExcel_Worksheet $source  Source worksheet
-     * @param \PHPExcel_Worksheet $dest  Destination worksheet
+     * @param XlWorksheet $source  Source worksheet
+     * @param XlWorksheet $dest  Destination worksheet
      * @return \NTLAB\Report\Util\Excel\Filer
      */
-    protected function copySheetProp(\PHPExcel_Worksheet $source, \PHPExcel_Worksheet $dest)
+    protected function copySheetProp(XlWorksheet $source, XlWorksheet $dest)
     {
         $dest->setTitle($source->getTitle());
         $dest->setPageSetup(clone $source->getPageSetup());
@@ -345,11 +349,11 @@ class Filer
     /**
      * Get merged cell.
      *
-     * @param \PHPExcel_Worksheet $sheet  The worksheet object
+     * @param XlWorksheet $sheet  The worksheet object
      * @param string $cell  The cell
      * @return string
      */
-    protected function getCellMerged(\PHPExcel_Worksheet $sheet, $cell)
+    protected function getCellMerged(XlWorksheet $sheet, $cell)
     {
         foreach ($sheet->getMergeCells() as $key => $range) {
             list($rangeStart, $rangeEnd) = explode(':', $key);
@@ -362,18 +366,18 @@ class Filer
     /**
      * Merge cells.
      *
-     * @param \PHPExcel_Worksheet $sheet  The worksheet
+     * @param XlWorksheet $sheet  The worksheet
      * @param string $cell  The origin cell
      * @param int $width  The number of columns from origin to merge
      * @param int $height  The number of rows from origin to merge
      * @return \NTLAB\Report\Util\Excel\Filer
      */
-    protected function mergeCells(\PHPExcel_Worksheet $sheet, $cell, $width, $height)
+    protected function mergeCells(XlWorksheet $sheet, $cell, $width, $height)
     {
-        list($rangeStart, $rangeEnd) = \PHPExcel_Cell::rangeBoundaries($cell);
+        list($rangeStart, $rangeEnd) = XlCell::rangeBoundaries($cell);
         $rangeEnd[0] = (int) $rangeStart[0] + $width - 1;
         $rangeEnd[1] = (int) $rangeStart[1] + $height - 1;
-        $range = \PHPExcel_Cell::stringFromColumnIndex($rangeStart[0] - 1).$rangeStart[1].':'.\PHPExcel_Cell::stringFromColumnIndex($rangeEnd[0] - 1).$rangeEnd[1];
+        $range = XlCell::stringFromColumnIndex($rangeStart[0] - 1).$rangeStart[1].':'.XlCell::stringFromColumnIndex($rangeEnd[0] - 1).$rangeEnd[1];
         $sheet->mergeCells($range);
 
         return $this;
@@ -399,16 +403,16 @@ class Filer
     /**
      * Copy a cell range from a sheet to another.
      *
-     * @param \PHPExcel_Worksheet $source  The source worksheet
-     * @param \PHPExcel_Worksheet $dest  The destination worksheet
+     * @param XlWorksheet $source  The source worksheet
+     * @param XlWorksheet $dest  The destination worksheet
      * @param string $range  The source range
      * @param array $anchor  The destination anchor
      * @param bool $replaceTag  True to replace tag before applying value to destination sheet
      * @return array Range boundaries array(start, end)
      */
-    protected function copyRange(\PHPExcel_Worksheet $source, \PHPExcel_Worksheet $dest, $range, &$anchor, $replaceTag = true)
+    protected function copyRange(XlWorksheet $source, XlWorksheet $dest, $range, &$anchor, $replaceTag = true)
     {
-        list($rangeStart, $rangeEnd) = \PHPExcel_Cell::rangeBoundaries($range);
+        list($rangeStart, $rangeEnd) = XlCell::rangeBoundaries($range);
         if (null == $anchor) {
             $anchor = $rangeStart;
         }
@@ -427,7 +431,7 @@ class Filer
                     ->applyFromArray(Style::styleToArray($source->getStyle($scell->getCoordinate())));
                 // merge cells
                 if ($merged = $this->getCellMerged($source, $scell->getCoordinate())) {
-                    $dim = \PHPExcel_Cell::rangeDimension($merged);
+                    $dim = XlCell::rangeDimension($merged);
                     $this->mergeCells($dest, $dcell->getCoordinate(), $dim[0], $dim[1]);
                 }
                 // set column width
@@ -456,12 +460,12 @@ class Filer
     /**
      * Fill range for master-data.
      *
-     * @param \PHPExcel_Cell $cell  The cell
+     * @param XlCell $cell  The cell
      * @param string $name  Data name
-     * @param string $value  Cell value
+     * @param string $value  XlCell value
      * @return mixed
      */
-    protected function fillData(\PHPExcel_Cell $cell, $name, $value)
+    protected function fillData(XlCell $cell, $name, $value)
     {
         // is variable?
         if (!$this->getScript()->getVar($value, $name, $this->getScript()->getContext())) {
@@ -495,12 +499,12 @@ class Filer
     /**
      * Fill range for summary.
      *
-     * @param \PHPExcel_Cell $cell  The cell
+     * @param XlCell $cell  The cell
      * @param string $name  Data name
-     * @param string $value  Cell value
+     * @param string $value  XlCell value
      * @return mixed
      */
-    protected function fillSummary(\PHPExcel_Cell $cell, $name, $value)
+    protected function fillSummary(XlCell $cell, $name, $value)
     {
         $value = $name;
         preg_match_all('/([a-zA-Z]+)\(([a-zA-Z0-9_]+)\)/', $name, $matches);
@@ -520,11 +524,11 @@ class Filer
      * Every cells in range is checked if
      * it contain field sign.
      *
-     * @param \PHPExcel_Worksheet $sheet  The worksheet
+     * @param XlWorksheet $sheet  The worksheet
      * @param array $ranges  The data ranges
      * @return \NTLAB\Report\Util\Excel\Filer
      */
-    protected function fillRange(\PHPExcel_Worksheet $sheet, $ranges = array(), $callback = null, $adjustRow = false)
+    protected function fillRange(XlWorksheet $sheet, $ranges = array(), $callback = null, $adjustRow = false)
     {
         // callback parameters (cell, data, value)
         if ($callback && is_callable($callback)) {
@@ -566,16 +570,16 @@ class Filer
     }
 
     /**
-     * Find and detect bands position from Worksheet.
+     * Find and detect bands position from XlWorksheet.
      *
-     * @param \PHPExcel_Worksheet $sheet  The target sheet
+     * @param XlWorksheet $sheet  The target sheet
      * @return \NTLAB\Report\Util\Excel\Filer
      */
     protected function findBands($sheet)
     {
         if (empty($this->bands)) {
             $rows = $sheet->getHighestDataRow();
-            $cols = \PHPExcel_Cell::columnIndexFromString($sheet->getHighestDataColumn());
+            $cols = XlCell::columnIndexFromString($sheet->getHighestDataColumn());
             $fsignFound = false;
             $fsignStart = null;
             $fsignEnd = null;
@@ -609,11 +613,11 @@ class Filer
             // bands found
             if ($fsignFound) {
                 // title band
-                $this->bands[self::BAND_TITLE] = sprintf('A1:%s%d', \PHPExcel_Cell::stringFromColumnIndex($cols - 1), $fsignStart - 1);
+                $this->bands[self::BAND_TITLE] = sprintf('A1:%s%d', XlCell::stringFromColumnIndex($cols - 1), $fsignStart - 1);
                 // master data band
-                $this->bands[self::BAND_MASTER_DATA] = sprintf('A%d:%s%d', $fsignStart, \PHPExcel_Cell::stringFromColumnIndex($cols - 1), $fsignEnd);
+                $this->bands[self::BAND_MASTER_DATA] = sprintf('A%d:%s%d', $fsignStart, XlCell::stringFromColumnIndex($cols - 1), $fsignEnd);
                 // summary band
-                $this->bands[self::BAND_SUMMARY] = sprintf('A%d:%s%d', $fsignEnd + 1, \PHPExcel_Cell::stringFromColumnIndex($cols - 1), $rows);
+                $this->bands[self::BAND_SUMMARY] = sprintf('A%d:%s%d', $fsignEnd + 1, XlCell::stringFromColumnIndex($cols - 1), $rows);
             }
         }
 
@@ -630,7 +634,7 @@ class Filer
     public function build($objects, $writerClass = null)
     {
         $this->objects = $objects;
-        if (($tplXls = \PHPExcel_IOFactory::load($this->template)) && ($insheet = $tplXls->getSheetByName($this->sheet))) {
+        if (($tplXls = XlIOFactory::load($this->template)) && ($insheet = $tplXls->getSheetByName($this->sheet))) {
             $this->getScript()
                 ->setObjects($this->objects)
             ;
@@ -645,13 +649,13 @@ class Filer
     /**
      * Prepare result sheet and assign document properties.
      *
-     * @param \PHPExcel_Worksheet $source  Template sheet
-     * @param \PHPExcel_Worksheet $sheet  Output sheet
-     * @return \PHPExcel
+     * @param XlWorksheet $source  Template sheet
+     * @param XlWorksheet $sheet  Output sheet
+     * @return XlSpreadsheet
      */
     protected function prepareResult($source, &$sheet)
     {
-        $excel = new \PHPExcel();
+        $excel = new XlSpreadsheet();
         $sheet = $excel->getActiveSheet();
         $this->copySheetProp($source, $sheet);
 
@@ -661,8 +665,8 @@ class Filer
     /**
      * Process report bands.
      *
-     * @param \PHPExcel_Worksheet $insheet  Input worksheet
-     * @param \PHPExcel_Worksheet $outsheet  Output worksheet
+     * @param XlWorksheet $insheet  Input worksheet
+     * @param XlWorksheet $outsheet  Output worksheet
      * @return \NTLAB\Report\Util\Excel\Filer
      */
     protected function processBands($insheet, $outsheet)
@@ -702,8 +706,8 @@ class Filer
     /**
      * Build detail row.
      *
-     * @param \PHPExcel_Worksheet $insheet  Input sheet
-     * @param \PHPExcel_Worksheet $outsheet  Output sheet
+     * @param XlWorksheet $insheet  Input sheet
+     * @param XlWorksheet $outsheet  Output sheet
      * @param string $band  Band range address
      * @param array $anchor  Anchor range
      * @return \NTLAB\Report\Util\Excel\Filer
@@ -727,18 +731,18 @@ class Filer
     {
         $writerClass = null !== $writerClass ? $writerClass : $this->defaultWriter;
         if (null == $writerClass) {
-            switch ($readerClass = \PHPExcel_IOFactory::identify($this->template)) {
-                case 'Excel2007':
+            switch ($readerClass = XlIOFactory::identify($this->template)) {
+                case 'Xlsx':
                     $writerClass = $readerClass;
                     break;
 
                 default:
-                    $writerClass = 'Excel5';
+                    $writerClass = 'Xls';
                     break;
             }
         }
         $filename = tempnam(dirname($this->template), 'xlstmp');
-        $writer = \PHPExcel_IOFactory::createWriter($xls, $writerClass);
+        $writer = XlIOFactory::createWriter($xls, $writerClass);
         $writer->save($filename);
 
         return file_get_contents($filename);

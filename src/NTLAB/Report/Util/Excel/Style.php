@@ -26,10 +26,20 @@
 
 namespace NTLAB\Report\Util\Excel;
 
+use PhpOffice\PhpSpreadsheet\Style as XlStyle;
+use PhpOffice\PhpSpreadsheet\Style\Alignment as XlStyleAlignment;
+use PhpOffice\PhpSpreadsheet\Style\Border as XlStyleBorder;
+use PhpOffice\PhpSpreadsheet\Style\Borders as XlStyleBorders;
+use PhpOffice\PhpSpreadsheet\Style\Color as XlStyleColor;
+use PhpOffice\PhpSpreadsheet\Style\Fill as XlStyleFill;
+use PhpOffice\PhpSpreadsheet\Style\Font as XlStyleFont;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat as XlStyleNumberFormat;
+use PhpOffice\PhpSpreadsheet\Style\Protection as XlStyleProtection;
+
 class Style
 {
     protected static $properties = array(
-        'PHPExcel_Style' => array(
+        'PhpOffice\PhpSpreadsheet\Style' => array(
             'fill' => 'getFill',
             'font' => 'getFont',
             'borders' => 'getBorders',
@@ -37,13 +47,13 @@ class Style
             'numberformat' => 'getNumberFormat',
             'protection' => 'getProtection'
         ),
-        'PHPExcel_Style_Fill' => array(
+        'PhpOffice\PhpSpreadsheet\Style\Fill' => array(
             'type' => 'getFillType',
             'rotation' => 'getRotation',
             'startcolor' => 'getStartColor',
             'endcolor' => 'getEndColor'
         ),
-        'PHPExcel_Style_Font' => array(
+        'PhpOffice\PhpSpreadsheet\Style\Font' => array(
             'name' => 'getName',
             'bold' => 'getBold',
             'italic' => 'getItalic',
@@ -54,7 +64,7 @@ class Style
             'color' => 'getColor',
             'size' => 'getSize'
         ),
-        'PHPExcel_Style_Borders' => array(
+        'PhpOffice\PhpSpreadsheet\Style\Borders' => array(
             'left' => 'getLeft',
             'right' => 'getRight',
             'top' => 'getTop',
@@ -63,7 +73,7 @@ class Style
             'diagonaldirection' => 'getDiagonalDirection'
             // 'allborders' => 'getAllBorders',
         ),
-        'PHPExcel_Style_Alignment' => array(
+        'PhpOffice\PhpSpreadsheet\Style\Alignment' => array(
             'horizontal' => 'getHorizontal',
             'vertical' => 'getVertical',
             'rotation' => 'getTextRotation',
@@ -71,17 +81,17 @@ class Style
             'shrinkToFit' => 'getShrinkToFit',
             'indent' => 'getIndent'
         ),
-        'PHPExcel_Style_NumberFormat' => array(
+        'PhpOffice\PhpSpreadsheet\Style\NumberFormat' => array(
             'code' => 'getFormatCode'
         ),
-        'PHPExcel_Style_Protection' => array(
+        'PhpOffice\PhpSpreadsheet\Style\Protection' => array(
             'locked' => 'getLocked',
             'hidden' => 'getHidden'
         ),
-        'PHPExcel_Style_Color' => array(
+        'PhpOffice\PhpSpreadsheet\Style\Color' => array(
             'argb' => 'getARGB'
         ),
-        'PHPExcel_Style_Border' => array(
+        'PhpOffice\PhpSpreadsheet\Style\Border' => array(
             'style' => 'getBorderStyle',
             'color' => 'getColor'
         )
@@ -124,10 +134,10 @@ class Style
     /**
      * Get style array from style object.
      *
-     * @param \PHPExcel_Style $style  The style
+     * @param XlStyle $style  The style
      * @return array
      */
-    public static function styleToArray(\PHPExcel_Style $style)
+    public static function styleToArray(XlStyle $style)
     {
         return self::objectToArray($style);
     }
@@ -135,10 +145,10 @@ class Style
     /**
      * Copy alignment.
      *
-     * @param \PHPExcel_Style_Alignment $source  The source
-     * @param \PHPExcel_Style_Alignment $dest  The destination
+     * @param XlStyleAlignment $source  The source
+     * @param XlStyleAlignment $dest  The destination
      */
-    public static function copyAlignment(\PHPExcel_Style_Alignment $source, \PHPExcel_Style_Alignment $dest)
+    public static function copyAlignment(XlStyleAlignment $source, XlStyleAlignment $dest)
     {
         if ($dest->getHashCode() !== $source->getHashCode()) {
             if ($dest->getHorizontal() !== $source->getHorizontal()) {
@@ -165,10 +175,10 @@ class Style
     /**
      * Copy color.
      *
-     * @param \PHPExcel_Style_Color $source  The source
-     * @param \PHPExcel_Style_Color $dest  The destination
+     * @param XlStyleColor $source  The source
+     * @param XlStyleColor $dest  The destination
      */
-    public static function copyColor(\PHPExcel_Style_Color $source, \PHPExcel_Style_Color $dest)
+    public static function copyColor(XlStyleColor $source, XlStyleColor $dest)
     {
         if ($dest->getHashCode() !== $source->getHashCode()) {
             $dest->setARGB($source->getARGB());
@@ -178,10 +188,10 @@ class Style
     /**
      * Copy border.
      *
-     * @param \PHPExcel_Style_Border $source  The source
-     * @param \PHPExcel_Style_Border $dest  The destination
+     * @param XlStyleBorder $source  The source
+     * @param XlStyleBorder $dest  The destination
      */
-    public static function copyBorder(\PHPExcel_Style_Border $source, \PHPExcel_Style_Border $dest)
+    public static function copyBorder(XlStyleBorder $source, XlStyleBorder $dest)
     {
         if ($dest->getHashCode() !== $source->getHashCode()) {
             if ($dest->getBorderStyle() !== $source->getBorderStyle()) {
@@ -194,10 +204,10 @@ class Style
     /**
      * Copy borders.
      *
-     * @param \PHPExcel_Style_Borders $source  The source
-     * @param \PHPExcel_Style_Borders $dest  The destination
+     * @param XlStyleBorders $source  The source
+     * @param XlStyleBorders $dest  The destination
      */
-    public static function copyBorders(\PHPExcel_Style_Borders $source, \PHPExcel_Style_Borders $dest)
+    public static function copyBorders(XlStyleBorders $source, XlStyleBorders $dest)
     {
         if ($dest->getHashCode() !== $source->getHashCode()) {
             self::copyBorder($source->getLeft(), $dest->getLeft());
@@ -221,10 +231,10 @@ class Style
     /**
      * Copy fill.
      *
-     * @param \PHPExcel_Style_Fill $source  The source
-     * @param \PHPExcel_Style_Fill $dest  The destination
+     * @param XlStyleFill $source  The source
+     * @param XlStyleFill $dest  The destination
      */
-    public static function copyFill(\PHPExcel_Style_Fill $source, \PHPExcel_Style_Fill $dest)
+    public static function copyFill(XlStyleFill $source, XlStyleFill $dest)
     {
         if ($dest->getHashCode() !== $source->getHashCode()) {
             if ($dest->getFillType() !== $source->getFillType()) {
@@ -241,10 +251,10 @@ class Style
     /**
      * Copy font.
      *
-     * @param \PHPExcel_Style_Font $source  The source
-     * @param \PHPExcel_Style_Font $dest  The destination
+     * @param XlStyleFont $source  The source
+     * @param XlStyleFont $dest  The destination
      */
-    public static function copyFont(\PHPExcel_Style_Font $source, \PHPExcel_Style_Font $dest)
+    public static function copyFont(XlStyleFont $source, XlStyleFont $dest)
     {
         if ($dest->getHashCode() !== $source->getHashCode()) {
             if ($dest->getName() !== $source->getName()) {
@@ -278,10 +288,10 @@ class Style
     /**
      * Copy number format.
      *
-     * @param \PHPExcel_Style_NumberFormat $source  The source
-     * @param \PHPExcel_Style_NumberFormat $dest  The destination
+     * @param XlStyleNumberFormat $source  The source
+     * @param XlStyleNumberFormat $dest  The destination
      */
-    public static function copyNumberFormat(\PHPExcel_Style_NumberFormat $source, \PHPExcel_Style_NumberFormat $dest)
+    public static function copyNumberFormat(XlStyleNumberFormat $source, XlStyleNumberFormat $dest)
     {
         if ($dest->getHashCode() !== $source->getHashCode()) {
             if ($dest->getBuiltInFormatCode() !== $source->getBuiltInFormatCode()) {
@@ -296,10 +306,10 @@ class Style
     /**
      * Copy cell style.
      *
-     * @param \PHPExcel_Style $source  The source
-     * @param \PHPExcel_Style $dest  The destination
+     * @param XlStyle $source  The source
+     * @param XlStyle $dest  The destination
      */
-    public static function copyStyle(\PHPExcel_Style $source, \PHPExcel_Style $dest)
+    public static function copyStyle(XlStyle $source, XlStyle $dest)
     {
         if ($dest->getHashCode() !== $source->getHashCode()) {
             self::copyFill($source->getFill(), $dest->getFill());

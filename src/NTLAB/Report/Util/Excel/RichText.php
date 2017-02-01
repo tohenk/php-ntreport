@@ -26,6 +26,9 @@
 
 namespace NTLAB\Report\Util\Excel;
 
+use PhpOffice\PhpSpreadsheet\RichText as XlRichText;
+use PhpOffice\PhpSpreadsheet\RichText\Run as XlRichTextRun;
+
 class RichText
 {
     const TAG_BOLD = 'b';
@@ -303,12 +306,12 @@ class RichText
      * Create text run.
      *
      *
-     * @param \PHPExcel_RichText $richtext  The rich text object
+     * @param XlRichText $richtext  The rich text object
      * @param string $text  The text
      * @param array $options  Rich text font options
-     * @return \PHPExcel_RichText_Run
+     * @return xlRichTextRun
      */
-    protected static function createTextRun(\PHPExcel_RichText $richtext, $text, $options = array())
+    protected static function createTextRun(XlRichText $richtext, $text, $options = array())
     {
         self::cleanText($text, $options);
         $trun = $richtext->createTextRun($text);
@@ -365,12 +368,12 @@ class RichText
      * Create rich text by replacing tags: <b>, <i>, <u> and others.
      *
      * @param string $text  The plain text
-     * @return \PHPExcel_RichText
+     * @return XlRichText
      */
     public static function create($text)
     {
         if ($text && count($offsets = self::tagOffset($text))) {
-            $richText = new \PHPExcel_RichText();
+            $richText = new XlRichText();
             $outers = self::cleanOffset($offsets);
             $pos = 0;
             foreach ($outers as $offset) {
