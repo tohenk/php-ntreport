@@ -24,15 +24,22 @@
  * SOFTWARE.
  */
 
-namespace NTLAB\Report\Util\Excel;
+namespace NTLAB\Report\Filer;
 
 use NTLAB\Script\Core\Script;
 use PhpOffice\PhpSpreadsheet\IOFactory as XlIOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet as XlSpreadsheet;
 use PhpOffice\PhpSpreadsheet\Worksheet as XlWorksheet;
 use PhpOffice\PhpSpreadsheet\Cell as XlCell;
+use NTLAB\Report\Util\Spreadsheet\Style;
+use NTLAB\Report\Util\Spreadsheet\RichText;
 
-class Filer
+/**
+ * Spreadsheet filer using PHPOffice PhpSpreadsheet.
+ *
+ * @author Toha
+ */
+class Spreadsheet implements FilerInterface
 {
     const BAND_TITLE = 'title';
     const BAND_HEADER = 'header';
@@ -627,12 +634,14 @@ class Filer
     /**
      * Build the template and fill with objects data.
      *
+     * @param string $template  Template spreadsheet
      * @param array $objects  The objects
      * @param string $writerClass  The writer class
      * @return string
      */
-    public function build($objects, $writerClass = null)
+    public function build($template, $objects, $writerClass = null)
     {
+        $this->template = $template;
         $this->objects = $objects;
         if (($tplXls = XlIOFactory::load($this->template)) && ($insheet = $tplXls->getSheetByName($this->sheet))) {
             $this->getScript()
@@ -681,7 +690,7 @@ class Filer
                 case static::BAND_MASTER_DATA:
                     $this->dataCells = array();
                     $this->getScript()
-                        ->each(function(Script $script, Filer $_this) use ($insheet, $outsheet, &$anchor, $bandData) {
+                        ->each(function(Script $script, Spreadsheet $_this) use ($insheet, $outsheet, &$anchor, $bandData) {
                             $_this->buildMasterData($insheet, $outsheet, $bandData, $anchor);
                         })
                     ;

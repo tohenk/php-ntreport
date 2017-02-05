@@ -27,14 +27,14 @@
 namespace NTLAB\Report\Engine;
 
 use NTLAB\Report\Report;
-use NTLAB\Report\Util\Excel\Filer;
+use NTLAB\Report\Filer\Spreadsheet as SpreadsheetFiler;
 
 class Excel extends Report
 {
     const ID = 'excel';
 
     /**
-     * @var \NTLAB\Report\Util\Excel\Filer
+     * @var \NTLAB\Report\Filer\Spreadsheet
      */
     protected $filer = null;
 
@@ -45,7 +45,7 @@ class Excel extends Report
 
     protected function configure(\DOMNodeList $nodes)
     {
-        $this->filer = new Filer();
+        $this->filer = new SpreadsheetFiler();
         $this->filer->setScript($this->getScript());
         foreach ($nodes as $node) {
             switch (strtolower($node->nodeName)) {
@@ -93,8 +93,7 @@ class Excel extends Report
         $tempfile = sys_get_temp_dir().DIRECTORY_SEPARATOR.md5(rand(1, 99999)).$this->extension;
         try {
             file_put_contents($tempfile, $this->templateContent);
-            $this->filer->setTemplate($tempfile);
-            $content = $this->filer->build($this->result);
+            $content = $this->filer->build($tempfile, $this->result);
         } catch (\Exception $e) {
             $this->errorCode = static::ERR_INTERNAL;
             $this->errorMessage = $e->getMessage();

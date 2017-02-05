@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-namespace NTLAB\Report\Util\Excel;
+namespace NTLAB\Report\Util\Spreadsheet;
 
 use PhpOffice\PhpSpreadsheet\Style as XlStyle;
 use PhpOffice\PhpSpreadsheet\Style\Alignment as XlStyleAlignment;

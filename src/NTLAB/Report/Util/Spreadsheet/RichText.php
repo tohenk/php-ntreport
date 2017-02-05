@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-namespace NTLAB\Report\Util\Excel;
+namespace NTLAB\Report\Util\Spreadsheet;
 
 use PhpOffice\PhpSpreadsheet\RichText as XlRichText;
 use PhpOffice\PhpSpreadsheet\RichText\Run as XlRichTextRun;

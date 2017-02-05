@@ -24,16 +24,21 @@
  * SOFTWARE.
  */
 
-namespace NTLAB\Report\Util\Rtf;
+namespace NTLAB\Report\Filer;
 
 use NTLAB\Script\Core\Script;
 
-class FilerLegacy implements FilerInterface
+/**
+ * Quick and dirty filer for RTF using regular expression.
+ *
+ * @author Toha
+ */
+class Rtf implements FilerInterface
 {
     const TAG_SIGN = '%';
 
     /**
-     * @var \NTLAB\Report\Util\Rtf\FilerLegacy
+     * @var \NTLAB\Report\Filer\Rtf
      */
     protected static $instance = null;
 
@@ -110,7 +115,7 @@ class FilerLegacy implements FilerInterface
     /**
      * Get the instance.
      *
-     * @return \NTLAB\Report\Util\Rtf\FilerLegacy
+     * @return \NTLAB\Report\Filer\Rtf
      */
     public static function getInstance()
     {
@@ -122,8 +127,8 @@ class FilerLegacy implements FilerInterface
     }
 
     /**
-     * (non-PHPdoc)
-     * @see \NTLAB\Report\Util\Rtf\FilerInterface::getScript()
+     * {@inheritDoc}
+     * @see \NTLAB\Report\Filer\FilerInterface::getScript()
      */
     public function getScript()
     {
@@ -135,8 +140,8 @@ class FilerLegacy implements FilerInterface
     }
 
     /**
-     * (non-PHPdoc)
-     * @see \NTLAB\Report\Util\Rtf\FilerInterface::setScript()
+     * {@inheritDoc}
+     * @see \NTLAB\Report\Filer\FilerInterface::setScript()
      */
     public function setScript(Script $script)
     {
@@ -280,7 +285,7 @@ class FilerLegacy implements FilerInterface
     /**
      * Clear the caches.
      *
-     * @return \NTLAB\Report\Util\Rtf\FilerLegacy
+     * @return \NTLAB\Report\Filer\Rtf
      */
     public function clear()
     {
@@ -590,7 +595,7 @@ class FilerLegacy implements FilerInterface
     /**
      * Begin document creation.
      *
-     * @return \NTLAB\Report\Util\Rtf\FilerLegacy
+     * @return \NTLAB\Report\Filer\Rtf
      */
     public function beginDoc()
     {
@@ -602,7 +607,7 @@ class FilerLegacy implements FilerInterface
     /**
      * End document creation.
      *
-     * @return \NTLAB\Report\Util\Rtf\FilerLegacy
+     * @return \NTLAB\Report\Filer\Rtf
      */
     public function endDoc()
     {
@@ -616,7 +621,7 @@ class FilerLegacy implements FilerInterface
      *
      * @param bool $new  True to add a page break
      * @param string $type  Break type
-     * @return \NTLAB\Report\Util\Rtf\FilerLegacy
+     * @return \NTLAB\Report\Filer\Rtf
      */
     public function newPage($new, $break = '\page')
     {
@@ -630,7 +635,7 @@ class FilerLegacy implements FilerInterface
     /**
      * Create a page and build and replace tags.
      *
-     * @return \NTLAB\Report\Util\Rtf\FilerLegacy
+     * @return \NTLAB\Report\Filer\Rtf
      */
     public function createPage()
     {
@@ -657,7 +662,7 @@ class FilerLegacy implements FilerInterface
             $this->beginDoc();
             $this->getScript()
                 ->setObjects($objects)
-                ->each(function(Script $script, FilerLegacy $_this) use ($child, $separator) {
+                ->each(function(Script $script, Rtf $_this) use ($child, $separator) {
                     $_this
                         ->newPage($script->getIterator()->getRecNo() > 1, $child ? (null !== $separator ? $separator : '\par') : null)
                         ->createPage();

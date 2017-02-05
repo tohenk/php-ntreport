@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-namespace NTLAB\Report\Util\Rtf;
+namespace NTLAB\Report\Filer;
 
 use NTLAB\Script\Core\Script;
 use NTLAB\RtfTree\Node\Tree;
@@ -33,10 +33,15 @@ use NTLAB\Report\Util\Rtf\Extractor\Extractor;
 use NTLAB\Report\Util\Rtf\Extractor\Paragraph as ParagraphExtractor;
 use NTLAB\Report\Util\Rtf\Extractor\Table as TableExtractor;
 
-class FilerTree implements FilerInterface
+/**
+ * Rtf filer which parse richtext document into nodes and do its job.
+ *
+ * @author Toha
+ */
+class RtfTree implements FilerInterface
 {
     /**
-     * @var \NTLAB\Report\Util\Rtf\FilerTree
+     * @var \NTLAB\Report\Filer\RtfTree
      */
     protected static $instance = null;
 
@@ -48,7 +53,7 @@ class FilerTree implements FilerInterface
     /**
      * Get the instance.
      *
-     * @return \NTLAB\Report\Util\Rtf\FilerTree
+     * @return \NTLAB\Report\Filer\RtfTree
      */
     public static function getInstance()
     {
@@ -60,8 +65,8 @@ class FilerTree implements FilerInterface
     }
 
     /**
-     * (non-PHPdoc)
-     * @see \NTLAB\Report\Util\Rtf\FilerInterface::getScript()
+     * {@inheritDoc}
+     * @see \NTLAB\Report\Filer\FilerInterface::getScript()
      */
     public function getScript()
     {
@@ -73,8 +78,8 @@ class FilerTree implements FilerInterface
     }
 
     /**
-     * (non-PHPdoc)
-     * @see \NTLAB\Report\Util\Rtf\FilerInterface::setScript()
+     * {@inheritDoc}
+     * @see \NTLAB\Report\Filer\FilerInterface::setScript()
      */
     public function setScript(Script $script)
     {
@@ -140,7 +145,7 @@ class FilerTree implements FilerInterface
      *
      * @param \NTLAB\RtfTree\Node\Tree $tree  The template body tree
      * @param array $ignores  Ignore tags
-     * @return \NTLAB\Report\Util\Rtf\FilerTree
+     * @return \NTLAB\Report\Filer\RtfTree
      */
     public function replaceTag(Tree $tree, $ignores = array())
     {
@@ -173,7 +178,7 @@ class FilerTree implements FilerInterface
      * @param \NTLAB\RtfTree\Node\Tree $tree  Result tree
      * @param array $regions  Region data
      * @param string $eolKey  Eol keyword used to separate each item
-     * @return \NTLAB\Report\Util\Rtf\FilerTree
+     * @return \NTLAB\Report\Filer\RtfTree
      */
     public function replaceRegion(Tree $tree, $regions = array(), $eolKey)
     {
@@ -185,7 +190,7 @@ class FilerTree implements FilerInterface
                 $this->getScript()
                     ->pushContext()
                     ->setObjects($objects)
-                    ->each(function(Script $script, FilerTree $_this) use ($result, $body, $eolKey) {
+                    ->each(function(Script $script, RtfTree $_this) use ($result, $body, $eolKey) {
                         $clone = $body->cloneTree();
                         $_this->replaceTag($clone);
                         Extractor::appendTree($result, $clone);
@@ -207,8 +212,8 @@ class FilerTree implements FilerInterface
     }
 
     /**
-     * (non-PHPdoc)
-     * @see \NTLAB\Report\Util\Rtf\FilerInterface::build()
+     * {@inheritDoc}
+     * @see \NTLAB\Report\Filer\FilerInterface::build()
      */
     public function build($template, $objects)
     {

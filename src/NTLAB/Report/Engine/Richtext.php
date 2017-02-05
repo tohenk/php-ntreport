@@ -27,16 +27,16 @@
 namespace NTLAB\Report\Engine;
 
 use NTLAB\Report\Report;
-use NTLAB\Report\Util\Rtf\FilerInterface;
-use NTLAB\Report\Util\Rtf\FilerLegacy;
-use NTLAB\Report\Util\Rtf\FilerTree;
+use NTLAB\Report\Filer\FilerInterface;
+use NTLAB\Report\Filer\Rtf as RtfFiler;
+use NTLAB\Report\Filer\RtfTree as RtfTreeFiler;
 
 class Richtext extends Report
 {
     const ID = 'richtext';
 
     /**
-     * @var \NTLAB\Report\Util\Rtf\FilerInterface
+     * @var \NTLAB\Report\Filer\FilerInterface
      */
     protected $filer = null;
 
@@ -89,13 +89,13 @@ class Richtext extends Report
     /**
      * Get rich text filer.
      *
-     * @return \NTLAB\Report\Util\Rtf\FilerInterface
+     * @return \NTLAB\Report\Filer\FilerInterface
      */
     protected function getFiler()
     {
         if (null === $this->filer) {
             if (null === static::$defaultFiler) {
-                static::$defaultFiler = get_class(new FilerLegacy());
+                static::$defaultFiler = get_class(new RtfFiler());
             }
             $this->filer = new static::$defaultFiler();
             $this->filer->setScript($this->getScript());

@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-namespace NTLAB\Report\Util\Rtf;
+namespace NTLAB\Report\Filer;
 
 use NTLAB\Script\Core\Script;
 
@@ -41,14 +41,14 @@ interface FilerInterface
      * Set the script object.
      *
      * @param \NTLAB\Script\Core\Script $script  The script object
-     * @return \NTLAB\Report\Util\Rtf\FilerInterface
+     * @return \NTLAB\Report\Filer\FilerInterface
      */
     public function setScript(Script $script);
 
     /**
      * Build the template.
      *
-     * @param string $template  Tree template
+     * @param string $template  Template content of filename
      * @param mixed $objects  The objects
      * @return string
      */
