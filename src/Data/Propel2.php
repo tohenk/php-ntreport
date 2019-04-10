@@ -103,6 +103,18 @@ class Propel2 extends Data
 
     /**
      * (non-PHPdoc)
+     * @see \NTLAB\Report\Data\Data::addGroupBy()
+     */
+    public function addGroupBy($column)
+    {
+        $this->items = array();
+        $query = $this->getQuery();
+        $this->applyQuery($query, $column, 'groupBy%s', array());
+        $this->endQueryUses();
+    }
+
+    /**
+     * (non-PHPdoc)
      * @see \NTLAB\Report\Data\Data::addOrder()
      */
     public function addOrder($column, $direction, $format = null)

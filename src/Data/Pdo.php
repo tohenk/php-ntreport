@@ -45,6 +45,11 @@ class Pdo extends Data
     /**
      * @var array
      */
+    protected $groups = array();
+
+    /**
+     * @var array
+     */
     protected $orders = array();
 
     /**
@@ -100,6 +105,15 @@ class Pdo extends Data
 
     /**
      * (non-PHPdoc)
+     * @see \NTLAB\Report\Data\Data::addGroupBy()
+     */
+    public function addGroupBy($column)
+    {
+        $this->groups[] = $column;
+    }
+
+    /**
+     * (non-PHPdoc)
      * @see \NTLAB\Report\Data\Data::addOrder()
      */
     public function addOrder($column, $direction, $format = null)
@@ -115,7 +129,8 @@ class Pdo extends Data
     {
         $sql = strtr($this->getSource(), array(
             '%COND%' => count($this->conds) ? implode(' AND ', $this->conds) : '1',
-            '%ORDER%' => count($this->orders) ? 'ORDER BY '.implode(', ', $this->orders) : ''
+            '%GROUP%' => count($this->groups) ? 'GROUP BY '.implode(', ', $this->groups) : '',
+            '%ORDER%' => count($this->orders) ? 'ORDER BY '.implode(', ', $this->orders) : '',
         ));
         $sql = $this->report->getScript()->evaluate($sql);
 

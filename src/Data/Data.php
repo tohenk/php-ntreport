@@ -118,6 +118,13 @@ abstract class Data
     abstract public function addCondition(Parameter $parameter);
 
     /**
+     * Add group by condition.
+     *
+     * @param string $column  Column name
+     */
+    abstract public function addGroupBy($column);
+
+    /**
      * Add result ordering.
      *
      * @param string $column  The column name to order

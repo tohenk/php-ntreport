@@ -132,6 +132,11 @@ abstract class Report
     /**
      * @var array
      */
+    protected $groups = array();
+
+    /**
+     * @var array
+     */
     protected $validators = array();
 
     /**
@@ -469,6 +474,17 @@ abstract class Report
     }
 
     /**
+     * Add model grouping.
+     *
+     * @param \DOMNode $node  The node order
+     */
+    protected function addSourceGrouping(\DOMNode $node)
+    {
+        $column = $this->nodeAttr($node, 'name');
+        $this->groups[] = $column;
+    }
+
+    /**
      * Add model sorting.
      *
      * @param \DOMNode $node  The node order
@@ -492,6 +508,10 @@ abstract class Report
             switch (strtolower($node->nodeName)) {
                 case 'param':
                     $this->addSourceParameter($node);
+                    break;
+
+                case 'group':
+                    $this->addSourceGrouping($node);
                     break;
 
                 case 'order':
@@ -635,6 +655,16 @@ abstract class Report
     }
 
     /**
+     * Get groups column.
+     *
+     * @return array
+     */
+    public function getGroups()
+    {
+        return $this->groups;
+    }
+
+    /**
      * Get report configurations.
      *
      * @return \NTLAB\Report\Config\Config[]
@@ -728,6 +758,10 @@ abstract class Report
                     continue;
                 }
                 $data->addCondition($param);
+            }
+            // apply grouping
+            foreach ($this->getGroups() as $group) {
+                $data->addGroupBy($group);
             }
             // apply sorting
             foreach ($this->getOrders() as $order) {
