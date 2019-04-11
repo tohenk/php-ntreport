@@ -83,11 +83,11 @@ abstract class Report
     const ORDER_ASC = 'ASC';
     const ORDER_DESC = 'DESC';
 
-    const ERR_NONE = 0;
-    const ERR_TEMPLATE = 1;
-    const ERR_TEMPLATE_INVALID = 2;
-    const ERR_DATA = 3;
-    const ERR_INTERNAL = 4;
+    const STATUS_OK = 0;
+    const STATUS_ERR_TMPL = 1;
+    const STATUS_ERR_TMPL_INVALID = 2;
+    const STATUS_ERR_NO_DATA = 3;
+    const STATUS_ERR_INTERNAL = 4;
 
     /**
      * @var \DOMDocument
@@ -187,12 +187,12 @@ abstract class Report
     /**
      * @var int
      */
-    protected $errorCode = null;
+    protected $status = null;
 
     /**
-     * @var string
+     * @var \Exception
      */
-    protected $errorMessage = null;
+    protected $error = null;
 
     /**
      * @var array
@@ -722,23 +722,23 @@ abstract class Report
     }
 
     /**
-     * Get the report generation error code.
+     * Get report generation status.
      *
      * @return int
      */
-    public function getErrorCode()
+    public function getStatus()
     {
-        return $this->errorCode;
+        return $this->status;
     }
 
     /**
-     * Get error message.
-     * 
-     * @return string
+     * Get report generation error object.
+     *
+     * @return \Exception
      */
-    public function getErrorMessage()
+    public function getError()
     {
-        return $this->errorMessage;
+      return $this->error;
     }
 
     /**
@@ -839,20 +839,27 @@ abstract class Report
     {
         ReportCore::setReport($this);
 
-        $this->errorCode = null;
-        $this->errorMessage = null;
+        $this->error = null;
+        $this->status = null;
         $this->result = $objects;
         if (count($this->result)) {
             if ($this->hasTemplate() && !$this->templateContent) {
-                $this->errorCode = static::ERR_TEMPLATE;
+                $this->status = static::STATUS_ERR_TMPL;
             } else {
-                if (null !== ($content = $this->build())) {
-                    return $content;
+                try {
+                    if (null !== ($content = $this->build())) {
+                        $this->status = static::STATUS_OK;
+                        return $content;
+                    }
+                } catch (\Exception $e) {
+                    $this->error = $e;
+                    error_log($e->getMessage());
+                    error_log($e->getTraceAsString());
                 }
-                $this->errorCode = static::ERR_INTERNAL;
+                $this->status = static::STATUS_ERR_INTERNAL;
             }
         } else {
-            $this->errorCode = static::ERR_DATA;
+            $this->status = static::STATUS_ERR_NO_DATA;
         }
 
         return false;

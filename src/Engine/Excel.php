@@ -90,15 +90,18 @@ class Excel extends Report
     protected function build()
     {
         $content = null;
+        $error = null;
         $tempfile = sys_get_temp_dir().DIRECTORY_SEPARATOR.md5(rand(1, 99999)).$this->extension;
         try {
             file_put_contents($tempfile, $this->templateContent);
             $content = $this->filer->build($tempfile, $this->result);
         } catch (\Exception $e) {
-            $this->errorCode = static::ERR_INTERNAL;
-            $this->errorMessage = $e->getMessage();
+            $error = $e;
         }
         unlink($tempfile);
+        if (null !== $error) {
+            throw $error;
+        }
 
         return $content;
     }

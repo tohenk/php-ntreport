@@ -29,8 +29,9 @@ namespace NTLAB\Report\Filer;
 use NTLAB\Script\Core\Script;
 use PhpOffice\PhpSpreadsheet\IOFactory as XlIOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet as XlSpreadsheet;
-use PhpOffice\PhpSpreadsheet\Worksheet as XlWorksheet;
-use PhpOffice\PhpSpreadsheet\Cell as XlCell;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet as XlWorksheet;
+use PhpOffice\PhpSpreadsheet\Cell\Cell as XlCell;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate as XlCoordinate;
 use NTLAB\Report\Util\Spreadsheet\Style;
 use NTLAB\Report\Util\Spreadsheet\RichText;
 
@@ -132,7 +133,7 @@ class Spreadsheet implements FilerInterface
      * Set excel template.
      *
      * @param string $value  Template filename
-     * @return \NTLAB\Report\Util\Excel\Filer
+     * @return \NTLAB\Report\Filer\Spreadsheet
      */
     public function setTemplate($value)
     {
@@ -155,7 +156,7 @@ class Spreadsheet implements FilerInterface
      * Set template sheet name.
      *
      * @param string $value  Sheet name
-     * @return \NTLAB\Report\Util\Excel\Filer
+     * @return \NTLAB\Report\Filer\Spreadsheet
      */
     public function setSheet($value)
     {
@@ -178,7 +179,7 @@ class Spreadsheet implements FilerInterface
      * Set field signature.
      *
      * @param string $signature  The signature
-     * @return \NTLAB\Report\Util\Excel\Filer
+     * @return \NTLAB\Report\Filer\Spreadsheet
      */
     public function setFieldSign($signature)
     {
@@ -201,7 +202,7 @@ class Spreadsheet implements FilerInterface
      * Set aggregate signature.
      *
      * @param string $signature  The signature
-     * @return \NTLAB\Report\Util\Excel\Filer
+     * @return \NTLAB\Report\Filer\Spreadsheet
      */
     public function setAggregateSign($signature)
     {
@@ -224,7 +225,7 @@ class Spreadsheet implements FilerInterface
      * Set data row autofit.
      *
      * @param boolean $value  Auto fit value
-     * @return \NTLAB\Report\Util\Excel\Filer
+     * @return \NTLAB\Report\Filer\Spreadsheet
      */
     public function setAutoFit($value)
     {
@@ -247,7 +248,7 @@ class Spreadsheet implements FilerInterface
      * Set data row height.
      *
      * @param float $value  The row height
-     * @return \NTLAB\Report\Util\Excel\Filer
+     * @return \NTLAB\Report\Filer\Spreadsheet
      */
     public function setRowHeight($value)
     {
@@ -270,7 +271,7 @@ class Spreadsheet implements FilerInterface
      * Set output writer.
      *
      * @param string $value  The writer class
-     * @return \NTLAB\Report\Util\Excel\Filer
+     * @return \NTLAB\Report\Filer\Spreadsheet
      */
     public function setDefaultWriter($value)
     {
@@ -284,7 +285,7 @@ class Spreadsheet implements FilerInterface
      *
      * @param string $band  The band name
      * @param string $range  The range
-     * @return \NTLAB\Report\Util\Excel\Filer
+     * @return \NTLAB\Report\Filer\Spreadsheet
      */
     public function addBand($band, $range)
     {
@@ -300,7 +301,7 @@ class Spreadsheet implements FilerInterface
      *
      * @param string $field  The field name
      * @param string $expression  Value expression
-     * @return \NTLAB\Report\Util\Excel\Filer
+     * @return \NTLAB\Report\Filer\Spreadsheet
      */
     public function addData($field, $expression)
     {
@@ -327,7 +328,7 @@ class Spreadsheet implements FilerInterface
      * Set the script object.
      *
      * @param \NTLAB\Script\Core\Script $script  The script object
-     * @return \NTLAB\Report\Util\Excel\Filer
+     * @return \NTLAB\Report\Filer\Spreadsheet
      */
     public function setScript(Script $script)
     {
@@ -341,7 +342,7 @@ class Spreadsheet implements FilerInterface
      *
      * @param XlWorksheet $source  Source worksheet
      * @param XlWorksheet $dest  Destination worksheet
-     * @return \NTLAB\Report\Util\Excel\Filer
+     * @return \NTLAB\Report\Filer\Spreadsheet
      */
     protected function copySheetProp(XlWorksheet $source, XlWorksheet $dest)
     {
@@ -377,14 +378,14 @@ class Spreadsheet implements FilerInterface
      * @param string $cell  The origin cell
      * @param int $width  The number of columns from origin to merge
      * @param int $height  The number of rows from origin to merge
-     * @return \NTLAB\Report\Util\Excel\Filer
+     * @return \NTLAB\Report\Filer\Spreadsheet
      */
     protected function mergeCells(XlWorksheet $sheet, $cell, $width, $height)
     {
-        list($rangeStart, $rangeEnd) = XlCell::rangeBoundaries($cell);
+        list($rangeStart, $rangeEnd) = XlCoordinate::rangeBoundaries($cell);
         $rangeEnd[0] = (int) $rangeStart[0] + $width - 1;
         $rangeEnd[1] = (int) $rangeStart[1] + $height - 1;
-        $range = XlCell::stringFromColumnIndex($rangeStart[0] - 1).$rangeStart[1].':'.XlCell::stringFromColumnIndex($rangeEnd[0] - 1).$rangeEnd[1];
+        $range = XlCoordinate::stringFromColumnIndex($rangeStart[0]).$rangeStart[1].':'.XlCoordinate::stringFromColumnIndex($rangeEnd[0]).$rangeEnd[1];
         $sheet->mergeCells($range);
 
         return $this;
@@ -419,7 +420,7 @@ class Spreadsheet implements FilerInterface
      */
     protected function copyRange(XlWorksheet $source, XlWorksheet $dest, $range, &$anchor, $replaceTag = true)
     {
-        list($rangeStart, $rangeEnd) = XlCell::rangeBoundaries($range);
+        list($rangeStart, $rangeEnd) = XlCoordinate::rangeBoundaries($range);
         if (null == $anchor) {
             $anchor = $rangeStart;
         }
@@ -427,8 +428,8 @@ class Spreadsheet implements FilerInterface
         $rows = $rangeEnd[1] - $rangeStart[1];
         for ($row = 0; $row <= $rows; $row++) {
             for ($col = 0; $col <= $cols; $col++) {
-                $scell = $source->getCellByColumnAndRow($rangeStart[0] + $col - 1, $rangeStart[1] + $row);
-                $dcell = $dest->getCellByColumnAndRow($anchor[0] + $col - 1, $anchor[1] + $row);
+                $scell = $source->getCellByColumnAndRow($rangeStart[0] + $col, $rangeStart[1] + $row);
+                $dcell = $dest->getCellByColumnAndRow($anchor[0] + $col, $anchor[1] + $row);
                 // copy value, ignore empty cell
                 if ($svalue = $scell->getValue()) {
                     $dcell->setValue($replaceTag ? $this->replaceTag($svalue) : $svalue);
@@ -438,7 +439,7 @@ class Spreadsheet implements FilerInterface
                     ->applyFromArray(Style::styleToArray($source->getStyle($scell->getCoordinate())));
                 // merge cells
                 if ($merged = $this->getCellMerged($source, $scell->getCoordinate())) {
-                    $dim = XlCell::rangeDimension($merged);
+                    $dim = XlCoordinate::rangeDimension($merged);
                     $this->mergeCells($dest, $dcell->getCoordinate(), $dim[0], $dim[1]);
                 }
                 // set column width
@@ -533,7 +534,7 @@ class Spreadsheet implements FilerInterface
      *
      * @param XlWorksheet $sheet  The worksheet
      * @param array $ranges  The data ranges
-     * @return \NTLAB\Report\Util\Excel\Filer
+     * @return \NTLAB\Report\Filer\Spreadsheet
      */
     protected function fillRange(XlWorksheet $sheet, $ranges = array(), $callback = null, $adjustRow = false)
     {
@@ -545,7 +546,7 @@ class Spreadsheet implements FilerInterface
             $rows = $rangeEnd[1] - $rangeStart[1];
             for ($row = 0; $row <= $rows; $row++) {
                 for ($col = 0; $col <= $cols; $col++) {
-                    $colindex = $rangeStart[0] + $col - 1;
+                    $colindex = $rangeStart[0] + $col;
                     $rowindex = $rangeStart[1] + $row;
                     $cell = $sheet->getCellByColumnAndRow($colindex, $rowindex);
                     // cell has value and prefixed with field signature
@@ -580,13 +581,13 @@ class Spreadsheet implements FilerInterface
      * Find and detect bands position from XlWorksheet.
      *
      * @param XlWorksheet $sheet  The target sheet
-     * @return \NTLAB\Report\Util\Excel\Filer
+     * @return \NTLAB\Report\Filer\Spreadsheet
      */
     protected function findBands($sheet)
     {
         if (empty($this->bands)) {
             $rows = $sheet->getHighestDataRow();
-            $cols = XlCell::columnIndexFromString($sheet->getHighestDataColumn());
+            $cols = XlCoordinate::columnIndexFromString($sheet->getHighestDataColumn());
             $fsignFound = false;
             $fsignStart = null;
             $fsignEnd = null;
@@ -595,7 +596,7 @@ class Spreadsheet implements FilerInterface
                 // check if row contain field sign
                 $has_sign = false;
                 for ($col = 1; $col <= $cols; $col++) {
-                    $cell = $sheet->getCellByColumnAndRow($col - 1, $row);
+                    $cell = $sheet->getCellByColumnAndRow($col, $row);
                     // ignore aggregate sign
                     if (($value = $cell->getValue()) && (0 === strpos($value, $this->getFieldSign())) && $this->aggregateSign != substr($value, 1, 1)) {
                         $has_sign = true;
@@ -620,11 +621,11 @@ class Spreadsheet implements FilerInterface
             // bands found
             if ($fsignFound) {
                 // title band
-                $this->bands[self::BAND_TITLE] = sprintf('A1:%s%d', XlCell::stringFromColumnIndex($cols - 1), $fsignStart - 1);
+                $this->bands[self::BAND_TITLE] = sprintf('A1:%s%d', XlCoordinate::stringFromColumnIndex($cols), $fsignStart - 1);
                 // master data band
-                $this->bands[self::BAND_MASTER_DATA] = sprintf('A%d:%s%d', $fsignStart, XlCell::stringFromColumnIndex($cols - 1), $fsignEnd);
+                $this->bands[self::BAND_MASTER_DATA] = sprintf('A%d:%s%d', $fsignStart, XlCoordinate::stringFromColumnIndex($cols), $fsignEnd);
                 // summary band
-                $this->bands[self::BAND_SUMMARY] = sprintf('A%d:%s%d', $fsignEnd + 1, XlCell::stringFromColumnIndex($cols - 1), $rows);
+                $this->bands[self::BAND_SUMMARY] = sprintf('A%d:%s%d', $fsignEnd + 1, XlCoordinate::stringFromColumnIndex($cols), $rows);
             }
         }
 
@@ -676,7 +677,7 @@ class Spreadsheet implements FilerInterface
      *
      * @param XlWorksheet $insheet  Input worksheet
      * @param XlWorksheet $outsheet  Output worksheet
-     * @return \NTLAB\Report\Util\Excel\Filer
+     * @return \NTLAB\Report\Filer\Spreadsheet
      */
     protected function processBands($insheet, $outsheet)
     {
@@ -719,7 +720,7 @@ class Spreadsheet implements FilerInterface
      * @param XlWorksheet $outsheet  Output sheet
      * @param string $band  Band range address
      * @param array $anchor  Anchor range
-     * @return \NTLAB\Report\Util\Excel\Filer
+     * @return \NTLAB\Report\Filer\Spreadsheet
      */
     public function buildMasterData($insheet, $outsheet, $band, &$anchor)
     {
@@ -732,7 +733,7 @@ class Spreadsheet implements FilerInterface
     /**
      * Create ouput content from result sheet.
      *
-     * @param \PHPExcel $xls  Excel output
+     * @param XlSpreadsheet $xls  Excel output
      * @param string $writerClass  Writer class
      * @return string
      */
