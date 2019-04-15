@@ -853,8 +853,7 @@ abstract class Report
                     }
                 } catch (\Exception $e) {
                     $this->error = $e;
-                    error_log($e->getMessage());
-                    error_log($e->getTraceAsString());
+                    error_log($this->getExceptionMessage($e));
                 }
                 $this->status = static::STATUS_ERR_INTERNAL;
             }
@@ -863,6 +862,23 @@ abstract class Report
         }
 
         return false;
+    }
+
+    protected function getExceptionMessage(\Exception $exception, $wrapper = '%s: [%s]')
+    {
+        $message = null;
+        while (null !== $exception) {
+            if ($msg = $exception->getMessage()) {
+                if (null == $message) {
+                    $message = $msg;
+                } else {
+                    $message = sprintf($wrapper, $message, $msg);
+                }
+            }
+            $exception = $exception->getPrevious();
+        }
+  
+        return $message;
     }
 
     /**
