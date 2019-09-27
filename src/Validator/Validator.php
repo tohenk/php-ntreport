@@ -67,7 +67,7 @@ class Validator
     public function setReport(Report $report)
     {
         $this->report = $report;
-        
+
         return $this;
     }
 

@@ -41,7 +41,7 @@ class Excel extends Report
     /**
      * @var string
      */
-    protected $extension = '.xls';
+    protected $extension = '.xlsx';
 
     protected function configure(\DOMNodeList $nodes)
     {

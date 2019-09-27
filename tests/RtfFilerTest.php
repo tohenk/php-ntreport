@@ -9,6 +9,6 @@ class RtfFilerTest extends BaseTest
     public function testExtract()
     {
         $tree = new Tree();
-        $this->assertTrue($tree->loadFromString($this->loadFixture('Template.rtf')), 'Template loaded succesdfully');
+        $this->assertTrue($tree->loadFromString($this->loadFixture('Template.rtf')), 'Template loaded successfully');
     }
 }
