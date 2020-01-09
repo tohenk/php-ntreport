@@ -37,7 +37,6 @@ use NTLAB\Report\Parameter\Statix as StaticParameter;
 use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
 use Propel\Runtime\Map\TableMap;
-use NTLAB\Report\Parameter\DateOnly;
 
 class Propel2 extends Data
 {

@@ -26,7 +26,6 @@
 
 namespace NTLAB\Report\Parameter;
 
-use NTLAB\Report\Report;
 use NTLAB\Script\Core\Manager;
 use NTLAB\Script\Context\ArrayVar;
 use Propel\Runtime\DataFetcher\DataFetcherInterface;

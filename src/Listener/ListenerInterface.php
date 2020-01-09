@@ -44,7 +44,7 @@ interface ListenerInterface
      * Apply parameter to underlying data handler.
      *
      * @param \NTLAB\Report\Parameter\Parameter $parameter  The parameter to apply
-     * @param NTLAB\Report\Data\Data $data  Data handler
+     * @param \NTLAB\Report\Data\Data $data  Data handler
      * @param array $result  The result array
      * @return boolean
      */

@@ -183,6 +183,7 @@ class Config
                 $this->object = $this->report->getObject();
             }
         }
+        $value = null;
         if ($this->report->getScript()->getVar($value, $this->name, $this->object)) {
             return $value;
         }

@@ -27,7 +27,7 @@
 namespace NTLAB\Report\Script;
 
 use NTLAB\Script\Core\Module;
-use NTLAB\Report\Util\Excel\RichText;
+use NTLAB\Report\Util\Spreadsheet\RichText;
 
 /**
  * Excel report functions.

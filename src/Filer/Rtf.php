@@ -258,6 +258,7 @@ class Rtf implements FilerInterface
         if ($cache && array_key_exists($tag, $this->caches)) {
             return $this->caches[$tag];
         }
+        $matches = null;
         $tags = array($tag);
         if (preg_match_all($this->getPartRegex(), $tag, $matches)) {
             foreach (array(
@@ -304,6 +305,7 @@ class Rtf implements FilerInterface
     protected function parseTag($tag)
     {
         $tag = $this->clean($tag);
+        $value = null;
         if (!$this->getScript()->getVar($value, $tag, $this->getScript()->getContext())) {
             $value = $this->getScript()->evaluate($tag);
         }
@@ -427,6 +429,7 @@ class Rtf implements FilerInterface
             // check if template has cached
             $md5 = md5($template);
             if (!in_array($md5, $this->hashes)) {
+                $matches = null;
                 preg_match_all(null !== $regex ? $regex : $this->getTagRegex(), $template, $matches, PREG_PATTERN_ORDER);
                 $this->matches[$md5] = $matches;
                 $this->hashes[] = $md5;
@@ -530,6 +533,7 @@ class Rtf implements FilerInterface
      */
     protected function findTag($text, $regex, &$match)
     {
+        $matches = null;
         $tags = $this->getTags();
         $pattern = sprintf('/%1$s(.*)(%3$s)(.*)%2$s/', $tags[0], $tags[1], $regex);
         if (preg_match($pattern, $text, $matches, PREG_OFFSET_CAPTURE)) {
@@ -583,6 +587,8 @@ class Rtf implements FilerInterface
         if (is_resource($template)) {
             $template = stream_get_contents($template);
         }
+        $smatch = null;
+        $ematch = null;
         $s = $this->findTag($template, $sregex, $smatch);
         $e = $this->findTag($template, $eregex, $ematch);
         if (is_array($parts = $this->splitParts($template, $s, $e, $smatch, $ematch))) {

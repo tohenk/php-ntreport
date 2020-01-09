@@ -228,6 +228,7 @@ class RichText
     {
         $offsets = array();
         foreach (self::$tags as $tag) {
+            $matches = null;
             $regex = self::tagRegex($tag);
             if (preg_match_all($regex, $text, $matches, PREG_OFFSET_CAPTURE)) {
                 for ($i = 0; $i < count($matches[0]); $i ++) {
@@ -287,6 +288,7 @@ class RichText
     {
         if ($text) {
             foreach (self::$tags as $tag) {
+                $matches = null;
                 $regex = self::tagRegex($tag);
                 if (preg_match_all($regex, $text, $matches, PREG_OFFSET_CAPTURE)) {
                     if ($text == $matches[0][0][0]) {

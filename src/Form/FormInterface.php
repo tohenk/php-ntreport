@@ -26,8 +26,6 @@
 
 namespace NTLAB\Report\Form;
 
-use NTLAB\Report\Parameter\Parameter;
-
 interface FormInterface
 {
     /**

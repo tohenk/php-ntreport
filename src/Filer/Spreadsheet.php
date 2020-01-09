@@ -364,7 +364,7 @@ class Spreadsheet implements FilerInterface
     protected function getCellMerged(XlWorksheet $sheet, $cell)
     {
         foreach ($sheet->getMergeCells() as $key => $range) {
-            list($rangeStart, $rangeEnd) = explode(':', $key);
+            list($rangeStart, ) = explode(':', $key);
             if ($rangeStart == $cell) {
                 return $range;
             }
@@ -399,6 +399,7 @@ class Spreadsheet implements FilerInterface
      */
     protected function replaceTag($tag)
     {
+        $matches = null;
         preg_match_all('/%([^%]+)%/', $tag, $matches, PREG_PATTERN_ORDER);
         foreach ($matches[1] as $match) {
             $replacement = $this->getScript()->evaluate($match);
@@ -515,6 +516,7 @@ class Spreadsheet implements FilerInterface
     protected function fillSummary(XlCell $cell, $name, $value)
     {
         $value = $name;
+        $matches = null;
         preg_match_all('/([a-zA-Z]+)\(([a-zA-Z0-9_]+)\)/', $name, $matches);
         for ($i = 0; $i < count($matches[0]); $i++) {
             $func = $matches[1][$i];
@@ -648,6 +650,7 @@ class Spreadsheet implements FilerInterface
             $this->getScript()
                 ->setObjects($this->objects)
             ;
+            $outsheet = null;
             $resXls = $this->prepareResult($insheet, $outsheet);
             $this->findBands($insheet);
             $this->processBands($insheet, $outsheet);

@@ -124,7 +124,7 @@ class Extractor
     /**
      * Find tag in the tree.
      *
-     * @param \NTLAB\Rtf\Node\Tree $tree  The tree 
+     * @param \NTLAB\RtfTree\Node\Tree $tree  The tree 
      * @param string $tag  Tag to find
      * @param int $size  The nodes size found for matched tag
      * @param int $start  Start position
@@ -189,7 +189,7 @@ class Extractor
      * @param \NTLAB\RtfTree\Node\Tree $source  Source tree
      * @param int $start  Start index
      * @param int $end  End index
-     * @return \NTLAB\Report\Util\Extractor\Extractor
+     * @return \NTLAB\Report\Util\Rtf\Extractor\Extractor
      */
     public static function copyTree(Tree $dest, Tree $source, $start, $end)
     {
@@ -218,7 +218,6 @@ class Extractor
      * @param \NTLAB\RtfTree\Node\Tree $dest  Destination tree
      * @param \NTLAB\RtfTree\Node\Tree $source  Source tree
      * @param int $position  Start position
-     * @return \NTLAB\Report\Util\RtfFiler
      */
     public static function insertTree(Tree $dest, Tree $source, $position)
     {
@@ -272,7 +271,7 @@ class Extractor
      * Extract template for begin and end mark. If begin or ending mark is not
      * found, return all paragraphs within template.
      *
-     * @param \NTLAB\Rtf\Node\Tree $tree  Template tree
+     * @param \NTLAB\RtfTree\Node\Tree $tree  Template tree
      * @param int $this->beginPos  Begin mark position found
      * @param int $this->endPos  End mark position found
      * @param string $bmark  Begining mark
@@ -285,6 +284,8 @@ class Extractor
         $start = $this->getStartIndex($tree);
         $result = $this->createTree();
 
+        $ssize = null;
+        $esize = null;
         $this->beginPos = $this->findTag($tree, $this->beginMark, $ssize, $start);
         $this->endPos = $this->findTag($tree, $this->endMark, $esize, $this->beginPos);
         // begin and end mark found
@@ -324,6 +325,7 @@ class Extractor
     {
         $result = array();
         while (true) {
+            $matches = null;
             preg_match_all($this->getTagRegex(), $tree->getText(), $matches, PREG_PATTERN_ORDER);
             // check region start e.g. %REGION:TEST:EXPR%
             if (false !== ($s = $this->findMatch($matches, $region.':'))) {
@@ -375,7 +377,7 @@ class Extractor
      * @param \NTLAB\RtfTree\Node\Tree $tree  Input tree
      * @param int $start  Start index
      * @param int $position  Current position index
-     * @return \NTLAB\Report\Util\Extractor\Extractor
+     * @return \NTLAB\Report\Util\Rtf\Extractor\Extractor
      */
     protected function ensureBeginKey(Tree $tree, $start, &$position)
     {
@@ -409,7 +411,7 @@ class Extractor
      *
      * @param \NTLAB\RtfTree\Node\Tree $tree  Input tree
      * @param int $position  Current position index
-     * @return \NTLAB\Report\Util\Extractor\Extractor
+     * @return \NTLAB\Report\Util\Rtf\Extractor\Extractor
      */
     protected function ensureEndKey(Tree $tree, &$position)
     {
@@ -449,7 +451,6 @@ class Extractor
     protected function findMatch($matches, $prefix)
     {
         for ($i = 0; $i < count($matches[0]); $i++) {
-            $match = $matches[0][$i];
             $tag = $matches[1][$i];
             if (0 === mb_strpos($tag, $prefix)) {
                 return $i;

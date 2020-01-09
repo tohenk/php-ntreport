@@ -38,7 +38,7 @@ class Table extends Extractor
      * Extract table region.
      *
      * @param \NTLAB\RtfTree\Node\Tree $tree  Input tree
-     * @return \NTLAB\Report\Util\Extractor\Paragraph
+     * @return \NTLAB\Report\Util\Rtf\Extractor\Paragraph
      */
     public static function getTable(Tree $tree)
     {
@@ -59,7 +59,7 @@ class Table extends Extractor
 
     /**
      * (non-PHPdoc)
-     * @see \NTLAB\Report\Util\Extractor\Extractor::isMatchEndKey()
+     * @see \NTLAB\Report\Util\Rtf\Extractor\Extractor::isMatchEndKey()
      */
     protected function isMatchEndKey(Node $node)
     {
@@ -74,7 +74,7 @@ class Table extends Extractor
 
     /**
      * (non-PHPdoc)
-     * @see \NTLAB\Report\Util\Extractor\Extractor::ensureEndKey()
+     * @see \NTLAB\Report\Util\Rtf\Extractor\Extractor::ensureEndKey()
      */
     protected function ensureEndKey(Tree $tree, &$position)
     {

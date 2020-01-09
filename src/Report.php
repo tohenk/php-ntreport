@@ -29,7 +29,6 @@ namespace NTLAB\Report;
 use NTLAB\Report\Config\Config;
 use NTLAB\Report\Data\Data;
 use NTLAB\Report\Data\Pdo as PdoData;
-use NTLAB\Report\Data\Propel as PropelData;
 use NTLAB\Report\Data\Propel2 as Propel2Data;
 use NTLAB\Report\Engine\Csv as CsvEngine;
 use NTLAB\Report\Engine\Excel as ExcelEngine;
@@ -59,7 +58,6 @@ RichtextEngine::create()->register();
 
 // register report data
 PdoData::create()->register();
-PropelData::create()->register();
 Propel2Data::create()->register();
 
 // register parameters
@@ -753,7 +751,7 @@ abstract class Report
                 throw new \RuntimeException('No report data can handle '.$this->source);
             }
             // apply query filter
-            foreach ($this->getParameters() as $key => $param) {
+            foreach ($this->getParameters() as $param) {
                 if (!$param->isSelected()) {
                     continue;
                 }
@@ -904,7 +902,7 @@ abstract class Report
      */
     public function populateConfigValues()
     {
-        foreach ($this->configs as $name => $config) {
+        foreach ($this->configs as $config) {
             $config->updateConfigValue();
         }
 

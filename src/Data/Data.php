@@ -26,7 +26,6 @@
 
 namespace NTLAB\Report\Data;
 
-use NTLAB\Report\Report;
 use NTLAB\Report\Parameter\Parameter;
 
 abstract class Data

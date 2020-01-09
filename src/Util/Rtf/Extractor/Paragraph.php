@@ -36,7 +36,7 @@ class Paragraph extends Extractor
      * Extract body.
      *
      * @param \NTLAB\RtfTree\Node\Tree $tree  Input tree
-     * @return \NTLAB\Report\Util\Extractor\Paragraph
+     * @return \NTLAB\Report\Util\Rtf\Extractor\Paragraph
      */
     public static function getBody(Tree $tree)
     {
@@ -51,7 +51,7 @@ class Paragraph extends Extractor
      *
      * @param \NTLAB\RtfTree\Node\Tree $tree  Input tree
      * @param string $region  Region name
-     * @return \NTLAB\Report\Util\Extractor\Paragraph
+     * @return \NTLAB\Report\Util\Rtf\Extractor\Paragraph
      */
     public static function getRegion(Tree $tree, $region)
     {
@@ -76,7 +76,7 @@ class Paragraph extends Extractor
 
     /**
      * (non-PHPdoc)
-     * @see \NTLAB\Report\Util\Extractor\Extractor::getStartIndex()
+     * @see \NTLAB\Report\Util\Rtf\Extractor\Extractor::getStartIndex()
      */
     protected function getStartIndex(Tree $tree)
     {

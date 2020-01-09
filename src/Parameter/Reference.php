@@ -26,10 +26,6 @@
 
 namespace NTLAB\Report\Parameter;
 
-use NTLAB\Script\Core\Manager;
-use NTLAB\Script\Context\ArrayVar;
-use Propel\Runtime\DataFetcher\DataFetcherInterface;
-
 class Reference extends Parameter
 {
     const ID = 'ref';

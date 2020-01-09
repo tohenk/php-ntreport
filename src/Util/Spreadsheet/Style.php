@@ -27,15 +27,6 @@
 namespace NTLAB\Report\Util\Spreadsheet;
 
 use PhpOffice\PhpSpreadsheet\Exception as XlException;
-use PhpOffice\PhpSpreadsheet\Style\Alignment as XlStyleAlignment;
-use PhpOffice\PhpSpreadsheet\Style\Border as XlStyleBorder;
-use PhpOffice\PhpSpreadsheet\Style\Borders as XlStyleBorders;
-use PhpOffice\PhpSpreadsheet\Style\Color as XlStyleColor;
-use PhpOffice\PhpSpreadsheet\Style\Fill as XlStyleFill;
-use PhpOffice\PhpSpreadsheet\Style\Font as XlStyleFont;
-use PhpOffice\PhpSpreadsheet\Style\NumberFormat as XlStyleNumberFormat;
-use PhpOffice\PhpSpreadsheet\Style\Protection as XlStyleProtection;
-use PhpOffice\PhpSpreadsheet\Style\Style as XlStyle;
 
 class Style
 {

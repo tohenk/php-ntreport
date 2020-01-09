@@ -123,7 +123,7 @@ class RtfTree implements FilerInterface
         // process body
         $this->getScript()
             ->setObjects($objects)
-            ->each(function(Script $script, Rtf\FilerTree $_this) use ($result, $body, $each, $table) {
+            ->each(function(Script $script, RtfTree $_this) use ($result, $body, $each, $table) {
                 $clone = $body->getResult()->cloneTree();
                 $_this
                     ->replaceTag($clone, array_merge(array_keys($each->getRegions()), array_keys($table->getRegions())))
@@ -150,6 +150,7 @@ class RtfTree implements FilerInterface
     public function replaceTag(Tree $tree, $ignores = array())
     {
         $caches = array();
+        $matches = null;
         preg_match_all(Extractor::getTagRegex(), $tree->getText(), $matches, PREG_PATTERN_ORDER);
         for ($i = 0; $i < count($matches[0]); $i++) {
             $tag = $matches[1][$i];
@@ -184,6 +185,7 @@ class RtfTree implements FilerInterface
     {
         foreach ($regions as $tag => $data) {
             list($expr, $body) = $data;
+            $size = null;
             $index = Extractor::findTag($tree, $tag, $size);
             if ($objects = $this->getScript()->evaluate($expr)) {
                 $result = Extractor::createTree();
