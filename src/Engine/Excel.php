@@ -66,7 +66,7 @@ class Excel extends Report
 
     protected function configureParams(\DOMNode $node)
     {
-        $this->template = $this->nodeAttr($node, 'template');
+        $this->template = $this->nodeAttr($node, 'name');
         $this->filer->setSheet($this->nodeAttr($node, 'sheet'));
         $this->filer->setFieldSign($this->nodeAttr($node, 'field-sign', $this->filer->getFieldSign()));
         $this->filer->setAutoFit($this->nodeAttr($node, 'autofit', $this->filer->getAutoFit()));

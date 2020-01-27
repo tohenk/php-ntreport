@@ -77,7 +77,7 @@ class Richtext extends Report
 
     protected function configureParams(\DOMNode $node)
     {
-        $this->template = $this->nodeAttr($node, 'file');
+        $this->template = $this->nodeAttr($node, 'name');
         $this->single = $this->nodeAttr($node, 'single');
     }
 
