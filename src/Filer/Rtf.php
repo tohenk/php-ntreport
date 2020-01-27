@@ -26,6 +26,7 @@
 
 namespace NTLAB\Report\Filer;
 
+use NTLAB\Report\Util\Tag;
 use NTLAB\Script\Core\Script;
 
 /**
@@ -35,12 +36,15 @@ use NTLAB\Script\Core\Script;
  */
 class Rtf implements FilerInterface
 {
-    const TAG_SIGN = '%';
-
     /**
      * @var \NTLAB\Report\Filer\Rtf
      */
     protected static $instance = null;
+
+    /**
+     * @var \NTLAB\Report\Util\Tag
+     */
+    protected $tag = null;
 
     /**
      * @var \NTLAB\Script\Core\Script
@@ -63,16 +67,6 @@ class Rtf implements FilerInterface
     );
 
     /**
-     * @var string
-     */
-    protected $tagRe = null;
-
-    /**
-     * @var string
-     */
-    protected $partRe = null;
-
-    /**
      * @var array
      */
     protected $matches = array();
@@ -81,11 +75,6 @@ class Rtf implements FilerInterface
      * @var array
      */
     protected $hashes = array();
-
-    /**
-     * @var array
-     */
-    protected $caches = array();
 
     /**
      * @var array
@@ -151,48 +140,32 @@ class Rtf implements FilerInterface
     }
 
     /**
-     * Get the enclosing tag signs.
-     * The result is an array which contains
-     * the opening and closing tag sign array(opening, closing).
+     * Get tag.
      *
-     * @return array
+     * @return \NTLAB\Report\Util\Tag
      */
-    public function getTags()
+    public function getTag()
     {
-        $stag = substr(static::TAG_SIGN, 0, 1);
-        $etag = strlen(static::TAG_SIGN) > 1 ? substr(static::TAG_SIGN, 1, 1) : $stag;
+        if (null === $this->tag) {
+            $this->tag = new Tag();
+        }
 
-        return array($stag, $etag);
+        return $this->tag;
     }
 
     /**
-     * Get tag regular expression pattern.
+     * Clear the caches.
      *
-     * @return string
+     * @return \NTLAB\Report\Filer\Rtf
      */
-    public function getTagRegex()
+    public function clear()
     {
-        if (null == $this->tagRe) {
-            $tags = $this->getTags();
-            $this->tagRe = sprintf('/%1$s([^%1$s]+)%2$s/', $tags[0], $tags[1]);
+        if ($this->tag) {
+            $this->tag->clear();
         }
+        $this->cleans = array();
 
-        return $this->tagRe;
-    }
-
-    /**
-     * Get part regular expression pattern.
-     *
-     * @return string
-     */
-    public function getPartRegex()
-    {
-        if (null == $this->partRe) {
-            $allowedChars = 'A-Za-z0-9\.\_';
-            $this->partRe = sprintf('/(?P<VALUE>[%1$s]+)(\%2$s(?P<SUBTYPE>[%1$s\(\)]+))?(\%3$s(?P<OPTIONS>[%1$s\%4$s]+))?(\%5$s(?P<CASE>[%1$s]+))?/x', $allowedChars, self::TAG_SUBTYPE_DELIM, self::TAG_OPTIONS_DELIM, self::TAG_OPTIONS_SPLIT, self::TAG_CASE_DELIM);
-        }
-
-        return $this->partRe;
+        return $this;
     }
 
     /**
@@ -230,70 +203,6 @@ class Rtf implements FilerInterface
         }
 
         return $text;
-    }
-
-    /**
-     * Create a tag.
-     *
-     * @param string $tag  The tag
-     * @return string
-     */
-    public function createTag($tag)
-    {
-        $tags = $this->getTags();
-
-        return $tags[0].$tag.$tags[1];
-    }
-
-    /**
-     * Split tag into array.
-     *
-     * @param string $tag  The tag to split
-     * @param string $cache  Cache the result
-     * @return array (0 => 'The value', '!' => 'subtype', '?' => 'options', ':' => 'case')
-     */
-    public function splitTag($tag, $cache = true)
-    {
-        // return cache
-        if ($cache && array_key_exists($tag, $this->caches)) {
-            return $this->caches[$tag];
-        }
-        $matches = null;
-        $tags = array($tag);
-        if (preg_match_all($this->getPartRegex(), $tag, $matches)) {
-            foreach (array(
-                0 => 'VALUE',
-                self::TAG_SUBTYPE_DELIM => 'SUBTYPE',
-                self::TAG_OPTIONS_DELIM => 'OPTIONS',
-                self::TAG_CASE_DELIM => 'CASE'
-            ) as $key => $name) {
-                if (isset($matches[$name]) && ($value = $matches[$name][0])) {
-                    $tags[$key] = $value;
-                }
-            }
-            // fix tags in case only got value
-            if (1 == count($tags)) {
-                $tags[0] = $tag;
-            }
-        }
-        if ($cache) {
-            $this->caches[$tag] = $tags;
-        }
-
-        return $tags;
-    }
-
-    /**
-     * Clear the caches.
-     *
-     * @return \NTLAB\Report\Filer\Rtf
-     */
-    public function clear()
-    {
-        $this->cleans = array();
-        $this->caches = array();
-
-        return $this;
     }
 
     /**
@@ -426,11 +335,12 @@ class Rtf implements FilerInterface
     public function parse($template, $regex = null, $script = false)
     {
         if ($template) {
+            $regex = $regex ?: $this->getTag()->getTagRegex();
             // check if template has cached
             $md5 = md5($template);
             if (!in_array($md5, $this->hashes)) {
                 $matches = null;
-                preg_match_all(null !== $regex ? $regex : $this->getTagRegex(), $template, $matches, PREG_PATTERN_ORDER);
+                preg_match_all($regex, $template, $matches, PREG_PATTERN_ORDER);
                 $this->matches[$md5] = $matches;
                 $this->hashes[] = $md5;
             } else {
@@ -534,7 +444,7 @@ class Rtf implements FilerInterface
     protected function findTag($text, $regex, &$match)
     {
         $matches = null;
-        $tags = $this->getTags();
+        $tags = $this->getTag()->getTags();
         $pattern = sprintf('/%1$s(.*)(%3$s)(.*)%2$s/', $tags[0], $tags[1], $regex);
         if (preg_match($pattern, $text, $matches, PREG_OFFSET_CAPTURE)) {
             $match = $matches[0][0];

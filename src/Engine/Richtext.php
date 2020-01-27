@@ -27,9 +27,7 @@
 namespace NTLAB\Report\Engine;
 
 use NTLAB\Report\Report;
-use NTLAB\Report\Filer\FilerInterface;
 use NTLAB\Report\Filer\Rtf as RtfFiler;
-use NTLAB\Report\Filer\RtfTree as RtfTreeFiler;
 
 class Richtext extends Report
 {
