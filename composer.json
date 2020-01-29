@@ -27,11 +27,12 @@
 		"ntlab/common": "dev-master",
 		"ntlab/ntscript": "dev-master",
 		"ntlab/rtf-tree": "dev-master",
-		"phpoffice/phpspreadsheet": "dev-master"
+		"phpoffice/phpspreadsheet": "dev-master",
+		"phpoffice/phpword": "dev-develop"
 	},
 	"require-dev" : {
 		"phpunit/phpunit" : "^8.5",
-		"propel/propel1" : "1.7.*@dev"
+		"propel/propel" : "2.0.*@dev"
 	},
 	"repositories": [
 		{
