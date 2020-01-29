@@ -754,7 +754,7 @@ class Spreadsheet implements FilerInterface
                     break;
             }
         }
-        $filename = tempnam(dirname($this->template), 'xlstmp');
+        $filename = tempnam(dirname($this->template), 'xls');
         $writer = XlIOFactory::createWriter($xls, $writerClass);
         $writer->save($filename);
 
