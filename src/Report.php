@@ -33,6 +33,7 @@ use NTLAB\Report\Data\Propel2 as Propel2Data;
 use NTLAB\Report\Engine\Csv as CsvEngine;
 use NTLAB\Report\Engine\Excel as ExcelEngine;
 use NTLAB\Report\Engine\Richtext as RichtextEngine;
+use NTLAB\Report\Engine\Word as WordEngine;
 use NTLAB\Report\Form\FormBuilder;
 use NTLAB\Report\Listener\ListenerInterface;
 use NTLAB\Report\Parameter\Parameter;
@@ -55,6 +56,7 @@ use NTLAB\Script\Core\Manager;
 CsvEngine::create()->register();
 ExcelEngine::create()->register();
 RichtextEngine::create()->register();
+WordEngine::create()->register();
 
 // register report data
 PdoData::create()->register();
