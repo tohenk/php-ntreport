@@ -49,8 +49,8 @@ class Excel extends Report
         $this->filer->setScript($this->getScript());
         foreach ($nodes as $node) {
             switch (strtolower($node->nodeName)) {
-                case 'parameters':
-                    $this->configureParams($node);
+                case 'template':
+                    $this->configureTemplate($node);
                     break;
 
                 case 'bands':
@@ -64,7 +64,7 @@ class Excel extends Report
         }
     }
 
-    protected function configureParams(\DOMNode $node)
+    protected function configureTemplate(\DOMNode $node)
     {
         $this->template = $this->nodeAttr($node, 'name');
         $this->filer->setSheet($this->nodeAttr($node, 'sheet'));
