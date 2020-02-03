@@ -38,11 +38,6 @@ class Excel extends Report
      */
     protected $filer = null;
 
-    /**
-     * @var string
-     */
-    protected $extension = '.xlsx';
-
     protected function configure(\DOMNodeList $nodes)
     {
         $this->filer = new SpreadsheetFiler();
@@ -87,11 +82,19 @@ class Excel extends Report
         }
     }
 
+    protected function getTempFile()
+    {
+        $ext = substr($this->template, strrpos($this->template, '.'));
+        $name = substr(sha1(rand(1, 99999)), 0, 8);
+
+        return sys_get_temp_dir().DIRECTORY_SEPARATOR.$name.$ext;
+    }
+
     protected function build()
     {
         $content = null;
         $error = null;
-        $tempfile = sys_get_temp_dir().DIRECTORY_SEPARATOR.md5(rand(1, 99999)).$this->extension;
+        $tempfile = $this->getTempFile();
         try {
             file_put_contents($tempfile, $this->templateContent);
             $content = $this->filer->build($tempfile, $this->result);

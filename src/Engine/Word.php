@@ -38,11 +38,6 @@ class Word extends Report
      */
     protected $single = null;
 
-    /**
-     * @var string
-     */
-    protected $extension = '.docx';
-
     protected function configure(\DOMNodeList $nodes)
     {
         foreach ($nodes as $node) {
@@ -69,6 +64,14 @@ class Word extends Report
         // do nothing
     }
 
+    protected function getTempFile()
+    {
+        $ext = substr($this->template, strrpos($this->template, '.'));
+        $name = substr(sha1(rand(1, 99999)), 0, 8);
+
+        return sys_get_temp_dir().DIRECTORY_SEPARATOR.$name.$ext;
+    }
+
     protected function build()
     {
         $objects = $this->result;
@@ -79,7 +82,7 @@ class Word extends Report
 
         $content = null;
         $error = null;
-        $tempfile = sys_get_temp_dir().DIRECTORY_SEPARATOR.md5(rand(1, 99999)).$this->extension;
+        $tempfile = $this->getTempFile();
         try {
             file_put_contents($tempfile, $this->templateContent);
             $filer = new DocumentFiler($tempfile);
