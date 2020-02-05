@@ -205,7 +205,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
                                 }
                             }
                             if ($cleaned && $startPos !== null && $endPos !== null) {
-                                $text = $this->cleanStrAt($text, $startPos, $endPos);
+                                $text = $this->replaceStrAt($text, $startPos, $endPos);
                                 $startPos = null;
                                 $endPos = null;
                                 $cleaned = false;
@@ -235,14 +235,15 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
      * @param string $str
      * @param int $start
      * @param int $end
+     * @param string $replacement
      * @return string
      */
-    protected function cleanStrAt($str, $start, $end)
+    protected function replaceStrAt($str, $start, $end, $replacement = null)
     {
         $sEnd = substr($str, $end);
         $sStart = substr($str, 0, $start);
 
-        return $sStart.$sEnd;
+        return $sStart.$replacement.$sEnd;
     }
 
     /**
@@ -399,11 +400,90 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
                         $tag = $tag->format(\DateTime::ISO8601);
                     }
                     $tag = $this->ensureUtf8Encoded($tag);
-                    $template = str_replace($match, $tag, $template);
+                    $this->replaceText($template, $match, $tag);
                 }
             }
             $this->contents[] = $template;
         }
+    }
+
+    /**
+     * Replace text and preserve space if needed.
+     *
+     * @param string $template
+     * @param string $search
+     * @param string $replace
+     * @return \NTLAB\Report\Filer\DocumentTag
+     */
+    protected function replaceText(&$template, $search, $replace)
+    {
+        $len = strlen($search);
+        $sText = '<w:t>';
+        $eText = '</w:t>';
+        $sLen = strlen($sText);
+        $eLen = strlen($eText);
+        while (true) {
+            if (false === ($pos = strpos($template, $search))) {
+                break;
+            }
+            $template = $this->replaceStrAt($template, $pos, $pos + $len, $replace);
+            if (
+                false !== ($start = strrpos(substr($template, 0, $pos), $sText)) &&
+                false !== ($end = strpos($template, $eText, $start))
+            ) {
+                $content = substr($template, $start + $sLen, $end - $start - $sLen);
+                $encoded = $this->getEncodedText($content);
+                if ($content !== $encoded) {
+                    $template = $this->replaceStrAt($template, $start, $end + $eLen, $encoded);
+                }
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Get encoded text.
+     *
+     * @param string $text
+     * @return string
+     */
+    protected function getEncodedText($text)
+    {
+        $result = array();
+        $parts = array();
+        while (true) {
+            if (!strlen($text)) {
+                break;
+            }
+            $str = $text;
+            $tab = false;
+            if (false !== ($p = strpos($text, "\t"))) {
+                $str = substr($text, 0, $p);
+                $tab = true;
+            }
+            if ($len = strlen($str)) {
+                $parts[] = $str;
+                $text = substr($text, $len);
+            }
+            if ($tab) {
+                $parts[] = "\t";
+                $text = substr($text, 1);
+            }
+        }
+        foreach ($parts as $part) {
+            if ("\t" === $part) {
+                $result[] = '<w:tab/>';
+            } else if (in_array(' ', array(substr($part, 0, 1), substr($part, -1)))) {
+                $result[] = sprintf('<w:t xml:space="preserve">%s</w:t>', $part);
+            } else if (count($parts) > 1) {
+                $result[] = sprintf('<w:t>%s</w:t>', $part);
+            } else {
+                $result[] = $part;
+            }
+        }
+
+        return implode('', $result);
     }
 
     /**
