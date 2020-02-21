@@ -350,12 +350,25 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
             $filer->tempDocumentFilename = tempnam(dirname($this->tempDocumentFilename), 'sub');
             $filer->tempDocumentMainPart = $template;
             $filer->docType = $docType;
-            $objects = $this->getScript()->evaluate($expr);
-            $content = $filer->build(null, $objects);
+            if (null !== ($objects = $this->getScript()->evaluate($expr))) {
+                $content = $filer->build(null, $objects);
+            } else {
+                error_log(sprintf('Expression "%s" return NULL!', $expr));
+            }
             @unlink($filer->tempDocumentFilename);
+            unset($filer);
         }
         catch (\Exception $e) {
-            error_log($e->getMessage());
+            $message = null;
+            while (null !== $e) {
+                if (null === $message) {
+                    $message = $e->getMessage();
+                } else {
+                    $message = sprintf('%s [%s]', $message, $e->getMessage());
+                }
+                $e = $e->getPrevious();
+            }
+            error_log($message);
         }
         $this->getScript()->popContext();
 
@@ -561,10 +574,8 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
     }
 
     /**
-     * Build data for objects using provided template.
-     *
-     * @param array $objects  The template objects
-     * @return string
+     * {@inheritDoc}
+     * @see \NTLAB\Report\Filer\FilerInterface::build()
      */
     public function build($template, $objects)
     {

@@ -307,6 +307,50 @@ class RtfTag implements FilerInterface
     }
 
     /**
+     * Parse sub template.
+     *
+     * @param string $template  Template content
+     * @param string $expr      Object expression
+     * @param string $break     Break separator
+     * @return string
+     */
+    protected function parseSub($template, $expr, $break = null)
+    {
+        $content = null;
+        if (strlen($template) && strlen($expr)) {
+            $this->getScript()->pushContext();
+            try {
+                if (null !== ($objects = $this->getScript()->evaluate($expr))) {
+                    $filer = new self();
+                    $filer->setScript($this->getScript());
+                    if (null !== $break) {
+                        $filer->break = $break;
+                    }
+                    $content = $filer->build($template, $objects);
+                    unset($filer);
+                } else {
+                    error_log(sprintf('Expression "%s" return NULL!', $expr));
+                }
+            }
+            catch (\Exception $e) {
+                $message = null;
+                while (null !== $e) {
+                    if (null === $message) {
+                        $message = $e->getMessage();
+                    } else {
+                        $message = sprintf('%s [%s]', $message, $e->getMessage());
+                    }
+                    $e = $e->getPrevious();
+                }
+                error_log($message);
+            }
+            $this->getScript()->popContext();
+        }
+  
+        return $content;
+    }
+
+    /**
      * Parse and replace all tags in template.
      *
      * @param string $template  The template content
@@ -347,29 +391,12 @@ class RtfTag implements FilerInterface
             }
             // process EACH
             foreach ($eachs as $tag => $params) {
-                $content = null;
-                if ($params['expr'] && $params['content']) {
-                    $this->getScript()->pushContext();
-                    $objects = $this->getScript()->evaluate($params['expr']);
-                    $filer = new self();
-                    $filer->setScript($this->getScript());
-                    $content = $filer->build($params['content'], $objects);
-                    $this->getScript()->popContext();
-                }
+                $content = $this->parseSub($params['content'], $params['expr']);
                 $template = str_replace('%%EACH:'.$tag.'%%', $content, $template);
             }
             // process TBL
             foreach ($tables as $tag => $params) {
-                $content = null;
-                if ($params['expr'] && $params['content']) {
-                    $this->getScript()->pushContext();
-                    $objects = $this->getScript()->evaluate($params['expr']);
-                    $filer = new self();
-                    $filer->setScript($this->getScript());
-                    $filer->break = "\n";
-                    $content = $filer->build($params['content'], $objects);
-                    $this->getScript()->popContext();
-                }
+                $content = $this->parseSub($params['content'], $params['expr'], "\n");
                 $template = str_replace('%%TBL:'.$tag.'%%', $content, $template);
             }
         }
@@ -515,11 +542,8 @@ class RtfTag implements FilerInterface
     }
 
     /**
-     * Build data for objects using provided template.
-     *
-     * @param string $template  The template
-     * @param array $objects  The template objects
-     * @return string
+     * {@inheritDoc}
+     * @see \NTLAB\Report\Filer\FilerInterface::build()
      */
     public function build($template, $objects)
     {

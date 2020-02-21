@@ -187,7 +187,7 @@ class RtfTree implements FilerInterface
             list($expr, $body) = $data;
             $size = null;
             $index = Extractor::findTag($tree, $tag, $size);
-            if ($objects = $this->getScript()->evaluate($expr)) {
+            if (null !== ($objects = $this->getScript()->evaluate($expr))) {
                 $result = Extractor::createTree();
                 $this->getScript()
                     ->pushContext()
@@ -205,6 +205,8 @@ class RtfTree implements FilerInterface
                 ;
                 Extractor::insertTree($tree, $result, $index + 1);
                 unset($result);
+            } else {
+                error_log(sprintf('Expression "%s" return NULL!', $expr));
             }
             // remove tag
             $tree->getMainGroup()->removeChildAt($index);

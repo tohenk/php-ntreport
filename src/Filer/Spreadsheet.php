@@ -635,12 +635,8 @@ class Spreadsheet implements FilerInterface
     }
 
     /**
-     * Build the template and fill with objects data.
-     *
-     * @param string $template  Template spreadsheet
-     * @param array $objects  The objects
-     * @param string $writerClass  The writer class
-     * @return string
+     * {@inheritDoc}
+     * @see \NTLAB\Report\Filer\FilerInterface::build()
      */
     public function build($template, $objects, $writerClass = null)
     {
