@@ -94,16 +94,20 @@ class Excel extends Report
     {
         $content = null;
         $error = null;
-        $tempfile = $this->getTempFile();
-        try {
-            file_put_contents($tempfile, $this->templateContent);
-            $content = $this->filer->build($tempfile, $this->result);
-        } catch (\Exception $e) {
-            $error = $e;
-        }
-        unlink($tempfile);
-        if (null !== $error) {
-            throw $error;
+        if ($template = $this->templateContent->getContent()) {
+            $tempfile = $this->getTempFile();
+            try {
+                file_put_contents($tempfile, $template);
+                $content = $this->filer->build($tempfile, $this->result);
+            } catch (\Exception $e) {
+                $error = $e;
+            }
+            unlink($tempfile);
+            if (null !== $error) {
+                throw $error;
+            }
+        } else {
+            $this->status = static::STATUS_ERR_TMPL;
         }
 
         return $content;

@@ -104,12 +104,18 @@ class Richtext extends Report
 
     protected function build()
     {
-        $objects = $this->result;
-        // is build for single content?
-        if ($objects && $this->single) {
-            $objects = array($objects[0]);
+        $content = null;
+        if ($template = $this->templateContent->getContent()) {
+            $objects = $this->result;
+            // is build for single content?
+            if ($objects && $this->single) {
+              $objects = array($objects[0]);
+            }
+            $content = $this->getFiler()->build($template, $objects);
+        } else {
+            $this->status = static::STATUS_ERR_TMPL;
         }
 
-        return $this->getFiler()->build($this->templateContent, $objects);
+        return $content;
     }
 }

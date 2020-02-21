@@ -46,9 +46,9 @@ interface FilerInterface
     public function setScript(Script $script);
 
     /**
-     * Build the template.
+     * Build content from the template.
      *
-     * @param string $template  Template content of filename
+     * @param \NTLAB\Report\Template $template  Template content
      * @param mixed $objects  The objects
      * @return string
      */

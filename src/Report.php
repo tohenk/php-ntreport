@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2020 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -170,7 +170,7 @@ abstract class Report
     protected $template = null;
 
     /**
-     * @var string
+     * @var \NTLAB\Report\Template
      */
     protected $templateContent = null;
 
@@ -208,6 +208,14 @@ abstract class Report
      * @var \NTLAB\Report\Form\FormBuilder
      */
     protected static $formBuilder;
+
+    /**
+     * Constructor.
+     */
+    public function __construct()
+    {
+        $this->templateContent = new Template($this);
+    }
 
     /**
      * Add report engine.
@@ -288,7 +296,10 @@ abstract class Report
         $doc = new \DOMDocument();
         if ($doc->loadXml($xml)) {
             $xpath = new \DOMXPath($doc);
-            if ($nodes = $xpath->query("//NTReport/Params/Param[@name='type']")) {
+            if (!count($nodes = $xpath->query("//NTReport/Params/Param[@name='type']"))) {
+                $nodes = $xpath->query("//NTReport/Parameters/Parameter[@name='type']");
+            }
+            if (count($nodes)) {
                 $type = $nodes->item(0)->attributes->getNamedItem('value')->nodeValue;
                 if (($class = static::getEngine($type)) && class_exists($class)) {
                     $report = new $class();
@@ -331,7 +342,9 @@ abstract class Report
         // initialize report
         $this->doInitialize();
         // report base parameter
-        $nodes = $this->xpath->query('//NTReport/Params/Param');
+        if (!count($nodes = $this->xpath->query('//NTReport/Params/Param'))) {
+            $nodes = $this->xpath->query('//NTReport/Parameters/Parameter');
+        }
         foreach ($nodes as $node) {
             switch ($this->nodeAttr($node, 'name')) {
                 case 'type':
@@ -507,6 +520,7 @@ abstract class Report
         foreach ($nodes as $node) {
             switch (strtolower($node->nodeName)) {
                 case 'param':
+                case 'parameter':
                     $this->addSourceParameter($node);
                     break;
 
@@ -742,11 +756,44 @@ abstract class Report
     }
 
     /**
-     * Get model result.
+     * Is report has template.
+     *
+     * @return bool
+     */
+    public function hasTemplate()
+    {
+        return $this->hasTemplate;
+    }
+
+    /**
+     * Set template content.
+     *
+     * @param string $content  The content
+     * @return \NTLAB\Report\Report
+     */
+    public function setTemplateContent($content)
+    {
+        $this->templateContent->setContent($content);
+
+        return $this;
+    }
+
+    /**
+     * Get template content.
+     *
+     * @return \NTLAB\Report\Template
+     */
+    public function getTemplateContent()
+    {
+        return $this->templateContent;
+    }
+
+    /**
+     * Fetch report data.
      *
      * @return array The result
      */
-    protected function getResult()
+    protected function fetchResult()
     {
         if ($this->form->isValid()) {
             if (!($data = $this->getReportData())) {
@@ -774,40 +821,7 @@ abstract class Report
     }
 
     /**
-     * Is report has template.
-     *
-     * @return bool
-     */
-    public function hasTemplate()
-    {
-        return $this->hasTemplate;
-    }
-
-    /**
-     * Set template content.
-     *
-     * @param string $content  The content
-     * @return \NTLAB\Report\Report
-     */
-    public function setTemplateContent($content)
-    {
-        $this->templateContent = $content;
-
-        return $this;
-    }
-
-    /**
-     * Get template content.
-     *
-     * @return string
-     */
-    public function getTemplateContent()
-    {
-        return $this->templateContent;
-    }
-
-    /**
-     * Check if the result is available.
+     * Check if the report data is available.
      *
      * @return bool
      */
@@ -816,17 +830,35 @@ abstract class Report
         return count($this->result) ? true : false;
     }
 
+    /**
+     * Get report data.
+     *
+     * @return array
+     */
+    public function getResult()
+    {
+        return $this->result;
+    }
+
+    /**
+     * Build report content.
+     *
+     * @see \NTLAB\Report\Report::generateFromObjects()
+     * @return string
+     */
     abstract protected function build();
 
     /**
      * Generate the report.
      *
-     * @see generateFromObjects()
+     * @see \NTLAB\Report\Report::generateFromObjects()
      * @return string|bool The generated content or false if a failure happened
      */
     public function generate()
     {
-        return $this->generateFromObjects($this->getResult());
+        $this->result = null;
+
+        return $this->generateFromObjects($this->fetchResult());
     }
 
     /**
@@ -843,18 +875,16 @@ abstract class Report
         $this->status = null;
         $this->result = $objects;
         if (count($this->result)) {
-            if ($this->hasTemplate() && !$this->templateContent) {
-                $this->status = static::STATUS_ERR_TMPL;
-            } else {
-                try {
-                    if (null !== ($content = $this->build())) {
-                        $this->status = static::STATUS_OK;
-                        return $content;
-                    }
-                } catch (\Exception $e) {
-                    $this->error = $e;
-                    error_log($this->getExceptionMessage($e));
+            try {
+                if (null !== ($content = $this->build())) {
+                    $this->status = static::STATUS_OK;
+                    return $content;
                 }
+            } catch (\Exception $e) {
+                $this->error = $e;
+                error_log($this->getExceptionMessage($e));
+            }
+            if (null === $this->status) {
                 $this->status = static::STATUS_ERR_INTERNAL;
             }
         } else {

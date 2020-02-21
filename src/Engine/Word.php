@@ -74,25 +74,29 @@ class Word extends Report
 
     protected function build()
     {
-        $objects = $this->result;
-        // is build for single content?
-        if ($objects && $this->single) {
-            $objects = array($objects[0]);
-        }
-
         $content = null;
         $error = null;
-        $tempfile = $this->getTempFile();
-        try {
-            file_put_contents($tempfile, $this->templateContent);
-            $filer = new DocumentFiler($tempfile);
-            $content = $filer->build($this->template, $objects);
-        } catch (\Exception $e) {
-            $error = $e;
-        }
-        unlink($tempfile);
-        if (null !== $error) {
-            throw $error;
+        if ($template = $this->templateContent->getContent()) {
+            $tempfile = $this->getTempFile();
+            try {
+                file_put_contents($tempfile, $template);
+                $objects = $this->result;
+                // is build for single content?
+                if ($objects && $this->single) {
+                    $objects = array($objects[0]);
+                }
+                $filer = new DocumentFiler($tempfile);
+                $content = $filer->build(null, $objects);
+                unset($filer);
+            } catch (\Exception $e) {
+                $error = $e;
+            }
+            unlink($tempfile);
+            if (null !== $error) {
+                throw $error;
+            }
+        } else {
+            $this->status = static::STATUS_ERR_TMPL;
         }
 
         return $content;
