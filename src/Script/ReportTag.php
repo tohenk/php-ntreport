@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2020 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -26,52 +26,24 @@
 
 namespace NTLAB\Report\Script;
 
-use NTLAB\Script\Provider\ProviderInterface;
+use NTLAB\Script\Core\Module;
 
-class ProviderReport implements ProviderInterface
+/**
+ * Report tag functions.
+ *
+ * @author Toha
+ * @id report.tag
+ */
+class ReportTag extends Module
 {
     /**
-     * @var \NTLAB\Script\Core\Module[]
-     */
-    protected $modules = array();
-
-    /**
-     * @var \NTLAB\Report\Script\ProviderReport
-     */
-    protected static $instance = null;
-
-    /**
-     * Get instance.
+     * Get percentage symbol.
      *
-     * @return \NTLAB\Report\Script\ProviderReport
+     * @return string
+     * @func percent
      */
-    public static function getInstance()
+    public function f_Percent()
     {
-        if (null === static::$instance) {
-            static::$instance = new self();
-        }
-
-        return static::$instance;
-    }
-
-    /**
-     * Constructor.
-     */
-    public function __construct()
-    {
-        $this->modules = array(
-            new ReportCore(),
-            new ReportTag(),
-            new ReportExcel(),
-        );
-    }
-
-    /**
-     * (non-PHPdoc)
-     * @see \NTLAB\Script\Provider\ProviderInterface::getModules()
-     */
-    public function getModules()
-    {
-        return $this->modules;
+        return '%';
     }
 }
