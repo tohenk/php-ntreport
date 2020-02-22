@@ -43,6 +43,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
 
     const DOC_SUB_TABLE   = 'TBL';
     const DOC_SUB_EACH    = 'EACH';
+    const DOC_SUB_IF      = 'IF';
 
     /**
      * @var \NTLAB\Report\Util\Tag
@@ -78,6 +79,16 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
      * @var array
      */
     protected $tags = array();
+
+    /**
+     * @var array
+     */
+    protected $ifs = array();
+
+    /**
+     * @var array
+     */
+    protected $eaches = array();
 
     /**
      * @var array
@@ -400,6 +411,14 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
                 }
                 $template = str_replace($this->createSubTag(static::DOC_SUB_TABLE, $tag), $content, $template);
             }
+            // process IF
+            foreach ($this->ifs as $tag => $params) {
+                $content = null;
+                if ($params['expr'] && $params['content'] && $this->getScript()->evaluate($params['expr'])) {
+                    $content = $params['content'];
+                }
+                $template = str_replace($this->createSubTag(static::DOC_SUB_IF, $tag), $content, $template);
+            }
             // process regular tags
             for ($i = 0; $i < count($this->vars); $i ++) {
                 $tag = $this->vars[$i];
@@ -546,6 +565,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
         }
         $this->contents = array();
         $this->vars = $this->getVariables();
+        $this->ifs = $this->findSubTags(static::DOC_SUB_IF, $this->vars);
         $this->eaches = $this->findSubTags(static::DOC_SUB_EACH, $this->vars);
         $this->tables = $this->findSubTags(static::DOC_SUB_TABLE, $this->vars);
 
