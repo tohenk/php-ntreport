@@ -431,7 +431,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
                     if ($tag instanceof \DateTime) {
                         $tag = $tag->format(\DateTime::ISO8601);
                     }
-                    $tag = $this->ensureUtf8Encoded($tag);
+                    $tag = $this->ensureUtf8Encoded(htmlspecialchars($tag));
                     $this->replaceText($template, $match, $tag);
                 }
             }
