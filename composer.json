@@ -27,8 +27,8 @@
 		"ntlab/ntlib": "^1.0",
 		"ntlab/ntscript": "^1.0",
 		"ntlab/rtftree": "^1.0",
-		"phpoffice/phpspreadsheet": "dev-master",
-		"phpoffice/phpword": "dev-develop"
+		"phpoffice/phpspreadsheet": "^1.16",
+		"phpoffice/phpword": "^0.17"
 	},
 	"require-dev" : {
 		"phpunit/phpunit" : "^9.5",
