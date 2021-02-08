@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014-2020 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2021 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -49,32 +49,32 @@ class RtfTag implements FilerInterface
     /**
      * @var array
      */
-    protected $separatorMaps = array('\\', ' ');
+    protected $separatorMaps = ['\\', ' '];
 
     /**
      * @var array
      */
-    protected $cleanMaps = array(
+    protected $cleanMaps = [
         "\n" => '',
         "\r" => '',
         '}' => '',
         '{' => ''
-    );
+    ];
 
     /**
      * @var array
      */
-    protected $matches = array();
+    protected $matches = [];
 
     /**
      * @var array
      */
-    protected $hashes = array();
+    protected $hashes = [];
 
     /**
      * @var array
      */
-    protected $cleans = array();
+    protected $cleans = [];
 
     /**
      * @var string
@@ -102,10 +102,9 @@ class RtfTag implements FilerInterface
      */
     public function getScript()
     {
-        if (null == $this->script) {
+        if (null === $this->script) {
             $this->script = new Script();
         }
-
         return $this->script;
     }
 
@@ -116,7 +115,6 @@ class RtfTag implements FilerInterface
     public function setScript(Script $script)
     {
         $this->script = $script;
-
         return $this;
     }
 
@@ -130,7 +128,6 @@ class RtfTag implements FilerInterface
         if (null === $this->tag) {
             $this->tag = new Tag();
         }
-
         return $this->tag;
     }
 
@@ -144,8 +141,7 @@ class RtfTag implements FilerInterface
         if ($this->tag) {
             $this->tag->clear();
         }
-        $this->cleans = array();
-
+        $this->cleans = [];
         return $this;
     }
 
@@ -182,7 +178,6 @@ class RtfTag implements FilerInterface
                 }
             }
         }
-
         return $text;
     }
 
@@ -199,7 +194,6 @@ class RtfTag implements FilerInterface
         if (!$this->getScript()->getVar($value, $tag, $this->getScript()->getContext())) {
             $value = $this->getScript()->evaluate($tag);
         }
-
         return $value;
     }
 
@@ -212,18 +206,18 @@ class RtfTag implements FilerInterface
      */
     protected function parseEach(&$template, $matches)
     {
-        $eachs = array();
+        $eachs = [];
         for ($i = 0; $i < count($matches[1]); $i ++) {
             $match = $matches[0][$i];
             $tag = $this->clean($matches[1][$i]);
             if ('EACH:' == substr($tag, 0, 5)) {
                 $tags = explode(':', $tag, 3);
-                $eachs[$tags[1]] = array(
+                $eachs[$tags[1]] = [
                     'start' => $match,
                     'end' => null,
                     'expr' => $tags[2],
                     'content' => null
-                );
+                ];
             }
             if ('EACHE:' == substr($tag, 0, 6)) {
                 $tags = explode(':', $tag, 2);
@@ -243,7 +237,6 @@ class RtfTag implements FilerInterface
                 }
             }
         }
-
         return $eachs;
     }
 
@@ -256,18 +249,18 @@ class RtfTag implements FilerInterface
      */
     protected function parseTable(&$template, $matches)
     {
-        $tables = array();
+        $tables = [];
         for ($i = 0; $i < count($matches[1]); $i ++) {
             $match = $matches[0][$i];
             $tag = $this->clean($matches[1][$i]);
             if ('TBL:' == substr($tag, 0, 4)) {
                 $tags = explode(':', $tag, 3);
-                $tables[$tags[1]] = array(
+                $tables[$tags[1]] = [
                     'start' => $match,
                     'end' => null,
                     'expr' => $tags[2],
                     'content' => null
-                );
+                ];
             }
             if ('TBLE:' == substr($tag, 0, 5)) {
                 $tags = explode(':', $tag, 2);
@@ -293,16 +286,15 @@ class RtfTag implements FilerInterface
                     $header = substr($template, 0, $s);
                     $content = substr($template, $s, $e - $s);
                     $footer = substr($template, $e);
-                    $content = strtr($content, array(
+                    $content = strtr($content, [
                         $tables[$keys[$i]]['start'] => '',
                         $tables[$keys[$i]]['end'] => ''
-                    ));
+                    ]);
                     $tables[$keys[$i]]['content'] = $content;
                     $template = $header.'%%TBL:'.$keys[$i].'%%'.$footer;
                 }
             }
         }
-
         return $tables;
     }
 
@@ -346,7 +338,6 @@ class RtfTag implements FilerInterface
             }
             $this->getScript()->popContext();
         }
-  
         return $content;
     }
 
@@ -400,7 +391,6 @@ class RtfTag implements FilerInterface
                 $template = str_replace('%%TBL:'.$tag.'%%', $content, $template);
             }
         }
-
         return $template;
     }
 
@@ -428,8 +418,7 @@ class RtfTag implements FilerInterface
             $header = substr($text, 0, $s);
             $footer = str_replace($endMatch, '', substr($text, $e));
             $body = str_replace($startMatch, '', substr($text, $s, $e - $s));
-
-            return array($header, $body, $footer);
+            return [$header, $body, $footer];
         }
     }
 
@@ -455,7 +444,6 @@ class RtfTag implements FilerInterface
                     }
                 }
                 break;
-
             // forward direction
             case $dir > 0:
                 $bpos = strpos($text, '{');
@@ -485,10 +473,8 @@ class RtfTag implements FilerInterface
         $pattern = sprintf('/%1$s(.*)(%3$s)(.*)%2$s/', $tags[0], $tags[1], $regex);
         if (preg_match($pattern, $text, $matches, PREG_OFFSET_CAPTURE)) {
             $match = $matches[0][0];
-
             return $matches[0][1];
         }
-
         return false;
     }
 
@@ -500,7 +486,6 @@ class RtfTag implements FilerInterface
     protected function beginDoc()
     {
         $this->content = null;
-
         return $this;
     }
 
@@ -525,7 +510,6 @@ class RtfTag implements FilerInterface
         if ($new) {
             $this->content .= $this->break;
         }
-
         return $this;
     }
 
@@ -537,7 +521,6 @@ class RtfTag implements FilerInterface
     protected function addContent()
     {
         $this->content .= $this->parse($this->template);
-
         return $this;
     }
 
@@ -559,7 +542,6 @@ class RtfTag implements FilerInterface
                 }, $this->notifyContextChange)
             ;
             $this->endDoc();
-
             return $this->content;
         }
     }

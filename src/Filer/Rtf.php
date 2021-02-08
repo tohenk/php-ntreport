@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014-2020 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2021 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -72,7 +72,6 @@ class Rtf extends RtfTag
         if (is_array($parts = $this->splitParts($template, $s, $e, $smatch, $ematch))) {
             return $parts;
         }
-
         return false;
     }
 
@@ -83,7 +82,6 @@ class Rtf extends RtfTag
     protected function beginDoc()
     {
         $this->content = $this->header;
-
         return $this;
     }
 
@@ -94,7 +92,6 @@ class Rtf extends RtfTag
     protected function endDoc()
     {
         $this->content .= $this->footer;
-
         return $this;
     }
 
@@ -107,7 +104,6 @@ class Rtf extends RtfTag
         if (is_array($parts = $this->extract($template))) {
             $this->header = $parts[0];
             $this->footer = $parts[2];
-
             return parent::build($parts[1], $objects);
         }
     }

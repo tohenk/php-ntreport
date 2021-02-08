@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2021 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -57,10 +57,9 @@ class RtfTree implements FilerInterface
      */
     public static function getInstance()
     {
-        if (null == self::$instance) {
+        if (null === self::$instance) {
             self::$instance = new self();
         }
-
         return self::$instance;
     }
 
@@ -70,10 +69,9 @@ class RtfTree implements FilerInterface
      */
     public function getScript()
     {
-        if (null == $this->script) {
+        if (null === $this->script) {
             $this->script = new Script();
         }
-
         return $this->script;
     }
 
@@ -116,7 +114,6 @@ class RtfTree implements FilerInterface
         $body = ParagraphExtractor::getBody($tree);
         $each = ParagraphExtractor::getRegion($body->getResult(), 'EACH');
         $table = TableExtractor::getTable($body->getResult());
-
         $result = Extractor::createTree();
         // include header
         Extractor::copyTree($result, $tree, 0, $body->getBeginPos() - 1);
@@ -136,7 +133,6 @@ class RtfTree implements FilerInterface
         ;
         // include footer
         Extractor::copyTree($result, $tree, $body->getEndPos() + 1, count($tree->getMainGroup()->getChildren()) - 1);
-
         return $result;
     }
 
@@ -147,9 +143,9 @@ class RtfTree implements FilerInterface
      * @param array $ignores  Ignore tags
      * @return \NTLAB\Report\Filer\RtfTree
      */
-    public function replaceTag(Tree $tree, $ignores = array())
+    public function replaceTag(Tree $tree, $ignores = [])
     {
-        $caches = array();
+        $caches = [];
         $matches = null;
         preg_match_all(Extractor::getTagRegex(), $tree->getText(), $matches, PREG_PATTERN_ORDER);
         for ($i = 0; $i < count($matches[0]); $i++) {
@@ -169,7 +165,6 @@ class RtfTree implements FilerInterface
             }
             $tree->getMainGroup()->replaceTextEx($match, $value);
         }
-
         return $this;
     }
 
@@ -181,7 +176,7 @@ class RtfTree implements FilerInterface
      * @param string $eolKey  Eol keyword used to separate each item
      * @return \NTLAB\Report\Filer\RtfTree
      */
-    public function replaceRegion(Tree $tree, $regions = array(), $eolKey)
+    public function replaceRegion(Tree $tree, $regions = [], $eolKey = null)
     {
         foreach ($regions as $tag => $data) {
             list($expr, $body) = $data;
@@ -211,7 +206,6 @@ class RtfTree implements FilerInterface
             // remove tag
             $tree->getMainGroup()->removeChildAt($index);
         }
-
         return $this;
     }
 

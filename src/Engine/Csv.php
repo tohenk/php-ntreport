@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2021 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -36,7 +36,7 @@ class Csv extends Report
     /**
      * @var array
      */
-    protected $columns = array();
+    protected $columns = [];
 
     /**
      * @var string
@@ -70,7 +70,6 @@ class Csv extends Report
                 case 'template':
                     $this->configureParams($node);
                     break;
-
                 case 'columns':
                     $this->configureColumns($node);
                     break;
@@ -104,15 +103,14 @@ class Csv extends Report
                 $_this->doBuild();
             })
         ;
-
         return $this->handle;
     }
 
     public function doBuild()
     {
         if (is_resource($this->handle)) {
-            $header = array();
-            $data = array();
+            $header = [];
+            $data = [];
             foreach ($this->columns as $label => $expr) {
                 if (!$this->header) {
                     $header[] = $label;

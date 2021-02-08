@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2016 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2016-2021 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -55,7 +55,7 @@ class Propel2 extends Data
     /**
      * @var ModelCriteria[]
      */
-    protected $items = array();
+    protected $items = [];
 
     /**
      * @var boolean
@@ -72,7 +72,6 @@ class Propel2 extends Data
         if (null == static::$supported) {
             static::$supported = class_exists('\Propel\Runtime\Propel') && version_compare(\Propel\Runtime\Propel::VERSION, '2.0.0', '>=') >= 0;
         }
-
         return static::$supported;
     }
 
@@ -91,11 +90,11 @@ class Propel2 extends Data
      */
     public function addCondition(Parameter $parameter)
     {
-        $this->items = array();
+        $this->items = [];
         $query = $this->getQuery();
         foreach ($this->convertParameter($parameter) as $params) {
             list($column, $operator, $value) = $params;
-            $this->applyQuery($query, $column, 'filterBy%s', array($value, $operator));
+            $this->applyQuery($query, $column, 'filterBy%s', [$value, $operator]);
         }
         $this->endQueryUses();
     }
@@ -106,9 +105,9 @@ class Propel2 extends Data
      */
     public function addGroupBy($column)
     {
-        $this->items = array();
+        $this->items = [];
         $query = $this->getQuery();
-        $this->applyQuery($query, $column, 'groupBy%s', array());
+        $this->applyQuery($query, $column, 'groupBy%s', []);
         $this->endQueryUses();
     }
 
@@ -118,20 +117,19 @@ class Propel2 extends Data
      */
     public function addOrder($column, $direction, $format = null)
     {
-        $this->items = array();
+        $this->items = [];
         $query = $this->getQuery();
         if ($format) {
             switch ($direction) {
                 case Report::ORDER_ASC:
-                    $this->applyQuery($query, $column, 'addAscendingOrderByColumn', array(), $format, true);
+                    $this->applyQuery($query, $column, 'addAscendingOrderByColumn', [], $format, true);
                     break;
-
                 case Report::ORDER_DESC:
-                    $this->applyQuery($query, $column, 'addDescendingOrderByColumn', array(), $format, true);
+                    $this->applyQuery($query, $column, 'addDescendingOrderByColumn', [], $format, true);
                     break;
             }
         } else {
-            $this->applyQuery($query, $column, 'orderBy%s', array($direction));
+            $this->applyQuery($query, $column, 'orderBy%s', [$direction]);
         }
         $this->endQueryUses();
     }
@@ -147,7 +145,6 @@ class Propel2 extends Data
         if ($this->isDistinct()) {
             $query->setDistinct();
         }
-
         return $query->find();
     }
 
@@ -172,7 +169,6 @@ class Propel2 extends Data
             $class = $this->getQueryClass();
             $this->query = $class::create();
         }
-
         return $this->query;
     }
 
@@ -184,7 +180,7 @@ class Propel2 extends Data
     protected function getTableMap()
     {
         if (null == $this->tableMap) {
-            $this->tableMap = call_user_func(array(constant($this->source.'::TABLE_MAP'), 'getTableMap'));
+            $this->tableMap = call_user_func([constant($this->source.'::TABLE_MAP'), 'getTableMap']);
         }
 
         return $this->tableMap;
@@ -213,18 +209,19 @@ class Propel2 extends Data
         } else {
             $method = $method_format;
             if ($translate) {
-                foreach (array(TableMap::TYPE_PHPNAME, TableMap::TYPE_FIELDNAME) as $type) {
+                foreach ([TableMap::TYPE_PHPNAME, TableMap::TYPE_FIELDNAME] as $type) {
                     try {
                         $translatedColumn = TableMap::translateFieldname($query->getModelName(), $column, $type, TableMap::TYPE_COLNAME);
                         $column = $translatedColumn;
                         break;
-                    } catch (\Exception $e) {
+                    }
+                    catch (\Exception $e) {
                     }
                 }
             }
             array_unshift($args, $this->applyFormat($column_format, $column));
         }
-        if (!is_callable(array($query, $method))) {
+        if (!is_callable([$query, $method])) {
             throw new \RuntimeException('Method "'.$method.'" doesn\'t exist in "'.get_class($query).'".');
         }
         if (null !== $extra) {
@@ -234,9 +231,8 @@ class Propel2 extends Data
             }
             $this->applyQuery($subquery, $extra, $method_format, $args, $column_format, $translate);
         } else {
-            call_user_func_array(array($query, $method), $args);
+            call_user_func_array([$query, $method], $args);
         }
-
         return $this;
     }
 
@@ -255,7 +251,6 @@ class Propel2 extends Data
                 $subquery->endUse();
             }
         }
-
         return $query;
     }
 
@@ -273,14 +268,13 @@ class Propel2 extends Data
         } else {
             $colName = $column;
         }
-        foreach (array(TableMap::TYPE_PHPNAME, TableMap::TYPE_FIELDNAME) as $type) {
+        foreach ([TableMap::TYPE_PHPNAME, TableMap::TYPE_FIELDNAME] as $type) {
             try {
                 $result = $tableMap->translateFieldName($colName, $type, TableMap::TYPE_COLNAME);
                 break;
             } catch (\Exception $e) {
             }
         }
-
         return $result;
     }
 
@@ -304,7 +298,6 @@ class Propel2 extends Data
         } else if (DateParameter::YEAR === $dateType) {
             $dateValue = date('Y', $dateValue);
         }
-
         return sprintf('%1$s %2$s %4$s%3$s%4$s',
             $adapter->subString($column, 1, strlen($dateValue)),
             $operator ? $operator : Criteria::EQUAL,
@@ -322,7 +315,6 @@ class Propel2 extends Data
         $column = $parameter->getColumn();
         $operator = $parameter->getOperator();
         $value = $parameter->getCurrentValue();
-
         switch ($parameter->getType())
         {
             case StaticParameter::ID:
@@ -334,7 +326,6 @@ class Propel2 extends Data
                     $value = null;
                 }
                 break;
-
             case DateParameter::ID:
             case DateOnlyParameter::ID:
             case DateMonthParameter::ID:
@@ -342,7 +333,6 @@ class Propel2 extends Data
                 $value = $this->formatDate($parameter->getRealColumn(), $parameter->getDateTypeValue(), $value, $operator);
                 $operator = Criteria::CUSTOM;
                 break;
-
             case DateRangeParameter::ID:
                 $value = sprintf('(%s AND %s)',
                     $this->formatDate($parameter->getRealColumn(), $parameter->getDateTypeValue(), $value, '>='),

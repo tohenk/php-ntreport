@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014-2020 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2021 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -59,7 +59,7 @@ class Tag
     /**
      * @var array
      */
-    protected $caches = array();
+    protected $caches = [];
 
     /**
      * Constructor.
@@ -78,8 +78,7 @@ class Tag
      */
     public function clear()
     {
-        $this->caches = array();
-
+        $this->caches = [];
         return $this;
     }
 
@@ -94,8 +93,7 @@ class Tag
     {
         $stag = substr($this->tag, 0, 1);
         $etag = strlen($this->tag) > 1 ? substr($this->tag, 1, 1) : $stag;
-
-        return array($stag, $etag);
+        return [$stag, $etag];
     }
 
     /**
@@ -109,7 +107,6 @@ class Tag
             $tags = $this->getTags();
             $this->tagRe = sprintf('/%1$s([^%1$s]+)%2$s/', $tags[0], $tags[1]);
         }
-
         return $this->tagRe;
     }
 
@@ -125,7 +122,6 @@ class Tag
             $this->partRe = sprintf('/(?P<VALUE>[%1$s]+)(\%2$s(?P<SUBTYPE>[%1$s\(\)]+))?(\%3$s(?P<OPTIONS>[%1$s\%4$s]+))?(\%5$s(?P<CASE>[%1$s]+))?/x',
                 $allowedChars, self::TAG_SUBTYPE_DELIM, self::TAG_OPTIONS_DELIM, self::TAG_OPTIONS_SPLIT, self::TAG_CASE_DELIM);
         }
-
         return $this->partRe;
     }
 
@@ -138,7 +134,6 @@ class Tag
     public function createTag($tag)
     {
         $tags = $this->getTags();
-
         return $tags[0].$tag.$tags[1];
     }
 
@@ -156,14 +151,14 @@ class Tag
             return $this->caches[$tag];
         }
         $matches = null;
-        $tags = array($tag);
+        $tags = [$tag];
         if (preg_match_all($this->getPartRegex(), $tag, $matches)) {
-            foreach (array(
+            foreach ([
                 0 => 'VALUE',
                 static::TAG_SUBTYPE_DELIM => 'SUBTYPE',
                 static::TAG_OPTIONS_DELIM => 'OPTIONS',
                 static::TAG_CASE_DELIM => 'CASE'
-            ) as $key => $name) {
+            ] as $key => $name) {
                 if (isset($matches[$name]) && ($value = $matches[$name][0])) {
                     $tags[$key] = $value;
                 }
@@ -176,7 +171,6 @@ class Tag
         if ($cache) {
             $this->caches[$tag] = $tags;
         }
-
         return $tags;
     }
 }

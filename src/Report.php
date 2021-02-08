@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014-2020 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2021 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -122,27 +122,27 @@ abstract class Report
     /**
      * @var array
      */
-    protected $parameters = array();
+    protected $parameters = [];
 
     /**
      * @var array
      */
-    protected $orders = array();
+    protected $orders = [];
 
     /**
      * @var array
      */
-    protected $groups = array();
+    protected $groups = [];
 
     /**
      * @var array
      */
-    protected $validators = array();
+    protected $validators = [];
 
     /**
      * @var array
      */
-    protected $configs = array();
+    protected $configs = [];
 
     /**
      * @var \NTLAB\Report\Data\Data
@@ -197,12 +197,12 @@ abstract class Report
     /**
      * @var array
      */
-    protected static $engines = array();
+    protected static $engines = [];
 
     /**
      * @var \NTLAB\Report\Listener\ListenerInterface[]
      */
-    protected static $listeners = array();
+    protected static $listeners = [];
 
     /**
      * @var \NTLAB\Report\Form\FormBuilder
@@ -304,7 +304,6 @@ abstract class Report
                 if (($class = static::getEngine($type)) && class_exists($class)) {
                     $report = new $class();
                     $report->initialize($doc, $xpath);
-
                     return $report;
                 }
             }
@@ -349,29 +348,23 @@ abstract class Report
             switch ($this->nodeAttr($node, 'name')) {
                 case 'type':
                     break;
-
                 case 'title':
                     $this->title = $this->nodeAttr($node, 'value');
                     break;
-
                 case 'category':
                     $this->category = $this->nodeAttr($node, 'value');
                     break;
-
                 case 'model':
                 case 'source':
                     $this->source = $this->nodeAttr($node, 'value');
                     $this->buildSourceParams($node->childNodes);
                     break;
-
                 case 'distinct':
                     $this->distinct = (bool) $this->nodeAttr($node, 'value');
                     break;
-
                 case 'validator':
                     $this->buildValidators($node->childNodes);
                     break;
-
                 case 'config':
                     $this->buildConfigs($node->childNodes);
                     break;
@@ -396,10 +389,9 @@ abstract class Report
      */
     public function getScript()
     {
-        if (null == $this->script) {
+        if (null === $this->script) {
             $this->script = new Script();
         }
-
         return $this->script;
     }
 
@@ -422,7 +414,6 @@ abstract class Report
     public function setObject($v)
     {
         $this->object = $v;
-
         return $this;
     }
 
@@ -439,7 +430,6 @@ abstract class Report
         if ($node->hasAttributes() && ($nodettr = $node->attributes->getNamedItem($attr))) {
             return $nodettr->nodeValue;
         }
-
         return $default;
     }
 
@@ -462,13 +452,13 @@ abstract class Report
             return;
         }
         $name = $this->nodeAttr($node, 'name');
-        $options = array(
+        $options = [
             'name' => $name,
             'column' => $this->nodeAttr($node, 'column'),
             'value' => $this->nodeAttr($node, 'value'),
             'is_default' => (bool) $this->nodeAttr($node, 'default', false),
             'is_changeable' => (bool) $this->nodeAttr($node, 'change', true)
-        );
+        ];
         if ($operator = $this->nodeAttr($node, 'operator')) {
             $options['operator'] = sprintf(' %s ', trim($operator));
         }
@@ -507,7 +497,7 @@ abstract class Report
         $column = $this->nodeAttr($node, 'name');
         $dir = $this->nodeAttr($node, 'dir', static::ORDER_ASC);
         $format = $this->nodeAttr($node, 'fmt');
-        $this->orders[] = array($column, $dir, $format);
+        $this->orders[] = [$column, $dir, $format];
     }
 
     /**
@@ -523,11 +513,9 @@ abstract class Report
                 case 'parameter':
                     $this->addSourceParameter($node);
                     break;
-
                 case 'group':
                     $this->addSourceGrouping($node);
                     break;
-
                 case 'order':
                     $this->addSourceOrdering($node);
                     break;
@@ -560,9 +548,9 @@ abstract class Report
     {
         foreach ($nodes as $node) {
             if (($name = $this->nodeAttr($node, 'name')) && ($model = $this->nodeAttr($node, 'model')) && ($column = $this->nodeAttr($node, 'column'))) {
-                $attributes = array();
+                $attributes = [];
                 foreach ($node->attributes as $attr) {
-                    if (!in_array($attr->nodeName, array('name', 'model', 'column', 'label', 'help', 'default', 'object', 'required'))) {
+                    if (!in_array($attr->nodeName, ['name', 'model', 'column', 'label', 'help', 'default', 'object', 'required'])) {
                         $attributes[$attr->nodeName] = $attr->nodeValue;
                     }
                 }
@@ -628,7 +616,6 @@ abstract class Report
             }
             $this->data = $data;
         }
-
         return $this->data;
     }
 
@@ -639,12 +626,11 @@ abstract class Report
      * @param array $defaults  Default values
      * @return \NTLAB\Report\Form\FormInterface
      */
-    public function getForm($defaults = array())
+    public function getForm($defaults = [])
     {
-        if (null == $this->form) {
+        if (null === $this->form) {
             $this->buildForm($defaults);
         }
-
         return $this->form;
     }
 
@@ -705,7 +691,7 @@ abstract class Report
      */
     public function saveConfigs()
     {
-        $objects = array();
+        $objects = [];
         foreach ($this->configs as $name => $config) {
             $var = $name;
             $context = null;
@@ -731,7 +717,6 @@ abstract class Report
                 $handler->flush($object);
             }
         }
-
         return $this;
     }
 
@@ -774,7 +759,6 @@ abstract class Report
     public function setTemplateContent($content)
     {
         $this->templateContent->setContent($content);
-
         return $this;
     }
 
@@ -815,7 +799,6 @@ abstract class Report
                 $data->addOrder($order[0], $order[1], $order[2]);
             }
             $data->setDistinct($this->distinct);
-
             return $data->fetch();
         }
     }
@@ -857,7 +840,6 @@ abstract class Report
     public function generate()
     {
         $this->result = null;
-
         return $this->generateFromObjects($this->fetchResult());
     }
 
@@ -870,7 +852,6 @@ abstract class Report
     public function generateFromObjects($objects)
     {
         ReportCore::setReport($this);
-
         $this->error = null;
         $this->status = null;
         $this->result = $objects;
@@ -880,7 +861,8 @@ abstract class Report
                     $this->status = static::STATUS_OK;
                     return $content;
                 }
-            } catch (\Exception $e) {
+            }
+            catch (\Exception $e) {
                 $this->error = $e;
                 error_log($this->getExceptionMessage($e));
             }
@@ -907,7 +889,6 @@ abstract class Report
             }
             $exception = $exception->getPrevious();
         }
-  
         return $message;
     }
 
@@ -923,7 +904,6 @@ abstract class Report
                 return false;
             }
         }
-
         return true;
     }
 
@@ -937,7 +917,6 @@ abstract class Report
         foreach ($this->configs as $config) {
             $config->updateConfigValue();
         }
-
         return $this;
     }
 }

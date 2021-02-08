@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2021 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -107,7 +107,7 @@ abstract class Parameter
     /**
      * @var array
      */
-    protected $widgets = array();
+    protected $widgets = [];
 
     /**
      * @var array
@@ -117,7 +117,7 @@ abstract class Parameter
     /**
      * @var array
      */
-    protected static $handlers = array();
+    protected static $handlers = [];
 
     /**
      * Add parameter handler.
@@ -162,7 +162,7 @@ abstract class Parameter
      * @param \NTLAB\Report\Report $report  The report
      * @param array $options  Parameter options
      */
-    public function initialize($type, $report, $options = array())
+    public function initialize($type, $report, $options = [])
     {
         $this->type = $type;
         $this->report = $report;
@@ -171,35 +171,27 @@ abstract class Parameter
                 case 'name':
                     $this->name = $v;
                     break;
-
                 case 'column':
                     $this->column = $v;
                     break;
-
                 case 'value':
                     $this->value = $v;
                     break;
-
                 case 'parent':
                     $this->parent = $v;
                     break;
-
                 case 'operator':
                     $this->operator = $v;
                     break;
-
                 case 'label':
                     $this->label = $v;
                     break;
-
                 case 'is_default':
                     $this->default = (bool) $v;
                     break;
-
                 case 'is_changeable':
                     $this->changeable = (bool) $v;
                     break;
-
                 case 'on_value':
                     $this->onValue = $v;
                     break;
@@ -367,7 +359,6 @@ abstract class Parameter
         if (false === $this->isChangeable()) {
             return true;
         }
-
         return $this->getFormValue($this->fieldCheck);
     }
 
@@ -402,7 +393,6 @@ abstract class Parameter
         if (!in_array($name, $this->widgets)) {
             $this->widgets[] = $name;
         }
-
         return $this;
     }
 
@@ -427,7 +417,6 @@ abstract class Parameter
                 $value = $defaults[$field];
             }
         }
-
         return $value;
     }
 
@@ -454,7 +443,6 @@ abstract class Parameter
                 break;
             }
         }
-
         return $title;
     }
 
@@ -477,11 +465,10 @@ abstract class Parameter
     {
         if (strlen($value) && strlen($this->onValue)) {
             $script = $this->report->getScript();
-            $var = new ArrayVar(array('value' => $value));
+            $var = new ArrayVar(['value' => $value]);
             $script->setContext($var);
             $value = $script->evaluate($this->onValue);
         }
-
         return $value;
     }
 
@@ -503,7 +490,7 @@ abstract class Parameter
     public function getValues()
     {
         if (null == $this->values) {
-            $this->values = array();
+            $this->values = [];
             try {
                 if (($value = $this->getDefaultValue()) &&
                     (
@@ -525,7 +512,6 @@ abstract class Parameter
             } catch (\Exception $e) {
             }
         }
-
         return $this->values;
     }
 

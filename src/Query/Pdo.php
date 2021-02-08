@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2021 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -50,7 +50,6 @@ class Pdo
         if (null === static::$instance) {
             static::$instance = new self();
         }
-
         return static::$instance;
     }
 
@@ -77,7 +76,6 @@ class Pdo
         } else {
             throw new \InvalidArgumentException('Connection must be an instance of PDO or Propel\Runtime\Connection\ConnectionInterface.');
         }
-
         return $this;
     }
 
@@ -95,10 +93,9 @@ class Pdo
      * @param array $parameters  SQL parameters
      * @return \NTLAB\Report\Query\PdoResult[]
      */
-    public function query($sql, $parameters = array())
+    public function query($sql, $parameters = [])
     {
-        $result = array();
-
+        $result = [];
         $this->checkConnection();
         $stmt = $this->connection->prepare($sql);
         foreach ($parameters as $pname => $pvalue) {
@@ -113,7 +110,6 @@ class Pdo
         while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
             $result[] = new PdoResult($row);
         }
-
         return $result;
     }
 }

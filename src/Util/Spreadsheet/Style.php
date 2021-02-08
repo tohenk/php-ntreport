@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2021 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -30,8 +30,8 @@ use PhpOffice\PhpSpreadsheet\Exception as XlException;
 
 class Style
 {
-    protected static $properties = array(
-        'PhpOffice\PhpSpreadsheet\Style\Alignment' => array(
+    protected static $properties = [
+        'PhpOffice\PhpSpreadsheet\Style\Alignment' => [
             'horizontal',
             'vertical',
             'textRotation',
@@ -39,12 +39,12 @@ class Style
             'shrinkToFit',
             'indent',
             'readOrder',
-        ),
-        'PhpOffice\PhpSpreadsheet\Style\Border' => array(
+        ],
+        'PhpOffice\PhpSpreadsheet\Style\Border' => [
             'borderStyle',
             'color',
-        ),
-        'PhpOffice\PhpSpreadsheet\Style\Borders' => array(
+        ],
+        'PhpOffice\PhpSpreadsheet\Style\Borders' => [
             'left',
             'right',
             'top',
@@ -52,17 +52,17 @@ class Style
             'diagonal',
             'diagonalDirection',
             'allBorders',
-        ),
-        'PhpOffice\PhpSpreadsheet\Style\Color' => array(
+        ],
+        'PhpOffice\PhpSpreadsheet\Style\Color' => [
             'argb',
-        ),
-        'PhpOffice\PhpSpreadsheet\Style\Fill' => array(
+        ],
+        'PhpOffice\PhpSpreadsheet\Style\Fill' => [
             'fillType',
             'rotation',
             'startColor',
             'endColor',
-        ),
-        'PhpOffice\PhpSpreadsheet\Style\Font' => array(
+        ],
+        'PhpOffice\PhpSpreadsheet\Style\Font' => [
             'name',
             'bold',
             'italic',
@@ -72,15 +72,15 @@ class Style
             'strikethrough',
             'color',
             'size',
-        ),
-        'PhpOffice\PhpSpreadsheet\Style\NumberFormat' => array(
+        ],
+        'PhpOffice\PhpSpreadsheet\Style\NumberFormat' => [
             'formatCode',
-        ),
-        'PhpOffice\PhpSpreadsheet\Style\Protection' => array(
+        ],
+        'PhpOffice\PhpSpreadsheet\Style\Protection' => [
             'locked',
             'hidden',
-        ),
-        'PhpOffice\PhpSpreadsheet\Style\Style' => array(
+        ],
+        'PhpOffice\PhpSpreadsheet\Style\Style' => [
             'fill',
             'font',
             'borders',
@@ -88,8 +88,8 @@ class Style
             'numberFormat',
             'protection',
             'quotePrefix',
-        ),
-    );
+        ],
+    ];
 
     /**
      * Get style array from style object.
@@ -102,7 +102,7 @@ class Style
         if (is_object($value)) {
             $class = get_class($value);
             if (isset(self::$properties[$class])) {
-                $result = array();
+                $result = [];
                 foreach (self::$properties[$class] as $key) {
                     $method = sprintf('get%s', ucfirst($key));
                     try {
@@ -112,7 +112,8 @@ class Style
                             continue;
                         }
                         $result[$key] = self::styleToArray($prop);
-                    } catch (XlException $e) {
+                    }
+                    catch (XlException $e) {
                         // ignore error
                     }
                 }

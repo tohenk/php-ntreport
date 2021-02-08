@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2016 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2016-2021 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -31,7 +31,7 @@ class DateYear extends Date
     const ID = 'year';
 
     /**
-     * (non-PHPdoc)
+     * {@inheritDoc}
      * @see \NTLAB\Report\Parameter\Date::getDateTypeValue()
      */
     public function getDateTypeValue()
@@ -49,7 +49,6 @@ class DateYear extends Date
         if (null != $value && is_numeric($value)) {
             $value = mktime(0, 0, 0, 1, 1, (int) $value);
         }
-
         return $value;
     }
 }

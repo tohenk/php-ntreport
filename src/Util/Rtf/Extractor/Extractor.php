@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2021 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -71,7 +71,7 @@ class Extractor
     /**
      * @var array
      */
-    protected $regions = array();
+    protected $regions = [];
 
     /**
      * @var string
@@ -89,8 +89,7 @@ class Extractor
     {
         $stag = substr(static::TAG_SIGN, 0, 1);
         $etag = strlen(static::TAG_SIGN) > 1 ? substr(static::TAG_SIGN, 1, 1) : $stag;
-
-        return array($stag, $etag);
+        return [$stag, $etag];
     }
 
     /**
@@ -104,7 +103,6 @@ class Extractor
             $tags = static::getTags();
             static::$re = sprintf('/%1$s([^%1$s]+)%2$s/', $tags[0], $tags[1]);
         }
-
         return static::$re;
     }
 
@@ -117,7 +115,6 @@ class Extractor
     public static function createTag($tag)
     {
         $tags = static::getTags();
-
         return $tags[0].$tag.$tags[1];
     }
 
@@ -165,7 +162,6 @@ class Extractor
                 }
             }
         }
-
         return false;
     }
 
@@ -178,7 +174,6 @@ class Extractor
     {
         $tree = new Tree();
         $tree->addMainGroup();
-
         return $tree;
     }
 
@@ -283,7 +278,6 @@ class Extractor
     {
         $start = $this->getStartIndex($tree);
         $result = $this->createTree();
-
         $ssize = null;
         $esize = null;
         $this->beginPos = $this->findTag($tree, $this->beginMark, $ssize, $start);
@@ -310,7 +304,6 @@ class Extractor
             // copy all
             $this->copyTree($result, $tree, $this->beginPos, $this->endPos);
         }
-
         return $result;
     }
 
@@ -323,7 +316,7 @@ class Extractor
      */
     public function extractRegion(Tree $tree, $region)
     {
-        $result = array();
+        $result = [];
         while (true) {
             $matches = null;
             preg_match_all($this->getTagRegex(), $tree->getText(), $matches, PREG_PATTERN_ORDER);
@@ -348,15 +341,13 @@ class Extractor
                         // insert placeholder
                         $tree->getMainGroup()->insertChild($this->beginPos, Node::create(Node::TEXT, $this->createTag($regionId)));
                         // add the result
-                        $result[$regionId] = array($expr, $rtree);
-
+                        $result[$regionId] = [$expr, $rtree];
                         continue;
                     }
                 }
             }
             break;
         }
-
         return $result;
     }
 
@@ -391,7 +382,6 @@ class Extractor
             }
             $position--;
         }
-
         return $this;
     }
 
@@ -426,7 +416,6 @@ class Extractor
             }
             $position++;
         }
-
         return $this;
     }
 
@@ -456,7 +445,6 @@ class Extractor
                 return $i;
             }
         }
-
         return false;
     }
 }

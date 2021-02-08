@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2021 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -40,7 +40,7 @@ class RichText
     const TAG_SIZE = 'size';
     const TAG_COLOR = 'color';
 
-    protected static $tags = array(
+    protected static $tags = [
         self::TAG_BOLD,
         self::TAG_ITALIC,
         self::TAG_ITALIC,
@@ -49,9 +49,9 @@ class RichText
         self::TAG_SUPERSCRIPT,
         self::TAG_SIZE,
         self::TAG_COLOR
-    );
+    ];
 
-    protected static $colors = array(
+    protected static $colors = [
         'aliceblue' => 'FFF0F8FF',
         'antiquewhite' => 'FFFAEBD7',
         'aqua' => 'FF00FFFF',
@@ -205,7 +205,7 @@ class RichText
         'whitesmoke' => 'FFF5F5F5',
         'yellow' => 'FFFFFF00',
         'yellowgreen' => 'FF9ACD32',
-    );
+    ];
 
     /**
      * Get tag regular expression.
@@ -226,7 +226,7 @@ class RichText
      */
     protected static function tagOffset($text)
     {
-        $offsets = array();
+        $offsets = [];
         foreach (self::$tags as $tag) {
             $matches = null;
             $regex = self::tagRegex($tag);
@@ -236,19 +236,18 @@ class RichText
                     $match = $matches[0][$i][0];
                     $extra = $matches[2][$i][0];
                     $inner = $matches[3][$i][0];
-                    $offsets[$offset] = array(
+                    $offsets[$offset] = [
                         'tag' => $tag,
                         'match' => $match,
                         'ofs' => $offset,
                         'len' => strlen($match),
                         'extra' => $extra,
                         'inner' => $inner
-                    );
+                    ];
                 }
             }
         }
         ksort($offsets);
-
         return $offsets;
     }
 
@@ -258,10 +257,10 @@ class RichText
      * @param array $offsets  The offsets
      * @return array
      */
-    protected static function cleanOffset($offsets = array())
+    protected static function cleanOffset($offsets = [])
     {
         if (count($offsets) > 1) {
-            $result = array();
+            $result = [];
             $result[] = array_shift($offsets);
             foreach ($offsets as $data) {
                 foreach ($result as $ref) {
@@ -271,7 +270,6 @@ class RichText
                 }
                 $result[] = $data;
             }
-
             return $result;
         } else {
             return $offsets;
@@ -284,7 +282,7 @@ class RichText
      * @param string $text  The text
      * @param array $options  Applied tags
      */
-    protected static function cleanText(&$text, &$options = array())
+    protected static function cleanText(&$text, &$options = [])
     {
         if ($text) {
             foreach (self::$tags as $tag) {
@@ -307,13 +305,12 @@ class RichText
     /**
      * Create text run.
      *
-     *
      * @param XlRichText $richtext  The rich text object
      * @param string $text  The text
      * @param array $options  Rich text font options
      * @return xlRichTextRun
      */
-    protected static function createTextRun(XlRichText $richtext, $text, $options = array())
+    protected static function createTextRun(XlRichText $richtext, $text, $options = [])
     {
         self::cleanText($text, $options);
         $trun = $richtext->createTextRun($text);
@@ -322,33 +319,26 @@ class RichText
                 case self::TAG_BOLD:
                     $trun->getFont()->setBold(true);
                     break;
-
                 case self::TAG_ITALIC:
                     $trun->getFont()->setItalic(true);
                     break;
-
                 case self::TAG_UNDERLINE:
                     $trun->getFont()->setUnderline(true);
                     break;
-
                 case self::TAG_STRIKETHROUGH:
                     $trun->getFont()->setStrikethrough(true);
                     break;
-
                 case self::TAG_SUBSCRIPT:
                     $trun->getFont()->setSubScript(true);
                     break;
-
                 case self::TAG_SUPERSCRIPT:
                     $trun->getFont()->setSuperScript(true);
                     break;
-
                 case self::TAG_SIZE:
                     if (is_numeric($extra)) {
                         $trun->getFont()->setSize(floatval($extra));
                     }
                     break;
-
                 case self::TAG_COLOR:
                     if (null !== $extra) {
                         $color = array_key_exists($extra, self::$colors) ? self::$colors[$extra] : $extra;
@@ -356,13 +346,13 @@ class RichText
                             $trun->getFont()
                                 ->getColor()
                                 ->setARGB($color);
-                        } catch (\Exception $e) {
+                        }
+                        catch (\Exception $e) {
                         }
                     }
                     break;
             }
         }
-
         return $trun;
     }
 
@@ -386,9 +376,9 @@ class RichText
                 // next pos
                 $pos = $offset['ofs'] + $offset['len'];
                 // rich text font options
-                $options = array(
+                $options = [
                     $offset['tag'] => $offset['extra'] ? $offset['extra'] : null
-                );
+                ];
                 // create text run
                 self::createTextRun($richText, $offset['inner'], $options);
             }
@@ -396,10 +386,8 @@ class RichText
             if ($pos < strlen($text)) {
                 $richText->createText(substr($text, $pos));
             }
-
             return $richText;
         }
-
         return $text;
     }
 

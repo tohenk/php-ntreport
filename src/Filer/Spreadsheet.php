@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2021 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -61,23 +61,23 @@ class Spreadsheet implements FilerInterface
     /**
      * @var array
      */
-    protected $bands = array();
+    protected $bands = [];
 
     /**
      * @var array
      */
-    protected $datas = array();
+    protected $datas = [];
 
     /**
      * @var array
      */
-    protected $allBands = array(
+    protected $allBands = [
         self::BAND_TITLE,
         self::BAND_HEADER,
         self::BAND_MASTER_DATA,
         self::BAND_FOOTER,
         self::BAND_SUMMARY
-    );
+    ];
 
     /**
      * @var \NTLAB\Script\Core\Script
@@ -117,7 +117,7 @@ class Spreadsheet implements FilerInterface
     /**
      * @var array
      */
-    protected $dataCells = array();
+    protected $dataCells = [];
 
     /**
      * Get excel template.
@@ -138,7 +138,6 @@ class Spreadsheet implements FilerInterface
     public function setTemplate($value)
     {
         $this->template = $value;
-
         return $this;
     }
 
@@ -161,7 +160,6 @@ class Spreadsheet implements FilerInterface
     public function setSheet($value)
     {
         $this->sheet = $value;
-
         return $this;
     }
 
@@ -184,7 +182,6 @@ class Spreadsheet implements FilerInterface
     public function setFieldSign($signature)
     {
         $this->fieldSign = $signature;
-
         return $this;
     }
 
@@ -207,7 +204,6 @@ class Spreadsheet implements FilerInterface
     public function setAggregateSign($signature)
     {
         $this->aggregateSign = $signature;
-
         return $this;
     }
 
@@ -230,7 +226,6 @@ class Spreadsheet implements FilerInterface
     public function setAutoFit($value)
     {
         $this->autoFit = (bool) $value;
-
         return $this;
     }
 
@@ -253,7 +248,6 @@ class Spreadsheet implements FilerInterface
     public function setRowHeight($value)
     {
         $this->rowHeight = $value;
-
         return $this;
     }
 
@@ -276,7 +270,6 @@ class Spreadsheet implements FilerInterface
     public function setDefaultWriter($value)
     {
         $this->defaultWriter = $value;
-
         return $this;
     }
 
@@ -292,7 +285,6 @@ class Spreadsheet implements FilerInterface
         if (in_array($band, $this->allBands)) {
             $this->bands[$band] = $range;
         }
-
         return $this;
     }
 
@@ -306,7 +298,6 @@ class Spreadsheet implements FilerInterface
     public function addData($field, $expression)
     {
         $this->datas[$field] = $expression;
-
         return $this;
     }
 
@@ -317,10 +308,9 @@ class Spreadsheet implements FilerInterface
      */
     public function getScript()
     {
-        if (null == $this->script) {
+        if (null === $this->script) {
             $this->script = new Script();
         }
-
         return $this->script;
     }
 
@@ -333,7 +323,6 @@ class Spreadsheet implements FilerInterface
     public function setScript(Script $script)
     {
         $this->script = $script;
-
         return $this;
     }
 
@@ -350,7 +339,6 @@ class Spreadsheet implements FilerInterface
         $dest->setPageSetup(clone $source->getPageSetup());
         $dest->setPageMargins(clone $source->getPageMargins());
         $dest->setSheetView(clone $source->getSheetView());
-
         return $this;
     }
 
@@ -387,7 +375,6 @@ class Spreadsheet implements FilerInterface
         $rangeEnd[1] = (int) $rangeStart[1] + $height - 1;
         $range = XlCoordinate::stringFromColumnIndex($rangeStart[0]).$rangeStart[1].':'.XlCoordinate::stringFromColumnIndex($rangeEnd[0]).$rangeEnd[1];
         $sheet->mergeCells($range);
-
         return $this;
     }
 
@@ -405,7 +392,6 @@ class Spreadsheet implements FilerInterface
             $replacement = $this->getScript()->evaluate($match);
             $tag = str_replace('%'.$match.'%', $replacement, $tag);
         }
-
         return $tag;
     }
 
@@ -459,10 +445,9 @@ class Spreadsheet implements FilerInterface
                 }
             }
         }
-        $ranges = array($anchor, array($anchor[0] + $cols, $anchor[1] + $rows));
+        $ranges = [$anchor, [$anchor[0] + $cols, $anchor[1] + $rows]];
         // increment anchor rows
         $anchor[1] = $anchor[1] + $rows + 1;
-
         return $ranges;
     }
 
@@ -493,15 +478,14 @@ class Spreadsheet implements FilerInterface
         }
         // assign data cell dimension for summary
         if (!array_key_exists($name, $this->dataCells)) {
-            $this->dataCells[$name] = array(
+            $this->dataCells[$name] = [
                 'column' => $cell->getColumn(),
                 'rowStart' => $cell->getRow(),
                 'rowEnd' => $cell->getRow()
-            );
+            ];
         } else {
             $this->dataCells[$name]['rowEnd'] = $cell->getRow();
         }
-
         return $value;
     }
 
@@ -521,11 +505,10 @@ class Spreadsheet implements FilerInterface
         for ($i = 0; $i < count($matches[0]); $i++) {
             $func = $matches[1][$i];
             $data = $matches[2][$i];
-            if (in_array(strtoupper($func), array('SUM', 'AVG', 'AVERAGE')) && array_key_exists($data, $this->dataCells)) {
+            if (in_array(strtoupper($func), ['SUM', 'AVG', 'AVERAGE']) && array_key_exists($data, $this->dataCells)) {
                 $value = str_replace($matches[0][$i], sprintf('%1$s(%2$s%3$d:%2$s%4$d)', $func, $this->dataCells[$data]['column'], $this->dataCells[$data]['rowStart'], $this->dataCells[$data]['rowEnd']), $value);
             }
         }
-
         return $value;
     }
 
@@ -538,7 +521,7 @@ class Spreadsheet implements FilerInterface
      * @param array $ranges  The data ranges
      * @return \NTLAB\Report\Filer\Spreadsheet
      */
-    protected function fillRange(XlWorksheet $sheet, $ranges = array(), $callback = null, $adjustRow = false)
+    protected function fillRange(XlWorksheet $sheet, $ranges = [], $callback = null, $adjustRow = false)
     {
         // callback parameters (cell, data, value)
         if ($callback && is_callable($callback)) {
@@ -575,7 +558,6 @@ class Spreadsheet implements FilerInterface
                 }
             }
         }
-
         return $this;
     }
 
@@ -630,7 +612,6 @@ class Spreadsheet implements FilerInterface
                 $this->bands[self::BAND_SUMMARY] = sprintf('A%d:%s%d', $fsignEnd + 1, XlCoordinate::stringFromColumnIndex($cols), $rows);
             }
         }
-
         return $this;
     }
 
@@ -650,7 +631,6 @@ class Spreadsheet implements FilerInterface
             $resXls = $this->prepareResult($insheet, $outsheet);
             $this->findBands($insheet);
             $this->processBands($insheet, $outsheet);
-
             return $this->createOutput($resXls, $writerClass);
         }
     }
@@ -667,7 +647,6 @@ class Spreadsheet implements FilerInterface
         $excel = new XlSpreadsheet();
         $sheet = $excel->getActiveSheet();
         $this->copySheetProp($source, $sheet);
-
         return $excel;
     }
 
@@ -688,14 +667,13 @@ class Spreadsheet implements FilerInterface
             $bandData = $this->bands[$band];
             switch ($band) {
                 case static::BAND_MASTER_DATA:
-                    $this->dataCells = array();
+                    $this->dataCells = [];
                     $this->getScript()
                         ->each(function(Script $script, Spreadsheet $_this) use ($insheet, $outsheet, &$anchor, $bandData) {
                             $_this->buildMasterData($insheet, $outsheet, $bandData, $anchor);
                         })
                     ;
                     break;
-
                 default:
                     if (null == $this->getScript()->getContext() && count($this->objects)) {
                         $this->getScript()->setContext($this->objects[0]);
@@ -703,12 +681,11 @@ class Spreadsheet implements FilerInterface
                     $ranges = $this->copyRange($insheet, $outsheet, $bandData, $anchor);
                     // process summary band and figure out the aggregate functions like SUM, AVG
                     if ($band === static::BAND_SUMMARY) {
-                        $this->fillRange($outsheet, $ranges, array($this,  'fillSummary'));
+                        $this->fillRange($outsheet, $ranges, [$this,  'fillSummary']);
                     }
                     break;
             }
         }
-
         return $this;
     }
 
@@ -724,8 +701,7 @@ class Spreadsheet implements FilerInterface
     public function buildMasterData($insheet, $outsheet, $band, &$anchor)
     {
         $ranges = $this->copyRange($insheet, $outsheet, $band, $anchor, false);
-        $this->fillRange($outsheet, $ranges, array($this, 'fillData'), true);
-
+        $this->fillRange($outsheet, $ranges, [$this, 'fillData'], true);
         return $this;
     }
 
@@ -744,7 +720,6 @@ class Spreadsheet implements FilerInterface
                 case 'Xlsx':
                     $writerClass = $readerClass;
                     break;
-
                 default:
                     $writerClass = 'Xls';
                     break;
@@ -753,7 +728,6 @@ class Spreadsheet implements FilerInterface
         $filename = tempnam(dirname($this->template), 'xls');
         $writer = XlIOFactory::createWriter($xls, $writerClass);
         $writer->save($filename);
-
         return file_get_contents($filename);
     }
 }

@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014-2020 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2021 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -68,42 +68,42 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
     /**
      * @var array
      */
-    protected $contents = array();
+    protected $contents = [];
 
     /**
      * @var array
      */
-    protected $vars = array();
+    protected $vars = [];
 
     /**
      * @var array
      */
-    protected $tags = array();
+    protected $tags = [];
 
     /**
      * @var array
      */
-    protected $ifs = array();
+    protected $ifs = [];
 
     /**
      * @var array
      */
-    protected $eaches = array();
+    protected $eaches = [];
 
     /**
      * @var array
      */
-    protected $tables = array();
+    protected $tables = [];
 
     /**
      * @var array
      */
-    protected $cleanMaps = array("#<(/)*(.*?)(/)*>#");
+    protected $cleanMaps = ["#<(/)*(.*?)(/)*>#"];
 
     /**
      * @var array
      */
-    protected $cleans = array();
+    protected $cleans = [];
 
     /**
      * Constructor.
@@ -123,10 +123,9 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
      */
     public function getScript()
     {
-        if (null == $this->script) {
+        if (null === $this->script) {
             $this->script = new Script();
         }
-
         return $this->script;
     }
 
@@ -137,7 +136,6 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
     public function setScript(Script $script)
     {
         $this->script = $script;
-
         return $this;
     }
 
@@ -151,7 +149,6 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
         if (null === $this->tag) {
             $this->tag = new Tag();
         }
-
         return $this->tag;
     }
 
@@ -165,8 +162,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
         if ($this->tag) {
             $this->tag->clear();
         }
-        $this->cleans = array();
-
+        $this->cleans = [];
         return $this;
     }
 
@@ -187,7 +183,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
                     $otext = $text;
                 }
                 foreach ($this->cleanMaps as $pattern) {
-                    $matches = array();
+                    $matches = [];
                     preg_match_all($pattern, $text, $matches, PREG_OFFSET_CAPTURE);
                     if (count($matches[0])) {
                         $endPos = null;
@@ -236,7 +232,6 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
                 }
             }
         }
-
         return $text;
     }
 
@@ -253,7 +248,6 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
     {
         $sEnd = substr($str, $end);
         $sStart = substr($str, 0, $start);
-
         return $sStart.$replacement.$sEnd;
     }
 
@@ -270,7 +264,6 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
         if (!$this->getScript()->getVar($value, $tag, $this->getScript()->getContext())) {
             $value = $this->getScript()->evaluate($tag);
         }
-
         return $value;
     }
 
@@ -295,7 +288,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
      */
     protected function findSubTags($key, $vars)
     {
-        $items = array();
+        $items = [];
         $skey = sprintf('%s:', $key);
         $ekey = sprintf('%sE:', $key);
         for ($i = 0; $i < count($vars); $i ++) {
@@ -303,12 +296,12 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
             $match = $this->getTag()->createTag($vars[$i]);
             if ($skey == substr($tag, 0, strlen($skey))) {
                 $tags = explode(':', $tag, 3);
-                $items[$tags[1]] = array(
+                $items[$tags[1]] = [
                     'start' => $match,
                     'end' => null,
                     'expr' => $tags[2],
                     'content' => null
-                );
+                ];
             }
             if ($ekey == substr($tag, 0, strlen($ekey))) {
                 $tags = explode(':', $tag, 2);
@@ -339,7 +332,6 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
                 }
             }
         }
-
         return $items;
     }
 
@@ -382,7 +374,6 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
             error_log($message);
         }
         $this->getScript()->popContext();
-
         return $content;
     }
 
@@ -470,7 +461,6 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
                 }
             }
         }
-
         return $this;
     }
 
@@ -482,8 +472,8 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
      */
     protected function getEncodedText($text)
     {
-        $result = array();
-        $parts = array();
+        $result = [];
+        $parts = [];
         while (true) {
             if (!strlen($text)) {
                 break;
@@ -506,7 +496,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
         foreach ($parts as $part) {
             if ("\t" === $part) {
                 $result[] = '<w:tab/>';
-            } else if (in_array(' ', array(substr($part, 0, 1), substr($part, -1)))) {
+            } else if (in_array(' ', [substr($part, 0, 1), substr($part, -1)])) {
                 $result[] = sprintf('<w:t xml:space="preserve">%s</w:t>', $part);
             } else if (count($parts) > 1) {
                 $result[] = sprintf('<w:t>%s</w:t>', $part);
@@ -514,7 +504,6 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
                 $result[] = $part;
             }
         }
-
         return implode('', $result);
     }
 
@@ -526,8 +515,8 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
      */
     protected function findTableTemplateRow()
     {
-        $rows = array();
-        $matches = array();
+        $rows = [];
+        $matches = [];
         $template = $this->tempDocumentMainPart;
         preg_match_all('#<w:tr(.*?)>(.*?)</w:tr>#', $template, $matches);
         foreach ($matches[0] as $row) {
@@ -543,7 +532,6 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
         }
         $this->tempDocumentMainPart = implode('', $rows);
         $this->docTemplate = str_replace($this->tempDocumentMainPart, '%ROWS%', $template);
-
         return $this;
     }
 
@@ -563,12 +551,11 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
             case static::DOC_EACH:
                 break;
         }
-        $this->contents = array();
+        $this->contents = [];
         $this->vars = $this->getVariables();
         $this->ifs = $this->findSubTags(static::DOC_SUB_IF, $this->vars);
         $this->eaches = $this->findSubTags(static::DOC_SUB_EACH, $this->vars);
         $this->tables = $this->findSubTags(static::DOC_SUB_TABLE, $this->vars);
-
         return $this;
     }
 
@@ -589,7 +576,6 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
             case static::DOC_EACH:
                 break;
         }
-
         return $this;
     }
 
@@ -608,7 +594,6 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
                 })
             ;
             $this->finishBuild();
-
             return $this->tempDocumentMainPart;
         }
     }
@@ -621,9 +606,8 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
      */
     protected function getVariablesForPart($documentPartXML)
     {
-        $matches = array();
+        $matches = [];
         preg_match_all($this->getTag()->getTagRegex(), $documentPartXML, $matches);
-
         return $matches[1];
     }
 

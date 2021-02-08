@@ -23,29 +23,15 @@
 		}
 	},
 	"require" : {
-		"php" : "^7.1 || ^8.0",
-		"ntlab/common": "dev-master",
-		"ntlab/ntscript": "dev-master",
-		"ntlab/rtf-tree": "dev-master",
+		"php" : ">=7.1",
+		"ntlab/ntlib": "^1.0",
+		"ntlab/ntscript": "^1.0",
+		"ntlab/rtftree": "^1.0",
 		"phpoffice/phpspreadsheet": "dev-master",
 		"phpoffice/phpword": "dev-develop"
 	},
 	"require-dev" : {
-		"phpunit/phpunit" : "^8.5",
-		"propel/propel" : "2.0.*@dev"
-	},
-	"repositories": [
-		{
-			"type": "vcs",
-			"url":  "https://github.com/tohenk/php-rtf-tree"
-		},
-		{
-			"type": "vcs",
-			"url":  "https://github.com/tohenk/php-common"
-		},
-		{
-			"type": "vcs",
-			"url":  "https://github.com/tohenk/php-ntscript"
-		}
-	]
+		"phpunit/phpunit" : "^9.5",
+		"propel/propel" : "^2.0@dev"
+	}
 }

@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014-2020 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2021 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -45,7 +45,6 @@ class Word extends Report
                 case 'template':
                     $this->configureParams($node);
                     break;
-
                 case 'columns':
                     $this->configureColumns($node);
                     break;
@@ -68,7 +67,6 @@ class Word extends Report
     {
         $ext = substr($this->template, strrpos($this->template, '.'));
         $name = substr(sha1(rand(1, 99999)), 0, 8);
-
         return sys_get_temp_dir().DIRECTORY_SEPARATOR.$name.$ext;
     }
 
@@ -83,7 +81,7 @@ class Word extends Report
                 $objects = $this->result;
                 // is build for single content?
                 if ($objects && $this->single) {
-                    $objects = array($objects[0]);
+                    $objects = [$objects[0]];
                 }
                 $filer = new DocumentFiler($tempfile);
                 $content = $filer->build(null, $objects);
@@ -98,7 +96,6 @@ class Word extends Report
         } else {
             $this->status = static::STATUS_ERR_TMPL;
         }
-
         return $content;
     }
 }

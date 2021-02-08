@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2021 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -40,22 +40,22 @@ class Pdo extends Data
     /**
      * @var array
      */
-    protected $conds = array();
+    protected $conds = [];
 
     /**
      * @var array
      */
-    protected $groups = array();
+    protected $groups = [];
 
     /**
      * @var array
      */
-    protected $orders = array();
+    protected $orders = [];
 
     /**
      * @var array
      */
-    protected $params = array();
+    protected $params = [];
 
     /**
      * @var boolean
@@ -72,7 +72,6 @@ class Pdo extends Data
         if (null == static::$supported) {
             static::$supported = extension_loaded('pdo');
         }
-
         return static::$supported;
     }
 
@@ -127,13 +126,12 @@ class Pdo extends Data
      */
     public function fetch()
     {
-        $sql = strtr($this->getSource(), array(
+        $sql = strtr($this->getSource(), [
             '%COND%' => count($this->conds) ? implode(' AND ', $this->conds) : '1',
             '%GROUP%' => count($this->groups) ? 'GROUP BY '.implode(', ', $this->groups) : '',
             '%ORDER%' => count($this->orders) ? 'ORDER BY '.implode(', ', $this->orders) : '',
-        ));
+        ]);
         $sql = $this->report->getScript()->evaluate($sql);
-
         return PdoQuery::getInstance()->query($sql, $this->params);
     }
 
@@ -155,7 +153,6 @@ class Pdo extends Data
         } else if (DateParameter::YEAR === $dateType) {
             $dateValue = date('Y', $dateValue);
         }
-
         return sprintf('%1$s %2$s %4$s%3$s%4$s',
             sprintf('SUBSTRING(%s, %d, %d)', $column, 1, strlen($dateValue)),
             $operator ? $operator : '=',
@@ -173,7 +170,6 @@ class Pdo extends Data
         $column = $parameter->getColumn();
         $operator = $parameter->getOperator();
         $value = $parameter->getCurrentValue();
-
         // convert parameter to SQL
         switch ($parameter->getType())
         {
@@ -188,7 +184,6 @@ class Pdo extends Data
                     $value = null;
                 }
                 break;
-
             case DateParameter::ID:
             case DateOnlyParameter::ID:
             case DateMonthParameter::ID:
@@ -197,7 +192,6 @@ class Pdo extends Data
                 $operator = null;
                 $value = null;
                 break;
-
             case DateRangeParameter::ID:
                 $column = sprintf('(%s AND %s)',
                     $this->formatDate($parameter->getRealColumn(), $parameter->getDateTypeValue(), $value, '>='),

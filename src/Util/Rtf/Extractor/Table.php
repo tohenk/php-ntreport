@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2021 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -44,7 +44,6 @@ class Table extends Extractor
     {
         $extractor = new self();
         $extractor->regions = $extractor->extractRegion($tree, 'TBL');
-
         return $extractor;
     }
 
@@ -68,7 +67,6 @@ class Table extends Extractor
                 return true;
             }
         }
-
         return false;
     }
 
@@ -86,7 +84,6 @@ class Table extends Extractor
                 $position++;
             }
         }
-
         return $this;
     }
 }

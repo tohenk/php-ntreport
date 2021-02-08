@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2021 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -36,7 +36,7 @@ class Config
     protected $label = null;
     protected $help = null;
     protected $required = null;
-    protected $attributes = array();
+    protected $attributes = [];
     protected $report = null;
     protected $objectexpr = null;
     protected $object = null;
@@ -52,7 +52,7 @@ class Config
      * @param string $objectexpr  Object expression
      * @param array $attributes  Attributes
      */
-    public function __construct($name, $model, $column, $label = null, $help = null, $objectexpr = null, $required = null, $attributes = array())
+    public function __construct($name, $model, $column, $label = null, $help = null, $objectexpr = null, $required = null, $attributes = [])
     {
         $this->name = $name;
         $this->model = $model;
@@ -73,7 +73,6 @@ class Config
     public function setReport(Report $report)
     {
         $this->report = $report;
-
         return $this;
     }
 
@@ -165,7 +164,6 @@ class Config
     public function getFormValue()
     {
         $values = $this->report->getForm()->getValue('config');
-
         return isset($values[$this->column]) ? $values[$this->column] : null;
     }
 
@@ -176,7 +174,7 @@ class Config
      */
     public function getValue()
     {
-        if (null == $this->object) {
+        if (null === $this->object) {
             if ($this->objectexpr) {
                 $this->object = $this->report->getScript()->evaluate($this->objectexpr);
             } else {
@@ -202,7 +200,6 @@ class Config
             $values[$this->getColumn()] = $value;
             $form->updateValue('config', $values);
         }
-
         return $this;
     }
 }

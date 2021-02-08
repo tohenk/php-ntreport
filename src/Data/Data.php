@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2021 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -33,7 +33,7 @@ abstract class Data
     /**
      * @var array
      */
-    protected static $handlers = array();
+    protected static $handlers = [];
 
     /**
      * @var \NTLAB\Report\Report;
@@ -84,12 +84,10 @@ abstract class Data
             $handler = new $handlerClass();
             if ($handler->canHandle($source)) {
                 $handler->source = $source;
-
                 return $handler;
             }
             unset($handler);
         }
-
         return false;
     }
 
@@ -203,7 +201,7 @@ abstract class Data
      */
     public function createParam($column, $operator, $value)
     {
-        return array($column, $operator, $value);
+        return [$column, $operator, $value];
     }
 
     /**
@@ -220,7 +218,6 @@ abstract class Data
                 return true;
             }
         }
-
         return false;
     }
 
@@ -232,7 +229,7 @@ abstract class Data
      */
     protected function convertParameter(Parameter $parameter)
     {
-        $result = array();
+        $result = [];
         if (!$this->applyParameter($parameter, $result)) {
             $this->doConvert($parameter, $result);
         }
@@ -260,7 +257,6 @@ abstract class Data
         if ($format && (false != strpos($format, '%s') || false != strpos($format, '%1$s'))) {
             $value = sprintf($format, $value);
         }
-
         return $value;
     }
 }
