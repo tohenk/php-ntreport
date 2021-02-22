@@ -356,7 +356,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
             if (null !== ($objects = $this->getScript()->evaluate($expr))) {
                 $content = $filer->build(null, $objects);
             } else {
-                error_log(sprintf('Expression "%s" return NULL!', $expr));
+                error_log(sprintf('Expression "%s" from %s return NULL!', $expr, $this->getScript()->getContext()));
             }
             @unlink($filer->tempDocumentFilename);
             unset($filer);
@@ -378,6 +378,41 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
     }
 
     /**
+     * Restore tag into original.
+     *
+     * @param string $template
+     * @param string $type
+     * @param array $tags
+     */
+    protected function restoreTemplateTag(&$template, $type, $tags)
+    {
+        foreach ($tags as $tag => $params) {
+            $placeholder = $this->createSubTag($type, $tag);
+            if (false !== strpos($template, $placeholder)) {
+                $content = implode('', [$params['matchStart'], $params['content'], $params['matchEnd']]);
+                $template = str_replace($placeholder, $content, $template);
+            }
+        }
+    }
+
+    /**
+     * Restore template with special tag original content.
+     *
+     * @param string $template
+     * @return string
+     */
+    protected function restoreTemplate($template)
+    {
+        // replace IF
+        $this->restoreTemplateTag($template, static::DOC_SUB_IF, $this->ifs);
+        // replace TBL
+        $this->restoreTemplateTag($template, static::DOC_SUB_TABLE, $this->tables);
+        // replace EACH
+        $this->restoreTemplateTag($template, static::DOC_SUB_EACH, $this->eaches);
+        return $template;
+    }
+
+    /**
      * Parse and replace all tags in template.
      *
      * @return \NTLAB\Report\Filer\DocumentTag
@@ -386,29 +421,41 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
     {
         if (count($this->vars)) {
             $template = $this->tempDocumentMainPart;
-            // process EACH
-            foreach ($this->eaches as $tag => $params) {
-                $content = null;
-                if ($params['expr'] && $params['content']) {
-                    $content = $this->parseSub($params['content'], $params['expr'], static::DOC_EACH);
-                }
-                $template = str_replace($this->createSubTag(static::DOC_SUB_EACH, $tag), $content, $template);
-            }
-            // process TBL
-            foreach ($this->tables as $tag => $params) {
-                $content = null;
-                if ($params['expr'] && $params['content']) {
-                    $content = $this->parseSub($params['content'], $params['expr'], static::DOC_TABLE);
-                }
-                $template = str_replace($this->createSubTag(static::DOC_SUB_TABLE, $tag), $content, $template);
-            }
             // process IF
             foreach ($this->ifs as $tag => $params) {
+                $placeholder = $this->createSubTag(static::DOC_SUB_IF, $tag);
+                if (false === strpos($template, $placeholder)) {
+                    continue;
+                }
                 $content = null;
                 if ($params['expr'] && $params['content'] && $this->getScript()->evaluate($params['expr'])) {
                     $content = $params['content'];
                 }
-                $template = str_replace($this->createSubTag(static::DOC_SUB_IF, $tag), $content, $template);
+                $template = str_replace($placeholder, $content, $template);
+            }
+            // process TBL
+            foreach ($this->tables as $tag => $params) {
+                $placeholder = $this->createSubTag(static::DOC_SUB_TABLE, $tag);
+                if (false === strpos($template, $placeholder)) {
+                    continue;
+                }
+                $content = null;
+                if ($params['expr'] && $params['content']) {
+                    $content = $this->parseSub($this->restoreTemplate($params['content']), $params['expr'], static::DOC_TABLE);
+                }
+                $template = str_replace($placeholder, $content, $template);
+            }
+            // process EACH
+            foreach ($this->eaches as $tag => $params) {
+                $placeholder = $this->createSubTag(static::DOC_SUB_EACH, $tag);
+                if (false === strpos($template, $placeholder)) {
+                    continue;
+                }
+                $content = null;
+                if ($params['expr'] && $params['content']) {
+                    $content = $this->parseSub($params['content'], $params['expr'], static::DOC_EACH);
+                }
+                $template = str_replace($placeholder, $content, $template);
             }
             // process regular tags
             for ($i = 0; $i < count($this->vars); $i ++) {
@@ -515,22 +562,26 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
      */
     protected function findTableTemplateRow()
     {
-        $rows = [];
+        $startRow = null;
+        $endRow = null;
         $matches = [];
         $template = $this->tempDocumentMainPart;
-        preg_match_all('#<w:tr(.*?)>(.*?)</w:tr>#', $template, $matches);
+        preg_match_all('#<w:tr(.*?)>(.*?)</w:tr>#', $template, $matches, PREG_OFFSET_CAPTURE);
         foreach ($matches[0] as $row) {
-            $this->tempDocumentMainPart = $row;
-            // table template row must be in a sequence
+            $this->tempDocumentMainPart = $row[0];
             if (count($this->getVariables())) {
-                $rows[] = $row;
-            } else {
-                if (count($rows)) {
-                    break;
+                if (null === $startRow) {
+                    $startRow = $row;
+                    $endRow = $row;
+                } else {
+                    $endRow = $row;
                 }
             }
         }
-        $this->tempDocumentMainPart = implode('', $rows);
+        if (null === $startRow || null === $endRow) {
+            throw new \InvalidArgumentException('Table has no template row');
+        }
+        $this->tempDocumentMainPart = substr($template, $startRow[1], $endRow[1] + strlen($endRow[0]) - $startRow[1]);
         $this->docTemplate = str_replace($this->tempDocumentMainPart, '%ROWS%', $template);
         return $this;
     }
