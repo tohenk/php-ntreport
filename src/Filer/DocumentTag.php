@@ -295,13 +295,16 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
             $tag = $this->clean($vars[$i]);
             $match = $this->getTag()->createTag($vars[$i]);
             if ($skey == substr($tag, 0, strlen($skey))) {
-                $tags = explode(':', $tag, 3);
+                $tags = explode(':', $tag, 4);
                 $items[$tags[1]] = [
                     'start' => $match,
                     'end' => null,
                     'expr' => $tags[2],
                     'content' => null
                 ];
+                if (count($tags) > 3) {
+                    $items[$tags[1]]['extra'] = $tags[3];
+                }
             }
             if ($ekey == substr($tag, 0, strlen($ekey))) {
                 $tags = explode(':', $tag, 2);
@@ -341,9 +344,10 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
      * @param string $template  Template content
      * @param string $expr  Script expression
      * @param int $docType  Document type to parse
+     * @param string $extra  Extra data for parsing
      * @return string
      */
-    protected function parseSub($template, $expr, $docType)
+    protected function parseSub($template, $expr, $docType, $extra = null)
     {
         $content = null;
         $this->getScript()->pushContext();
@@ -353,6 +357,9 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
             $filer->tempDocumentFilename = tempnam(dirname($this->tempDocumentFilename), 'sub');
             $filer->tempDocumentMainPart = $template;
             $filer->docType = $docType;
+            if (null !== $extra) {
+                $filer->extra = $extra;
+            }
             if (null !== ($objects = $this->getScript()->evaluate($expr))) {
                 $content = $filer->build(null, $objects);
             } else {
@@ -441,7 +448,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
                 }
                 $content = null;
                 if ($params['expr'] && $params['content']) {
-                    $content = $this->parseSub($this->restoreTemplate($params['content']), $params['expr'], static::DOC_TABLE);
+                    $content = $this->parseSub($this->restoreTemplate($params['content']), $params['expr'], static::DOC_TABLE, isset($params['extra']) ? $params['extra'] : null);
                 }
                 $template = str_replace($placeholder, $content, $template);
             }
@@ -567,14 +574,26 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
         $matches = [];
         $template = $this->tempDocumentMainPart;
         preg_match_all('#<w:tr(.*?)>(.*?)</w:tr>#', $template, $matches, PREG_OFFSET_CAPTURE);
-        foreach ($matches[0] as $row) {
-            $this->tempDocumentMainPart = $row[0];
-            if (count($this->getVariables())) {
-                if (null === $startRow) {
-                    $startRow = $row;
-                    $endRow = $row;
-                } else {
-                    $endRow = $row;
+        if (isset($this->extra)) {
+            $extras = explode(',', $this->extra);
+            $startIdx = (int) $extras[0];
+            $rowSize = count($extras) > 1 ? (int) $extras[1] : 1;
+            $startIdx--;
+            $endIdx = $startIdx + $rowSize - 1;
+            if ($endIdx < count($matches[0])) {
+                $startRow = $matches[0][$startIdx];
+                $endRow = $matches[0][$endIdx];
+            }
+        } else {
+            foreach ($matches[0] as $row) {
+                $this->tempDocumentMainPart = $row[0];
+                if (count($this->getVariables())) {
+                    if (null === $startRow) {
+                        $startRow = $row;
+                        $endRow = $row;
+                    } else {
+                        $endRow = $row;
+                    }
                 }
             }
         }
