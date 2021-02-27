@@ -197,7 +197,8 @@ abstract class Parameter
                     break;
             }
         }
-        $this->field = $this->report->getFormBuilder()->normalize($this->name);
+        $this->field = $this->report->getFormBuilder() ?
+            $this->report->getFormBuilder()->normalize($this->name) : $this->name;
         $this->fieldCheck = $this->field.'_check';
         $this->configure();
     }
