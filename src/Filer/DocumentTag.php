@@ -565,14 +565,14 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
      * Find template rows in table, row must be has a variable to be considered as
      * template row.
      *
-     * @return \NTLAB\Report\Filer\DocumentTag
+     * @return array
      */
-    protected function findTableTemplateRow()
+    protected function findTableTemplateRow($template)
     {
+        $result = [$template, null];
         $startRow = null;
         $endRow = null;
         $matches = [];
-        $template = $this->tempDocumentMainPart;
         preg_match_all('#<w:tr(.*?)>(.*?)</w:tr>#', $template, $matches, PREG_OFFSET_CAPTURE);
         if (isset($this->extra)) {
             $extras = explode(',', $this->extra);
@@ -597,12 +597,11 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
                 }
             }
         }
-        if (null === $startRow || null === $endRow) {
-            throw new \InvalidArgumentException('Table has no template row');
+        if (null !== $startRow && null !== $endRow) {
+            $result[0] = substr($template, $startRow[1], $endRow[1] + strlen($endRow[0]) - $startRow[1]);
+            $result[1] = str_replace($result[0], '%ROWS%', $template);
         }
-        $this->tempDocumentMainPart = substr($template, $startRow[1], $endRow[1] + strlen($endRow[0]) - $startRow[1]);
-        $this->docTemplate = str_replace($this->tempDocumentMainPart, '%ROWS%', $template);
-        return $this;
+        return $result;
     }
 
     /**
@@ -612,20 +611,22 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
      */
     protected function prepareBuild()
     {
-        switch ($this->docType) {
-            case static::DOC_DOCUMENT:
-                break;
-            case static::DOC_TABLE:
-                $this->findTableTemplateRow();
-                break;
-            case static::DOC_EACH:
-                break;
-        }
         $this->contents = [];
         $this->vars = $this->getVariables();
         $this->ifs = $this->findSubTags(static::DOC_SUB_IF, $this->vars);
         $this->eaches = $this->findSubTags(static::DOC_SUB_EACH, $this->vars);
         $this->tables = $this->findSubTags(static::DOC_SUB_TABLE, $this->vars);
+        switch ($this->docType) {
+            case static::DOC_DOCUMENT:
+                break;
+            case static::DOC_TABLE:
+                list($template, $docTemplate) = $this->findTableTemplateRow($this->tempDocumentMainPart);
+                $this->tempDocumentMainPart = $template;
+                $this->docTemplate = $docTemplate;
+                break;
+            case static::DOC_EACH:
+                break;
+        }
         return $this;
     }
 
@@ -641,7 +642,9 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
             case static::DOC_DOCUMENT:
                 break;
             case static::DOC_TABLE:
-                $this->tempDocumentMainPart = str_replace('%ROWS%', $this->tempDocumentMainPart, $this->docTemplate);
+                if (false !== strpos($this->docTemplate, '%ROWS%')) {
+                    $this->tempDocumentMainPart = str_replace('%ROWS%', $this->tempDocumentMainPart, $this->docTemplate);
+                }
                 break;
             case static::DOC_EACH:
                 break;
