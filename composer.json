@@ -26,8 +26,8 @@
 		"php" : ">=7.1",
 		"ntlab/ntscript": "^1.0",
 		"ntlab/rtftree": "^1.0",
-		"phpoffice/phpspreadsheet": "^1.16",
-		"phpoffice/phpword": "^0.17"
+		"phpoffice/phpspreadsheet": "^1.18",
+		"phpoffice/phpword": "^0.18"
 	},
 	"require-dev" : {
 		"phpunit/phpunit" : "^9.5",
