@@ -464,7 +464,7 @@ abstract class Parameter
      */
     protected function evalValue($value)
     {
-        if (strlen($value) && strlen($this->onValue)) {
+        if (strlen((string) $value) && strlen((string) $this->onValue)) {
             $script = $this->report->getScript();
             $var = new ArrayVar(['value' => $value]);
             $script->setContext($var);

@@ -43,7 +43,7 @@ class Statix extends Parameter
     public function getValue()
     {
         $value = $this->getDefaultValue();
-        if (false !== strpos($value, '|')) {
+        if (false !== strpos((string) $value, '|')) {
             $value = explode('|', $value);
         }
         return $value;
