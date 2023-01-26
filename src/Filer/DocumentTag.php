@@ -438,7 +438,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
                 if ($params['expr'] && $params['content'] && $this->getScript()->evaluate($params['expr'])) {
                     $content = $params['content'];
                 }
-                $template = str_replace($placeholder, $content, $template);
+                $template = str_replace($placeholder, (string) $content, $template);
             }
             // process TBL
             foreach ($this->tables as $tag => $params) {
@@ -450,7 +450,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
                 if ($params['expr'] && $params['content']) {
                     $content = $this->parseSub($this->restoreTemplate($params['content']), $params['expr'], static::DOC_TABLE, isset($params['extra']) ? $params['extra'] : null);
                 }
-                $template = str_replace($placeholder, $content, $template);
+                $template = str_replace($placeholder, (string) $content, $template);
             }
             // process EACH
             foreach ($this->eaches as $tag => $params) {
@@ -462,7 +462,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
                 if ($params['expr'] && $params['content']) {
                     $content = $this->parseSub($params['content'], $params['expr'], static::DOC_EACH);
                 }
-                $template = str_replace($placeholder, $content, $template);
+                $template = str_replace($placeholder, (string) $content, $template);
             }
             // process regular tags
             for ($i = 0; $i < count($this->vars); $i ++) {
