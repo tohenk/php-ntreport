@@ -354,7 +354,6 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
         try {
             $filer = new self();
             $filer->setScript($this->getScript());
-            $filer->tempDocumentFilename = tempnam(dirname($this->tempDocumentFilename), 'sub');
             $filer->tempDocumentMainPart = $template;
             $filer->docType = $docType;
             if (null !== $extra) {
@@ -365,7 +364,6 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
             } else {
                 error_log(sprintf('Expression "%s" from %s return NULL!', $expr, $this->getScript()->getContext()));
             }
-            @unlink($filer->tempDocumentFilename);
             unset($filer);
         }
         catch (\Exception $e) {
@@ -396,7 +394,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
         foreach ($tags as $tag => $params) {
             $placeholder = $this->createSubTag($type, $tag);
             if (false !== strpos($template, $placeholder)) {
-                $content = implode('', [$params['matchStart'], $params['content'], $params['matchEnd']]);
+                $content = implode('', [$params['matchStart'], $this->restoreTemplate($params['content']), $params['matchEnd']]);
                 $template = str_replace($placeholder, $content, $template);
             }
         }
@@ -427,61 +425,72 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
     protected function parse()
     {
         if (count($this->vars)) {
-            $template = $this->tempDocumentMainPart;
-            // process IF
-            foreach ($this->ifs as $tag => $params) {
-                $placeholder = $this->createSubTag(static::DOC_SUB_IF, $tag);
-                if (false === strpos($template, $placeholder)) {
-                    continue;
-                }
-                $content = null;
-                if ($params['expr'] && $params['content'] && $this->getScript()->evaluate($params['expr'])) {
-                    $content = $params['content'];
-                }
-                $template = str_replace($placeholder, (string) $content, $template);
-            }
-            // process TBL
-            foreach ($this->tables as $tag => $params) {
-                $placeholder = $this->createSubTag(static::DOC_SUB_TABLE, $tag);
-                if (false === strpos($template, $placeholder)) {
-                    continue;
-                }
-                $content = null;
-                if ($params['expr'] && $params['content']) {
-                    $content = $this->parseSub($this->restoreTemplate($params['content']), $params['expr'], static::DOC_TABLE, isset($params['extra']) ? $params['extra'] : null);
-                }
-                $template = str_replace($placeholder, (string) $content, $template);
-            }
-            // process EACH
-            foreach ($this->eaches as $tag => $params) {
-                $placeholder = $this->createSubTag(static::DOC_SUB_EACH, $tag);
-                if (false === strpos($template, $placeholder)) {
-                    continue;
-                }
-                $content = null;
-                if ($params['expr'] && $params['content']) {
-                    $content = $this->parseSub($params['content'], $params['expr'], static::DOC_EACH);
-                }
-                $template = str_replace($placeholder, (string) $content, $template);
-            }
-            // process regular tags
-            for ($i = 0; $i < count($this->vars); $i ++) {
-                $tag = $this->vars[$i];
-                $match = $this->getTag()->createTag($tag);
-                // ignore non exist match
-                if (false === strpos($template, $match)) {
-                    continue;
-                }
-                if (false !== ($tag = $this->parseTag($tag))) {
-                    if ($tag instanceof \DateTime) {
-                        $tag = $tag->format(\DateTime::ISO8601);
-                    }
-                    $tag = $this->ensureUtf8Encoded(htmlspecialchars((string) $tag));
-                    $this->replaceText($template, $match, $tag);
-                }
-            }
-            $this->contents[] = $template;
+            $this->contents[] = $this->parseTemplate($this->tempDocumentMainPart);
         }
+        return $this;
+    }
+
+    /**
+     * Parse and replace all tags in template.
+     *
+     * @param string $template
+     * @return string
+     */
+    protected function parseTemplate($template)
+    {
+        // process TBL
+        foreach ($this->tables as $tag => $params) {
+            $placeholder = $this->createSubTag(static::DOC_SUB_TABLE, $tag);
+            if (false === strpos($template, $placeholder)) {
+                continue;
+            }
+            $content = null;
+            if ($params['expr'] && $params['content']) {
+                $content = $this->parseSub($this->restoreTemplate($params['content']), $params['expr'], static::DOC_TABLE, isset($params['extra']) ? $params['extra'] : null);
+            }
+            $template = str_replace($placeholder, (string) $content, $template);
+        }
+        // process IF
+        foreach ($this->ifs as $tag => $params) {
+            $placeholder = $this->createSubTag(static::DOC_SUB_IF, $tag);
+            if (false === strpos($template, $placeholder)) {
+                continue;
+            }
+            $content = null;
+            if ($params['expr'] && $params['content'] && $this->getScript()->evaluate($params['expr'])) {
+                $content = $params['content'];
+            }
+            $template = str_replace($placeholder, (string) $content, $template);
+        }
+        // process EACH
+        foreach ($this->eaches as $tag => $params) {
+            $placeholder = $this->createSubTag(static::DOC_SUB_EACH, $tag);
+            if (false === strpos($template, $placeholder)) {
+                continue;
+            }
+            $content = null;
+            if ($params['expr'] && $params['content']) {
+                $content = $this->parseSub($params['content'], $params['expr'], static::DOC_EACH);
+            }
+            $template = str_replace($placeholder, (string) $content, $template);
+        }
+        // process regular tags
+        for ($i = 0; $i < count($this->vars); $i ++) {
+            $tag = $this->vars[$i];
+            $match = $this->getTag()->createTag($tag);
+            // ignore non exist match
+            if (false === strpos($template, $match)) {
+                continue;
+            }
+            if (false !== ($tag = $this->parseTag($tag))) {
+                if ($tag instanceof \DateTime) {
+                    $tag = $tag->format(\DateTime::ISO8601);
+                }
+                $tag = $this->ensureUtf8Encoded(htmlspecialchars((string) $tag));
+                $this->replaceText($template, $match, $tag);
+            }
+        }
+        return $template;
     }
 
     /**
@@ -642,8 +651,10 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
             case static::DOC_DOCUMENT:
                 break;
             case static::DOC_TABLE:
-                if (false !== strpos($this->docTemplate, '%ROWS%')) {
-                    $this->tempDocumentMainPart = str_replace('%ROWS%', $this->tempDocumentMainPart, $this->docTemplate);
+                if ($this->docTemplate) {
+                    if (false !== strpos($this->docTemplate, '%ROWS%')) {
+                        $this->tempDocumentMainPart = str_replace('%ROWS%', $this->tempDocumentMainPart, $this->docTemplate);
+                    }
                 }
                 break;
             case static::DOC_EACH:
