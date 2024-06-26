@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014-2021 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2024 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -26,7 +26,7 @@
 
 namespace NTLAB\Report;
 
-class Template
+class Template implements \ArrayAccess
 {
     /**
      * @var \NTLAB\Report\Report
@@ -39,6 +39,11 @@ class Template
     protected $content = null;
 
     /**
+     * @var array
+     */
+    protected $properties = [];
+
+    /**
      * Constructor.
      *
      * @param \NTLAB\Report\Report $report
@@ -46,6 +51,31 @@ class Template
     public function __construct($report)
     {
         $this->report = $report;
+    }
+
+    /**
+     * Set property.
+     *
+     * @param string $name
+     * @param mixed $value
+     * @return \NTLAB\Report\Template
+     */
+    public function setProperty($name, $value)
+    {
+        $this->properties[$name] = $value;
+        return $this;
+    }
+
+    /**
+     * Get property.
+     *
+     * @param string $name
+     * @param mixed $default
+     * @return mixed
+     */
+    public function getProperty($name, $default = null)
+    {
+        return isset($this->properties[$name]) ? $this->properties[$name] : $default;
     }
 
     /**
@@ -89,6 +119,26 @@ class Template
             return call_user_func($this->content, $this);
         }
         return $this->content;
+    }
+
+    public function offsetExists(mixed $offset): bool
+    {
+        return isset($this->properties[$offset]);
+    }
+
+    public function offsetGet(mixed $offset): mixed
+    {
+        return $this->properties[$offset];
+    }
+
+    public function offsetSet(mixed $offset, mixed $value): void
+    {
+        $this->properties[$offset] = $value;
+    }
+
+    public function offsetUnset(mixed $offset): void
+    {
+        unset($this->properties[$offset]);
     }
 
     public function __toString()
