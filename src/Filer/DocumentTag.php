@@ -26,6 +26,8 @@
 
 namespace NTLAB\Report\Filer;
 
+use NTLAB\Report\Script\ReportCore;
+use NTLAB\Report\Symbol;
 use NTLAB\Report\Util\Tag;
 use NTLAB\Script\Core\Script;
 use PhpOffice\PhpWord\TemplateProcessor;
@@ -253,6 +255,47 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
     {
         $sEnd = substr($str, $end);
         $sStart = substr($str, 0, $start);
+        switch (true) {
+            // check if replacement should be replaced with symbol
+            case null === $replacement:
+                $replaced = substr($str, $start, $end - $start + 1);
+                $matches = [];
+                preg_match_all('#<w:sym\s(.*?)/>#', $replaced, $matches, PREG_OFFSET_CAPTURE);
+                if (count($matches[0])) {
+                    $symbols = [];
+                    foreach ($matches[0] as $symbol) {
+                        $pos = $symbol[1];
+                        $start = strrpos(substr($replaced, 0, $pos), '<w:r ');
+                        $end = strpos(substr($replaced, $pos + strlen($symbol[0])), '</w:r>');
+                        if (false !== $start && false !== $end) {
+                            $end += $pos + strlen($symbol[0]);
+                            $symbols[] = substr($replaced, $start, $end - $start + 6);
+                        }
+                    }
+                    if (count($symbols)) {
+                        $replacement = ReportCore::getReport()->addSymbol(implode('', $symbols));
+                    }
+                }
+                break;
+            // check if replacement is empty or symbol
+            case '' === $replacement:
+            case $replacement instanceof Symbol && '</w:r>' === substr($replacement, -6):
+                $pos = null;
+                foreach (['<w:r>', '<w:r '] as $t) {
+                    if (false !== ($p = strrpos($sStart, $t))) {
+                        if (null === $pos || $p > $pos) {
+                            $pos = $p;
+                        }
+                    }
+                }
+                if (null !== $pos) {
+                    $sStart = substr($sStart, 0, $pos);
+                }
+                if (false !== ($pos = strpos($sEnd, '</w:r>'))) {
+                    $sEnd = substr($sEnd, $pos + 6);
+                }
+                break;
+        }
         return $sStart.$replacement.$sEnd;
     }
 
@@ -491,7 +534,9 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
                 if ($tag instanceof \DateTime) {
                     $tag = $tag->format(\DateTime::ISO8601);
                 }
-                $tag = $this->ensureUtf8Encoded(htmlspecialchars((string) $tag));
+                if (!$tag instanceof Symbol) {
+                    $tag = $this->ensureUtf8Encoded(htmlspecialchars((string) $tag));
+                }
                 $this->replaceText($template, $match, $tag);
             }
         }
@@ -517,15 +562,23 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
             if (false === ($pos = strpos($template, $search))) {
                 break;
             }
+            /*if ($replace instanceof Symbol) {
+                error_log(sprintf('Template start: %s', substr($template, 0, $pos)));
+                error_log(sprintf('Template end: %s', substr($template, $pos + $len)));
+                error_log(sprintf('Replaced: %s', substr($template, $pos, $len)));
+                error_log(sprintf('Symbol: %s', (string) $replace));
+            }*/
             $template = $this->replaceStrAt($template, $pos, $pos + $len, $replace);
-            if (
-                false !== ($start = strrpos(substr($template, 0, $pos), $sText)) &&
-                false !== ($end = strpos($template, $eText, $start))
-            ) {
-                $content = substr($template, $start + $sLen, $end - $start - $sLen);
-                $encoded = $this->getEncodedText($content);
-                if ($content !== $encoded) {
-                    $template = $this->replaceStrAt($template, $start, $end + $eLen, $encoded);
+            if (!$replace instanceof Symbol) {
+                if (
+                    false !== ($start = strrpos(substr($template, 0, $pos), $sText)) &&
+                    false !== ($end = strpos($template, $eText, $start))
+                ) {
+                    $content = substr($template, $start + $sLen, $end - $start - $sLen);
+                    $encoded = $this->getEncodedText($content);
+                    if ($content !== $encoded) {
+                        $template = $this->replaceStrAt($template, $start, $end + $eLen, $encoded);
+                    }
                 }
             }
         }
@@ -588,7 +641,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
         $endRow = null;
         $matches = [];
         preg_match_all('#<w:tr(.*?)>(.*?)</w:tr>#', $template, $matches, PREG_OFFSET_CAPTURE);
-        if (isset($this->extra)) {
+        if ($this->extra) {
             $extras = explode(',', $this->extra);
             $startIdx = (int) $extras[0];
             $rowSize = count($extras) > 1 ? (int) $extras[1] : 1;

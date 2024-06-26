@@ -197,6 +197,11 @@ abstract class Report
     /**
      * @var array
      */
+    protected $symbols = [];
+
+    /**
+     * @var array
+     */
     protected static $engines = [];
 
     /**
@@ -685,6 +690,42 @@ abstract class Report
     }
 
     /**
+     * Clear symbols.
+     *
+     * @return \NTLAB\Report\Report
+     */
+    public function clearSymbols()
+    {
+        $this->symbols = [];
+        return $this;
+    }
+
+    /**
+     * Add symbol and return script function to retrieve it.
+     *
+     * @param string $symbol
+     * @return string
+     */
+    public function addSymbol($symbol)
+    {
+        if (!in_array($symbol, $this->symbols)) {
+            $this->symbols[] = $symbol;
+        }
+        return Script::asFunc('sym', array_search($symbol, $this->symbols));
+    }
+
+    /**
+     * Get symbol at specified index.
+     *
+     * @param int $offset
+     * @return string
+     */
+    public function getSymbol($offset)
+    {
+        return isset($this->symbols[$offset]) ? $this->symbols[$offset] : null;
+    }
+
+    /**
      * Save report configuration.
      *
      * @return \NTLAB\Report\Report
@@ -852,6 +893,7 @@ abstract class Report
     public function generateFromObjects($objects)
     {
         ReportCore::setReport($this);
+        $this->clearSymbols();
         $this->error = null;
         $this->status = null;
         $this->result = $objects;
