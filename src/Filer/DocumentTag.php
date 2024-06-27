@@ -243,6 +243,48 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
     }
 
     /**
+     * Get the right most position of tags.
+     *
+     * @param string $str
+     * @param array<string> $tags
+     * @return int|null
+     */
+    protected function getLastTagPos($str, $tags)
+    {
+        $pos = null;
+        $tags = is_array($tags) ? $tags : [$tags];
+        foreach ($tags as $tag) {
+            if (false !== ($p = strrpos($str, $tag))) {
+                if (null === $pos || $p > $pos) {
+                    $pos = $p;
+                }
+            }
+        }
+        return $pos;
+    }
+
+    /**
+     * Get the left most position of tags.
+     *
+     * @param string $str
+     * @param array<string> $tags
+     * @return int|null
+     */
+    protected function getFirstTagPos($str, $tags)
+    {
+        $pos = null;
+        $tags = is_array($tags) ? $tags : [$tags];
+        foreach ($tags as $tag) {
+            if (false !== ($p = strpos($str, $tag))) {
+                if (null === $pos || $p < $pos) {
+                    $pos = $p + strlen($tag);
+                }
+            }
+        }
+        return $pos;
+    }
+
+    /**
      * Clean part of string from start to end position.
      *
      * @param string $str
@@ -265,11 +307,13 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
                     $symbols = [];
                     foreach ($matches[0] as $symbol) {
                         $pos = $symbol[1];
-                        $start = strrpos(substr($replaced, 0, $pos), '<w:r ');
-                        $end = strpos(substr($replaced, $pos + strlen($symbol[0])), '</w:r>');
-                        if (false !== $start && false !== $end) {
+                        $symStart = substr($replaced, 0, $pos);
+                        $symEnd = substr($replaced, $pos + strlen($symbol[0]));
+                        $start = $this->getLastTagPos($symStart, ['<w:r>', '<w:r ']);
+                        $end = $this->getFirstTagPos($symEnd, ['</w:r>']);
+                        if (null !== $start && null !== $end) {
                             $end += $pos + strlen($symbol[0]);
-                            $symbols[] = substr($replaced, $start, $end - $start + 6);
+                            $symbols[] = substr($replaced, $start, $end - $start);
                         }
                     }
                     if (count($symbols)) {
@@ -280,19 +324,11 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
             // check if replacement is empty or symbol
             case '' === $replacement:
             case $replacement instanceof Symbol && '</w:r>' === substr($replacement, -6):
-                $pos = null;
-                foreach (['<w:r>', '<w:r '] as $t) {
-                    if (false !== ($p = strrpos($sStart, $t))) {
-                        if (null === $pos || $p > $pos) {
-                            $pos = $p;
-                        }
-                    }
-                }
-                if (null !== $pos) {
+                if (null !== ($pos = $this->getLastTagPos($sStart, ['<w:r>', '<w:r ']))) {
                     $sStart = substr($sStart, 0, $pos);
                 }
-                if (false !== ($pos = strpos($sEnd, '</w:r>'))) {
-                    $sEnd = substr($sEnd, $pos + 6);
+                if (null !== ($pos = $this->getFirstTagPos($sEnd, ['</w:r>']))) {
+                    $sEnd = substr($sEnd, $pos);
                 }
                 break;
         }
@@ -404,9 +440,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
             $filer->setScript($this->getScript());
             $filer->tempDocumentMainPart = $template;
             $filer->docType = $docType;
-            if (null !== $extra) {
-                $filer->extra = $extra;
-            }
+            $filer->extra = $extra;
             if (null !== ($objects = $this->getScript()->evaluate($expr))) {
                 $content = $filer->build(null, $objects);
             } else {
@@ -520,6 +554,15 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
             if ($params['expr'] && $params['content']) {
                 $content = $this->parseSub($params['content'], $params['expr'], static::DOC_EACH);
             }
+            // empty each result in table column should be replaced with paragraph
+            if ('' === $content) {
+                $pos = strpos($template, $placeholder);
+                $tmplStart = substr($template, 0, $pos);
+                $tmplEnd = substr($template, $pos + strlen($placeholder));
+                if (substr($tmplStart, -9) === '</w:tcPr>' && substr($tmplEnd, 0, 7) === '</w:tc>') {
+                    $content = '<w:p/>';
+                }
+            }
             $template = str_replace($placeholder, (string) $content, $template);
         }
         // process regular tags
@@ -535,7 +578,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
                     $tag = $tag->format(\DateTime::ISO8601);
                 }
                 if (!$tag instanceof Symbol) {
-                    $tag = $this->ensureUtf8Encoded(htmlspecialchars((string) $tag));
+                    $tag = $this->ensureUtf8Encoded(htmlspecialchars((string) $tag, ENT_NOQUOTES|ENT_SUBSTITUTE));
                 }
                 $this->replaceText($template, $match, $tag);
             }
@@ -562,12 +605,6 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
             if (false === ($pos = strpos($template, $search))) {
                 break;
             }
-            /*if ($replace instanceof Symbol) {
-                error_log(sprintf('Template start: %s', substr($template, 0, $pos)));
-                error_log(sprintf('Template end: %s', substr($template, $pos + $len)));
-                error_log(sprintf('Replaced: %s', substr($template, $pos, $len)));
-                error_log(sprintf('Symbol: %s', (string) $replace));
-            }*/
             $template = $this->replaceStrAt($template, $pos, $pos + $len, $replace);
             if (!$replace instanceof Symbol) {
                 if (
