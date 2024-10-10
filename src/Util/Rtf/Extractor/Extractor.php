@@ -31,7 +31,7 @@ use NTLAB\RtfTree\Node\Node;
 
 class Extractor
 {
-    const TAG_SIGN = '%';
+    public const TAG_SIGN = '%';
 
     /**
      * @var string
@@ -99,7 +99,7 @@ class Extractor
      */
     public static function getTagRegex()
     {
-        if (null == static::$re) {
+        if (null === static::$re) {
             $tags = static::getTags();
             static::$re = sprintf('/%1$s([^%1$s]+)%2$s/', $tags[0], $tags[1]);
         }

@@ -29,7 +29,7 @@ namespace NTLAB\Report\Filer;
 /**
  * Quick and dirty filer for RTF using regular expression.
  *
- * @author Toha
+ * @author Toha <tohenk@yahoo.com>
  */
 class Rtf extends RtfTag
 {

@@ -254,7 +254,7 @@ abstract class Data
      */
     protected function applyFormat($format, $value)
     {
-        if ($format && (false != strpos($format, '%s') || false != strpos($format, '%1$s'))) {
+        if ($format && (false !== strpos($format, '%s') || false !== strpos($format, '%1$s'))) {
             $value = sprintf($format, $value);
         }
         return $value;

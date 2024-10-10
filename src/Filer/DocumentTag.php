@@ -26,6 +26,8 @@
 
 namespace NTLAB\Report\Filer;
 
+use DOMDocument;
+use DOMXPath;
 use NTLAB\Report\Script\ReportCore;
 use NTLAB\Report\Symbol;
 use NTLAB\Report\Util\Tag;
@@ -35,17 +37,26 @@ use PhpOffice\PhpWord\TemplateProcessor;
 /**
  * Document Filer using PHPWord Template Processor.
  *
- * @author Toha
+ * @author Toha <tohenk@yahoo.com>
  */
 class DocumentTag extends TemplateProcessor implements FilerInterface
 {
-    const DOC_DOCUMENT    = 1;
-    const DOC_TABLE       = 2;
-    const DOC_EACH        = 3;
+    public const CONTENT_TYPES_NS = 'http://schemas.openxmlformats.org/package/2006/content-types';
+    public const RELATIONSHIPS_NS = 'http://schemas.openxmlformats.org/package/2006/relationships';
+    public const IMAGE_RELATIONSHIP_TYPE = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/image';
 
-    const DOC_SUB_TABLE   = 'TBL';
-    const DOC_SUB_EACH    = 'EACH';
-    const DOC_SUB_IF      = 'IF';
+    public const DOC_DOCUMENT = 1;
+    public const DOC_TABLE = 2;
+    public const DOC_EACH = 3;
+
+    public const DOC_SUB_TABLE = 'TBL';
+    public const DOC_SUB_EACH = 'EACH';
+    public const DOC_SUB_IF = 'IF';
+
+    /**
+     * @var \NTLAB\Report\Filer\DocumentTag
+     */
+    protected $context = null;
 
     /**
      * @var \NTLAB\Report\Util\Tag
@@ -100,6 +111,11 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
     /**
      * @var array
      */
+    protected $images = [];
+
+    /**
+     * @var array
+     */
     protected $cleanMaps = ["#<(/)*(.*?)(/)*>#"];
 
     /**
@@ -111,6 +127,21 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
      * @var string
      */
     protected $extra = null;
+
+    /**
+     * @var \DOMDocument
+     */
+    protected $contentTypes = null;
+
+    /**
+     * @var \DOMDocument
+     */
+    protected $relations = null;
+
+    /**
+     * @var array<string>
+     */
+    protected $relationIds = [];
 
     /**
      * Constructor.
@@ -157,6 +188,16 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
             $this->tag = new Tag();
         }
         return $this->tag;
+    }
+
+    /**
+     * Get context.
+     *
+     * @return \NTLAB\Report\Filer\DocumentTag
+     */
+    public function getContext()
+    {
+        return $this->context ? $this->context : $this;
     }
 
     /**
@@ -210,7 +251,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
                                     // is cleaning necessary
                                     if ($e === $startPos) {
                                         $startPos = $s;
-                                        if ($i == 0) {
+                                        if ($i === 0) {
                                             $cleaned = true;
                                         }
                                     } else {
@@ -228,7 +269,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
                                     $i++;
                                 }
                             }
-                            if ($i == 0) {
+                            if ($i === 0) {
                                 break;
                             }
                         }
@@ -247,16 +288,17 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
      *
      * @param string $str
      * @param array<string> $tags
+     * @param bool $exclude
      * @return int|null
      */
-    protected function getLastTagPos($str, $tags)
+    protected function getLastTagPos($str, $tags, $exclude = true)
     {
         $pos = null;
         $tags = is_array($tags) ? $tags : [$tags];
         foreach ($tags as $tag) {
             if (false !== ($p = strrpos($str, $tag))) {
                 if (null === $pos || $p > $pos) {
-                    $pos = $p;
+                    $pos = $p + ($exclude ? 0 : strlen($tag));
                 }
             }
         }
@@ -268,16 +310,17 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
      *
      * @param string $str
      * @param array<string> $tags
+     * @param bool $exclude
      * @return int|null
      */
-    protected function getFirstTagPos($str, $tags)
+    protected function getFirstTagPos($str, $tags, $exclude = true)
     {
         $pos = null;
         $tags = is_array($tags) ? $tags : [$tags];
         foreach ($tags as $tag) {
             if (false !== ($p = strpos($str, $tag))) {
                 if (null === $pos || $p < $pos) {
-                    $pos = $p + strlen($tag);
+                    $pos = $p + ($exclude ? strlen($tag) : 0);
                 }
             }
         }
@@ -367,7 +410,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
      * Get sub tags in template.
      *
      * @param string $key  Tag key
-     * @param array $vars  The variables tags
+     * @param array $vars  The variable tags
      * @return array
      */
     protected function findSubTags($key, $vars)
@@ -375,10 +418,10 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
         $items = [];
         $skey = sprintf('%s:', $key);
         $ekey = sprintf('%sE:', $key);
-        for ($i = 0; $i < count($vars); $i ++) {
+        for ($i = 0; $i < count($vars); $i++) {
             $tag = $this->clean($vars[$i]);
             $match = $this->getTag()->createTag($vars[$i]);
-            if ($skey == substr($tag, 0, strlen($skey))) {
+            if ($skey === substr($tag, 0, strlen($skey))) {
                 $tags = explode(':', $tag, 4);
                 $items[$tags[1]] = [
                     'start' => $match,
@@ -390,7 +433,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
                     $items[$tags[1]]['extra'] = $tags[3];
                 }
             }
-            if ($ekey == substr($tag, 0, strlen($ekey))) {
+            if ($ekey === substr($tag, 0, strlen($ekey))) {
                 $tags = explode(':', $tag, 2);
                 if (isset($items[$tags[1]])) {
                     $items[$tags[1]]['end'] = $match;
@@ -398,7 +441,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
             }
         }
         $keys = array_keys($items);
-        for ($i = 0; $i < count($keys); $i ++) {
+        for ($i = 0; $i < count($keys); $i++) {
             if ($items[$keys[$i]]['start'] && $items[$keys[$i]]['end']) {
                 if (
                     ($startPos = $this->findContainingXmlBlockForMacro($items[$keys[$i]]['start'])) &&
@@ -423,6 +466,39 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
     }
 
     /**
+     * Find images in template part.
+     *
+     * @param array The variable tags
+     * @return array
+     */
+    protected function findImages(&$vars)
+    {
+        $items = [];
+        $founds = [];
+        for ($i = 0; $i < count($vars); $i++) {
+            $tag = $this->getTag()->createTag($vars[$i]);
+            if (false !== ($p = strpos($this->tempDocumentMainPart, $tag))) {
+                $tmplStart = substr($this->tempDocumentMainPart, 0, $p);
+                $tmplEnd = substr($this->tempDocumentMainPart, $p + strlen($tag));
+                $s = $this->getFirstTagPos($tmplStart, '<w:drawing>', false);
+                $e = $this->getLastTagPos($tmplEnd, '</w:drawing>', false);
+                if (null !== $s && null !== $e) {
+                    $part = substr($tmplStart, $s).$tag.substr($tmplEnd, 0, $e);
+                    $items[$vars[$i]] = [
+                        'start' => $s,
+                        'content' => $part,
+                    ];
+                    $founds[] = $i;
+                }
+            }
+        }
+        foreach (array_reverse($founds) as $index) {
+            unset($vars[$index]);
+        }
+        return $items;
+    }
+
+    /**
      * Parse sub template.
      *
      * @param string $template  Template content
@@ -438,6 +514,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
         try {
             $filer = new self();
             $filer->setScript($this->getScript());
+            $filer->context = $this->getContext();
             $filer->tempDocumentMainPart = $template;
             $filer->docType = $docType;
             $filer->extra = $extra;
@@ -506,9 +583,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
      */
     protected function parse()
     {
-        if (count($this->vars)) {
-            $this->contents[] = $this->parseTemplate($this->tempDocumentMainPart);
-        }
+        $this->contents[] = $this->parseTemplate($this->tempDocumentMainPart);
         return $this;
     }
 
@@ -565,8 +640,27 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
             }
             $template = str_replace($placeholder, (string) $content, $template);
         }
+        // process IMAGES
+        foreach ($this->images as $tag => $params) {
+            $content = null;
+            $tmplImg = $params['content'];
+            if (($data = $this->parseTag($tag)) && false !== ($imgdata = @getimagesizefromstring($data))) {
+                // update content types
+                $extension = $this->getImageExtension($imgdata[2]);
+                // update relations
+                preg_match('#r:embed="(rId\d+)"#', $tmplImg, $matches);
+                list($rid, $imageName) = $this->getImageRelationId($extension, $matches[1]);
+                // update media
+                /** @var \ZipArchive $zip */
+                $zip = $this->getContext()->zipClass;
+                $zip->addFromString(sprintf('word/%s', $imageName), $data);
+                // update image template
+                $content = strtr($tmplImg, [$matches[1] => $rid]);
+            }
+            $template = str_replace($tmplImg, (string) $content, $template);
+        }
         // process regular tags
-        for ($i = 0; $i < count($this->vars); $i ++) {
+        for ($i = 0; $i < count($this->vars); $i++) {
             $tag = $this->vars[$i];
             $match = $this->getTag()->createTag($tag);
             // ignore non exist match
@@ -584,6 +678,113 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
             }
         }
         return $template;
+    }
+
+    /**
+     * Get image extension and update content types if needed.
+     *
+     * @param int $imageType Image type
+     * @return string
+     */
+    protected function getImageExtension($imageType)
+    {
+        $extensions = [
+            'image/jpeg' => 'jpeg',
+            'image/png'  => 'png',
+            'image/bmp'  => 'bmp',
+            'image/gif'  => 'gif',
+        ];
+        $imageMime = image_type_to_mime_type($imageType);
+        if (isset($extensions[$imageMime])) {
+            $ctx = $this->getContext();
+            $extension = $extensions[$imageMime];
+            if (null === $ctx->contentTypes) {
+                $ctx->contentTypes = new DOMDocument();
+                $ctx->contentTypes->loadXML($ctx->tempDocumentContentTypes);
+            }
+            $xpath = new DOMXPath($ctx->contentTypes);
+            $xpath->registerNamespace('ns', static::CONTENT_TYPES_NS);
+            $matchedNode = null;
+            $insertNode = null;
+            /** @var \DOMElement $node */
+            foreach ($xpath->query('//ns:Types/ns:Default[@Extension]') as $node) {
+                if ($node->getAttribute('Extension') === 'rels') {
+                    $insertNode = $node;
+                }
+                if ($node->getAttribute('Extension') === $extension) {
+                    $matchedNode = $node;
+                    break;
+                }
+            }
+            if (null === $matchedNode) {
+                $node = $ctx->contentTypes->createElementNS(static::CONTENT_TYPES_NS, 'Default');
+                $node->setAttribute('Extension', $extension);
+                $node->setAttribute('ContentType', $imageMime);
+                if ($insertNode) {
+                    $ctx->contentTypes->documentElement->insertBefore($node, $insertNode);
+                } else {
+                    $ctx->contentTypes->documentElement->appendChild($node);
+                }
+            }
+            return $extension;
+        }
+    }
+
+    /**
+     * Get image relation id and update document relationships.
+     *
+     * @param string $extension Image extension
+     * @param string $rid Original relation id from template
+     * @return array
+     */
+    protected function getImageRelationId($extension, $rid)
+    {
+        $imageName = null;
+        $ctx = $this->getContext();
+        if (null == $ctx->relations) {
+            $ctx->relations = new DOMDocument();
+            $ctx->relations->loadXML($ctx->tempDocumentRelations[$ctx->getMainPartName()]);
+        }
+        $relId = in_array($rid, $ctx->relationIds) ? null : $rid;
+        $usedIds = [];
+        $xpath = new DOMXPath($ctx->relations);
+        $xpath->registerNamespace('ns', static::RELATIONSHIPS_NS);
+        /** @var \DOMElement $node */
+        foreach ($xpath->query('//ns:Relationships/ns:Relationship') as $node) {
+            $usedIds[] = (int) substr($node->getAttribute('Id'), 3);
+            if (null !== $relId) {
+                if ($node->getAttribute('Id') === $relId) {
+                    /** @var \ZipArchive $zip */
+                    $zip = $ctx->zipClass;
+                    $zip->deleteName(sprintf('word/%s', $node->getAttribute('Target')));
+                    $ctx->relations->documentElement->removeChild($node);
+                    break;
+                }
+            }
+        }
+        if (null === $relId) {
+            usort($usedIds, function($a, $b) {
+                return $a - $b;
+            });
+            $i = 0;
+            while (true) {
+                $i++;
+                if (!in_array($i, $usedIds)) {
+                    $relId = sprintf('rId%d', $i);
+                    break;
+                }
+            }
+        }
+        $ctx->relationIds[] = $relId;
+        if (null === $imageName) {
+            $imageName = sprintf('media/image%d.%s', count($ctx->relationIds), $extension);
+        }
+        $node = $ctx->relations->createElementNS(static::RELATIONSHIPS_NS, 'Relationship');
+        $node->setAttribute('Id', $relId);
+        $node->setAttribute('Type', static::IMAGE_RELATIONSHIP_TYPE);
+        $node->setAttribute('Target', $imageName);
+        $ctx->relations->documentElement->appendChild($node);
+        return [$relId, $imageName];
     }
 
     /**
@@ -731,6 +932,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
             case static::DOC_EACH:
                 break;
         }
+        $this->images = $this->findImages($this->vars);
         return $this;
     }
 
@@ -754,6 +956,12 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
                 break;
             case static::DOC_EACH:
                 break;
+        }
+        if ($this->contentTypes) {
+            $this->tempDocumentContentTypes = $this->contentTypes->saveXML();
+        }
+        if ($this->relations) {
+            $this->tempDocumentRelations[$this->getMainPartName()] = $this->relations->saveXML();
         }
         return $this;
     }

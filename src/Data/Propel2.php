@@ -35,25 +35,19 @@ use NTLAB\Report\Parameter\DateMonth as DateMonthParameter;
 use NTLAB\Report\Parameter\DateYear as DateYearParameter;
 use NTLAB\Report\Parameter\Statix as StaticParameter;
 use Propel\Runtime\ActiveQuery\Criteria;
-use Propel\Runtime\ActiveQuery\ModelCriteria;
 use Propel\Runtime\Map\TableMap;
 
 class Propel2 extends Data
 {
-    const COLUMN_CONCATENATOR = '.';
+    public const COLUMN_CONCATENATOR = '.';
 
     /**
-     * @var ModelCriteria
+     * @var \Propel\Runtime\ActiveQuery\ModelCriteria
      */
     protected $query = null;
 
     /**
-     * @var TableMap
-     */
-    protected $tableMap = null;
-
-    /**
-     * @var ModelCriteria[]
+     * @var \Propel\Runtime\ActiveQuery\ModelCriteria[]
      */
     protected $items = [];
 
@@ -69,7 +63,7 @@ class Propel2 extends Data
      */
     public static function isSupported()
     {
-        if (null == static::$supported) {
+        if (null === static::$supported) {
             static::$supported = class_exists('\Propel\Runtime\Propel') && version_compare(\Propel\Runtime\Propel::VERSION, '2.0.0', '>=') >= 0;
         }
         return static::$supported;
@@ -161,7 +155,7 @@ class Propel2 extends Data
     /**
      * Get the query object.
      *
-     * @return ModelCriteria
+     * @return \Propel\Runtime\ActiveQuery\ModelCriteria
      */
     protected function getQuery()
     {
@@ -173,23 +167,9 @@ class Propel2 extends Data
     }
 
     /**
-     * Get table map.
-     *
-     * @return TableMap
-     */
-    protected function getTableMap()
-    {
-        if (null == $this->tableMap) {
-            $this->tableMap = call_user_func([constant($this->source.'::TABLE_MAP'), 'getTableMap']);
-        }
-
-        return $this->tableMap;
-    }
-
-    /**
      * Apply query to criteria object.
      *
-     * @param ModelCriteria $query  The criteria object
+     * @param \Propel\Runtime\ActiveQuery\ModelCriteria $query  The criteria object
      * @param string $column  The column name, can be nested using MyModel.MyOtherModel.MyMethod
      * @param string $method_format  The method format to be called
      * @param array $args  The method arguments
@@ -209,13 +189,15 @@ class Propel2 extends Data
         } else {
             $method = $method_format;
             if ($translate) {
+                $tableMap = $this->getQuery()->getTableMap();
                 foreach ([TableMap::TYPE_PHPNAME, TableMap::TYPE_FIELDNAME] as $type) {
                     try {
-                        $translatedColumn = TableMap::translateFieldname($query->getModelName(), $column, $type, TableMap::TYPE_COLNAME);
+                        $translatedColumn = $tableMap->translateFieldName($column, $type, TableMap::TYPE_COLNAME);
                         $column = $translatedColumn;
                         break;
                     }
                     catch (\Exception $e) {
+                        error_log($e->getMessage());
                     }
                 }
             }
@@ -239,7 +221,7 @@ class Propel2 extends Data
     /**
      * End all sub query uses and merge with main query.
      *
-     * @return ModelCriteria
+     * @return \Propel\Runtime\ActiveQuery\ModelCriteria
      */
     protected function endQueryUses()
     {
@@ -261,7 +243,7 @@ class Propel2 extends Data
     public function getColumn($column)
     {
         $result = null;
-        $tableMap = $this->getTableMap();
+        $tableMap = $this->getQuery()->getTableMap();
         if (false !== strpos($column, self::COLUMN_CONCATENATOR)) {
             $cols = explode(self::COLUMN_CONCATENATOR, $column);
             $colName = array_pop($cols);
@@ -289,7 +271,7 @@ class Propel2 extends Data
      */
     protected function formatDate($column, $dateType, $dateValue, $operator = null)
     {
-        $tableMap = $this->getTableMap();
+        $tableMap = $this->getQuery()->getTableMap();
         $adapter = \Propel\Runtime\Propel::getAdapter($tableMap::DATABASE_NAME);
         if (DateParameter::DATE === $dateType) {
             $dateValue = date($adapter->getDateFormatter(), $dateValue);
@@ -330,10 +312,12 @@ class Propel2 extends Data
             case DateOnlyParameter::ID:
             case DateMonthParameter::ID:
             case DateYearParameter::ID:
+                /** @var \NTLAB\Report\Parameter\Date $parameter */
                 $value = $this->formatDate($parameter->getRealColumn(), $parameter->getDateTypeValue(), $value, $operator);
                 $operator = Criteria::CUSTOM;
                 break;
             case DateRangeParameter::ID:
+                /** @var \NTLAB\Report\Parameter\DateRange $parameter */
                 $value = sprintf('(%s AND %s)',
                     $this->formatDate($parameter->getRealColumn(), $parameter->getDateTypeValue(), $value, '>='),
                     $this->formatDate($parameter->getRealColumn(), $parameter->getDateTypeValue(), $parameter->getCurrentValue2(), '<=')

@@ -32,7 +32,7 @@ use Propel\Runtime\DataFetcher\DataFetcherInterface;
 
 abstract class Parameter
 {
-    const ID = 'none';
+    public const ID = 'none';
 
     /**
      * @var \NTLAB\Report\Report
@@ -490,7 +490,7 @@ abstract class Parameter
      */
     public function getValues()
     {
-        if (null == $this->values) {
+        if (null === $this->values) {
             $this->values = [];
             try {
                 if (($value = $this->getDefaultValue()) &&
@@ -511,6 +511,7 @@ abstract class Parameter
                     }
                 }
             } catch (\Exception $e) {
+                error_log($e->getMessage());
             }
         }
         return $this->values;

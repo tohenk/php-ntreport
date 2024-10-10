@@ -29,7 +29,7 @@ namespace NTLAB\Report\Filer;
 /**
  * Document filer using PHPOffice PhpWord.
  *
- * @author Toha
+ * @author Toha <tohenk@yahoo.com>
  */
 class Document extends DocumentTag
 {

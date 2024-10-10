@@ -28,7 +28,7 @@ namespace NTLAB\Report\Parameter;
 
 class Boolean extends Parameter
 {
-    const ID = 'bool';
+    public const ID = 'bool';
 
     protected function configure()
     {

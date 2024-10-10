@@ -29,17 +29,17 @@ namespace NTLAB\Report\Util;
 /**
  * Report TAG utility.
  *
- * @author Toha
+ * @author Toha <tohenk@yahoo.com>
  */
 class Tag
 {
-    const TAG_SIGN = '%';
+    public const TAG_SIGN = '%';
 
-    const TAG_SUBTYPE_DELIM = '!';
-    const TAG_OPTIONS_DELIM = '?';
-    const TAG_CASE_DELIM = ':';
+    public const TAG_SUBTYPE_DELIM = '!';
+    public const TAG_OPTIONS_DELIM = '?';
+    public const TAG_CASE_DELIM = ':';
 
-    const TAG_OPTIONS_SPLIT = ',';
+    public const TAG_OPTIONS_SPLIT = ',';
 
     /**
      * @var string
@@ -103,7 +103,7 @@ class Tag
      */
     public function getTagRegex()
     {
-        if (null == $this->tagRe) {
+        if (null === $this->tagRe) {
             $tags = $this->getTags();
             $this->tagRe = sprintf('/%1$s([^%1$s]+)%2$s/', $tags[0], $tags[1]);
         }
@@ -164,7 +164,7 @@ class Tag
                 }
             }
             // fix tags in case only got value
-            if (1 == count($tags)) {
+            if (1 === count($tags)) {
                 $tags[0] = $tag;
             }
         }

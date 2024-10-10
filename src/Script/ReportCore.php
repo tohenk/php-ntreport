@@ -35,7 +35,7 @@ use NTLAB\Report\Symbol;
 /**
  * Report core functions.
  *
- * @author Toha
+ * @author Toha <tohenk@yahoo.com>
  * @id report.core
  */
 class ReportCore extends Module

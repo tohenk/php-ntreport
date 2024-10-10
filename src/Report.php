@@ -78,16 +78,16 @@ Manager::addProvider(ProviderReport::getInstance());
 
 abstract class Report
 {
-    const ID = 'none';
+    public const ID = 'none';
 
-    const ORDER_ASC = 'ASC';
-    const ORDER_DESC = 'DESC';
+    public const ORDER_ASC = 'ASC';
+    public const ORDER_DESC = 'DESC';
 
-    const STATUS_OK = 0;
-    const STATUS_ERR_TMPL = 1;
-    const STATUS_ERR_TMPL_INVALID = 2;
-    const STATUS_ERR_NO_DATA = 3;
-    const STATUS_ERR_INTERNAL = 4;
+    public const STATUS_OK = 0;
+    public const STATUS_ERR_TMPL = 1;
+    public const STATUS_ERR_TMPL_INVALID = 2;
+    public const STATUS_ERR_NO_DATA = 3;
+    public const STATUS_ERR_INTERNAL = 4;
 
     /**
      * @var \DOMDocument
@@ -923,7 +923,7 @@ abstract class Report
         $message = null;
         while (null !== $exception) {
             if ($msg = $exception->getMessage()) {
-                if (null == $message) {
+                if (null === $message) {
                     $message = $msg;
                 } else {
                     $message = sprintf($wrapper, $message, $msg);

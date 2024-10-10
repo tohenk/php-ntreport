@@ -28,7 +28,7 @@ namespace NTLAB\Report\Parameter;
 
 class DateRange extends DateOnly
 {
-    const ID = 'daterange';
+    public const ID = 'daterange';
 
     /**
      * Get parameter field name for the second date.

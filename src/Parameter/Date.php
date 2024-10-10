@@ -28,11 +28,11 @@ namespace NTLAB\Report\Parameter;
 
 class Date extends Parameter
 {
-    const ID = 'date';
+    public const ID = 'date';
 
-    const DATE = 'date';
-    const MONTH = 'month';
-    const YEAR = 'year';
+    public const DATE = 'date';
+    public const MONTH = 'month';
+    public const YEAR = 'year';
 
     /**
      * Get date type field name.

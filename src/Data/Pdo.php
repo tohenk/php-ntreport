@@ -69,7 +69,7 @@ class Pdo extends Data
      */
     public static function isSupported()
     {
-        if (null == static::$supported) {
+        if (null === static::$supported) {
             static::$supported = extension_loaded('pdo');
         }
         return static::$supported;

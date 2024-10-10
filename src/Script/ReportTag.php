@@ -31,7 +31,7 @@ use NTLAB\Script\Core\Module;
 /**
  * Report tag functions.
  *
- * @author Toha
+ * @author Toha <tohenk@yahoo.com>
  * @id report.tag
  */
 class ReportTag extends Module

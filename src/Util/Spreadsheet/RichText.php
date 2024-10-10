@@ -31,14 +31,14 @@ use PhpOffice\PhpSpreadsheet\RichText\Run as XlRichTextRun;
 
 class RichText
 {
-    const TAG_BOLD = 'b';
-    const TAG_ITALIC = 'i';
-    const TAG_UNDERLINE = 'u';
-    const TAG_STRIKETHROUGH = 'strike';
-    const TAG_SUBSCRIPT = 'sub';
-    const TAG_SUPERSCRIPT = 'sup';
-    const TAG_SIZE = 'size';
-    const TAG_COLOR = 'color';
+    public const TAG_BOLD = 'b';
+    public const TAG_ITALIC = 'i';
+    public const TAG_UNDERLINE = 'u';
+    public const TAG_STRIKETHROUGH = 'strike';
+    public const TAG_SUBSCRIPT = 'sub';
+    public const TAG_SUPERSCRIPT = 'sup';
+    public const TAG_SIZE = 'size';
+    public const TAG_COLOR = 'color';
 
     protected static $tags = [
         self::TAG_BOLD,
@@ -231,7 +231,7 @@ class RichText
             $matches = null;
             $regex = self::tagRegex($tag);
             if (preg_match_all($regex, $text, $matches, PREG_OFFSET_CAPTURE)) {
-                for ($i = 0; $i < count($matches[0]); $i ++) {
+                for ($i = 0; $i < count($matches[0]); $i++) {
                     $offset = $matches[0][$i][1];
                     $match = $matches[0][$i][0];
                     $extra = $matches[2][$i][0];
@@ -289,7 +289,7 @@ class RichText
                 $matches = null;
                 $regex = self::tagRegex($tag);
                 if (preg_match_all($regex, $text, $matches, PREG_OFFSET_CAPTURE)) {
-                    if ($text == $matches[0][0][0]) {
+                    if ($text === $matches[0][0][0]) {
                         $text = $matches[3][0][0];
                         if (!array_key_exists($tag, $options)) {
                             $options[$tag] = $matches[2][0][0] ? $matches[2][0][0] : null;

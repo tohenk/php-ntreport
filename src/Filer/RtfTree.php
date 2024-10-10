@@ -36,7 +36,7 @@ use NTLAB\Report\Util\Rtf\Extractor\Table as TableExtractor;
 /**
  * Rtf filer which parse richtext document into nodes and do its job.
  *
- * @author Toha
+ * @author Toha <tohenk@yahoo.com>
  */
 class RtfTree implements FilerInterface
 {

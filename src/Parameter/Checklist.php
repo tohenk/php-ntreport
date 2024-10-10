@@ -28,7 +28,7 @@ namespace NTLAB\Report\Parameter;
 
 class Checklist extends Reference
 {
-    const ID = 'checklist';
+    public const ID = 'checklist';
 
     protected function getDefaultTitle()
     {

@@ -24,10 +24,10 @@
 	},
 	"require" : {
 		"php" : ">=7.1",
-		"ntlab/ntscript": "^1.0",
+		"ntlab/ntscript": "^1.3",
 		"ntlab/rtftree": "^1.0",
-		"phpoffice/phpspreadsheet": "^1.18",
-		"phpoffice/phpword": "^0.18"
+		"phpoffice/phpspreadsheet": "^3.3",
+		"phpoffice/phpword": "^1.3"
 	},
 	"require-dev" : {
 		"phpunit/phpunit" : "^9.5",

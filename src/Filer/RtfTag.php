@@ -32,7 +32,7 @@ use NTLAB\Script\Core\Script;
 /**
  * RTF Tag filer using regular expression.
  *
- * @author Toha
+ * @author Toha <tohenk@yahoo.com>
  */
 class RtfTag implements FilerInterface
 {
@@ -207,10 +207,10 @@ class RtfTag implements FilerInterface
     protected function parseEach(&$template, $matches)
     {
         $eachs = [];
-        for ($i = 0; $i < count($matches[1]); $i ++) {
+        for ($i = 0; $i < count($matches[1]); $i++) {
             $match = $matches[0][$i];
             $tag = $this->clean($matches[1][$i]);
-            if ('EACH:' == substr($tag, 0, 5)) {
+            if ('EACH:' === substr($tag, 0, 5)) {
                 $tags = explode(':', $tag, 3);
                 $eachs[$tags[1]] = [
                     'start' => $match,
@@ -219,7 +219,7 @@ class RtfTag implements FilerInterface
                     'content' => null
                 ];
             }
-            if ('EACHE:' == substr($tag, 0, 6)) {
+            if ('EACHE:' === substr($tag, 0, 6)) {
                 $tags = explode(':', $tag, 2);
                 if (isset($eachs[$tags[1]])) {
                     $eachs[$tags[1]]['end'] = $match;
@@ -227,7 +227,7 @@ class RtfTag implements FilerInterface
             }
         }
         $keys = array_keys($eachs);
-        for ($i = 0; $i < count($keys); $i ++) {
+        for ($i = 0; $i < count($keys); $i++) {
             if ($eachs[$keys[$i]]['start'] && $eachs[$keys[$i]]['end']) {
                 $s = strpos($template, $eachs[$keys[$i]]['start']);
                 $e = strpos($template, $eachs[$keys[$i]]['end']);
@@ -250,10 +250,10 @@ class RtfTag implements FilerInterface
     protected function parseTable(&$template, $matches)
     {
         $tables = [];
-        for ($i = 0; $i < count($matches[1]); $i ++) {
+        for ($i = 0; $i < count($matches[1]); $i++) {
             $match = $matches[0][$i];
             $tag = $this->clean($matches[1][$i]);
-            if ('TBL:' == substr($tag, 0, 4)) {
+            if ('TBL:' === substr($tag, 0, 4)) {
                 $tags = explode(':', $tag, 3);
                 $tables[$tags[1]] = [
                     'start' => $match,
@@ -262,7 +262,7 @@ class RtfTag implements FilerInterface
                     'content' => null
                 ];
             }
-            if ('TBLE:' == substr($tag, 0, 5)) {
+            if ('TBLE:' === substr($tag, 0, 5)) {
                 $tags = explode(':', $tag, 2);
                 if (isset($tables[$tags[1]])) {
                     $tables[$tags[1]]['end'] = $match;
@@ -270,7 +270,7 @@ class RtfTag implements FilerInterface
             }
         }
         $keys = array_keys($tables);
-        for ($i = 0; $i < count($keys); $i ++) {
+        for ($i = 0; $i < count($keys); $i++) {
             if ($tables[$keys[$i]]['start'] && $tables[$keys[$i]]['end']) {
                 // find table row begin \trowd
                 if (false !== ($s = strpos($template, $tables[$keys[$i]]['start']))) {
@@ -366,7 +366,7 @@ class RtfTag implements FilerInterface
             // scan for TBL tags
             $tables = $this->parseTable($template, $matches);
             // parse regular tags
-            for ($i = 0; $i < count($matches[1]); $i ++) {
+            for ($i = 0; $i < count($matches[1]); $i++) {
                 $match = $matches[0][$i];
                 $tag = $matches[1][$i];
                 // ignore non exist match
@@ -411,7 +411,7 @@ class RtfTag implements FilerInterface
         if ($e > $s) {
             $this->nearestItem($text, $s);
             $this->nearestItem($text, $e);
-            if ($s == $e) {
+            if ($s === $e) {
                 $s = $start;
                 $e = $end;
             }

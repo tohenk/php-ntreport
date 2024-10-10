@@ -28,7 +28,7 @@ namespace NTLAB\Report\Parameter;
 
 class DateOnly extends Date
 {
-    const ID = 'dateonly';
+    public const ID = 'dateonly';
 
     /**
      * {@inheritDoc}

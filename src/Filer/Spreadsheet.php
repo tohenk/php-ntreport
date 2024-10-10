@@ -31,6 +31,7 @@ use PhpOffice\PhpSpreadsheet\IOFactory as XlIOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet as XlSpreadsheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet as XlWorksheet;
 use PhpOffice\PhpSpreadsheet\Cell\Cell as XlCell;
+use PhpOffice\PhpSpreadsheet\Cell\CellAddress as XlCellAddress;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate as XlCoordinate;
 use NTLAB\Report\Util\Spreadsheet\Style;
 use NTLAB\Report\Util\Spreadsheet\RichText;
@@ -38,15 +39,15 @@ use NTLAB\Report\Util\Spreadsheet\RichText;
 /**
  * Spreadsheet filer using PHPOffice PhpSpreadsheet.
  *
- * @author Toha
+ * @author Toha <tohenk@yahoo.com>
  */
 class Spreadsheet implements FilerInterface
 {
-    const BAND_TITLE = 'title';
-    const BAND_HEADER = 'header';
-    const BAND_MASTER_DATA = 'master-data';
-    const BAND_FOOTER = 'footer';
-    const BAND_SUMMARY = 'summary';
+    public const BAND_TITLE = 'title';
+    public const BAND_HEADER = 'header';
+    public const BAND_MASTER_DATA = 'master-data';
+    public const BAND_FOOTER = 'footer';
+    public const BAND_SUMMARY = 'summary';
 
     /**
      * @var string
@@ -353,7 +354,7 @@ class Spreadsheet implements FilerInterface
     {
         foreach ($sheet->getMergeCells() as $key => $range) {
             list($rangeStart, ) = explode(':', $key);
-            if ($rangeStart == $cell) {
+            if ($rangeStart === $cell) {
                 return $range;
             }
         }
@@ -408,15 +409,15 @@ class Spreadsheet implements FilerInterface
     protected function copyRange(XlWorksheet $source, XlWorksheet $dest, $range, &$anchor, $replaceTag = true)
     {
         list($rangeStart, $rangeEnd) = XlCoordinate::rangeBoundaries($range);
-        if (null == $anchor) {
+        if (null === $anchor) {
             $anchor = $rangeStart;
         }
         $cols = $rangeEnd[0] - $rangeStart[0];
         $rows = $rangeEnd[1] - $rangeStart[1];
         for ($row = 0; $row <= $rows; $row++) {
             for ($col = 0; $col <= $cols; $col++) {
-                $scell = $source->getCellByColumnAndRow($rangeStart[0] + $col, $rangeStart[1] + $row);
-                $dcell = $dest->getCellByColumnAndRow($anchor[0] + $col, $anchor[1] + $row);
+                $scell = $source->getCell(XlCellAddress::fromColumnAndRow($rangeStart[0] + $col, $rangeStart[1] + $row));
+                $dcell = $dest->getCell(XlCellAddress::fromColumnAndRow($anchor[0] + $col, $anchor[1] + $row));
                 // copy value, ignore empty cell
                 if ($svalue = $scell->getValue()) {
                     $dcell->setValue($replaceTag ? $this->replaceTag($svalue) : $svalue);
@@ -436,7 +437,7 @@ class Spreadsheet implements FilerInterface
                     $cdim->setWidth($width);
                 }
                 // set row height
-                if ($col == 0) {
+                if ($col === 0) {
                     $height = $source->getRowDimension($scell->getRow())
                         ->getRowHeight();
                     if (($rdim = $dest->getRowDimension($dcell->getRow())) && $rdim->getRowHeight() !== $height) {
@@ -533,7 +534,7 @@ class Spreadsheet implements FilerInterface
                 for ($col = 0; $col <= $cols; $col++) {
                     $colindex = $rangeStart[0] + $col;
                     $rowindex = $rangeStart[1] + $row;
-                    $cell = $sheet->getCellByColumnAndRow($colindex, $rowindex);
+                    $cell = $sheet->getCell(XlCellAddress::fromColumnAndRow($colindex, $rowindex));
                     // cell has value and prefixed with field signature
                     if (($value = $cell->getValue()) && (0 === strpos($value, $this->getFieldSign()))) {
                         $data = substr($value, strlen($this->getFieldSign()));
@@ -546,11 +547,11 @@ class Spreadsheet implements FilerInterface
                         $cell->setValue($value);
                     }
                     // if we're at the end of column, we should adjust the row height
-                    if ($adjustRow && $col == $cols) {
+                    if ($adjustRow && $col === $cols) {
                         if ($this->autoFit) {
                             // TODO: autofit row
                         } elseif (null !== $this->rowHeight) {
-                            $cell->getParent()
+                            $cell->getWorksheet()
                                 ->getRowDimension($cell->getRow())
                                 ->setRowHeight($this->rowHeight);
                         }
@@ -580,9 +581,9 @@ class Spreadsheet implements FilerInterface
                 // check if row contain field sign
                 $has_sign = false;
                 for ($col = 1; $col <= $cols; $col++) {
-                    $cell = $sheet->getCellByColumnAndRow($col, $row);
+                    $cell = $sheet->getCell(XlCellAddress::fromColumnAndRow($col, $row));
                     // ignore aggregate sign
-                    if (($value = $cell->getValue()) && (0 === strpos($value, $this->getFieldSign())) && $this->aggregateSign != substr($value, 1, 1)) {
+                    if (($value = $cell->getValue()) && (0 === strpos($value, $this->getFieldSign())) && $this->aggregateSign !== substr($value, 1, 1)) {
                         $has_sign = true;
                         break;
                     }
@@ -675,7 +676,7 @@ class Spreadsheet implements FilerInterface
                     ;
                     break;
                 default:
-                    if (null == $this->getScript()->getContext() && count($this->objects)) {
+                    if (null === $this->getScript()->getContext() && count($this->objects)) {
                         $this->getScript()->setContext($this->objects[0]);
                     }
                     $ranges = $this->copyRange($insheet, $outsheet, $bandData, $anchor);
@@ -715,7 +716,7 @@ class Spreadsheet implements FilerInterface
     protected function createOutput($xls, $writerClass)
     {
         $writerClass = null !== $writerClass ? $writerClass : $this->defaultWriter;
-        if (null == $writerClass) {
+        if (null === $writerClass) {
             switch ($readerClass = XlIOFactory::identify($this->template)) {
                 case 'Xlsx':
                     $writerClass = $readerClass;

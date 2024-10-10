@@ -31,8 +31,8 @@ use NTLAB\RtfTree\Node\Node;
 
 class Table extends Extractor
 {
-    const TROWD = 'trowd';
-    const ROW = 'row';
+    public const TROWD = 'trowd';
+    public const ROW = 'row';
 
     /**
      * Extract table region.

@@ -30,7 +30,7 @@ use NTLAB\RtfTree\Node\Tree;
 
 class Paragraph extends Extractor
 {
-    const PARAGRAPH = 'pard';
+    public const PARAGRAPH = 'pard';
 
     /**
      * Extract body.

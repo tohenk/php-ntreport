@@ -28,7 +28,7 @@ namespace NTLAB\Report\Parameter;
 
 class DateYear extends Date
 {
-    const ID = 'year';
+    public const ID = 'year';
 
     /**
      * {@inheritDoc}
@@ -41,12 +41,12 @@ class DateYear extends Date
 
     public function getValue()
     {
-        if (null == ($value = $this->getFormValue($this->field)) && count($years = $this->getValues())) {
+        if (null === ($value = $this->getFormValue($this->field)) && count($years = $this->getValues())) {
             $keys = array_keys($years);
             $value = array_shift($keys);
         }
         // create datetime from original value
-        if (null != $value && is_numeric($value)) {
+        if (null !== $value && is_numeric($value)) {
             $value = mktime(0, 0, 0, 1, 1, (int) $value);
         }
         return $value;

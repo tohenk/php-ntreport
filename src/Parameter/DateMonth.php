@@ -28,7 +28,7 @@ namespace NTLAB\Report\Parameter;
 
 class DateMonth extends Date
 {
-    const ID = 'month';
+    public const ID = 'month';
 
     /**
      * {@inheritDoc}
@@ -51,11 +51,11 @@ class DateMonth extends Date
 
     public function getValue()
     {
-        if (null == ($year = $this->getFormValue($this->getFieldName())) && count($years = $this->getValues())) {
+        if (null === ($year = $this->getFormValue($this->getFieldName())) && count($years = $this->getValues())) {
             $keys = array_keys($years);
             $year = array_shift($keys);
         }
-        if (null == ($month = $this->getFormValue($this->getFieldName2()))) {
+        if (null === ($month = $this->getFormValue($this->getFieldName2()))) {
             $month = date('m');
         }
         // create datetime from original value

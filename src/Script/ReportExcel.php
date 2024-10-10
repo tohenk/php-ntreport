@@ -32,7 +32,7 @@ use NTLAB\Report\Util\Spreadsheet\RichText;
 /**
  * Excel report functions.
  *
- * @author Toha
+ * @author Toha <tohenk@yahoo.com>
  * @id report.excel
  */
 class ReportExcel extends Module

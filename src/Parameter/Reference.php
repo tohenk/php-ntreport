@@ -28,7 +28,7 @@ namespace NTLAB\Report\Parameter;
 
 class Reference extends Parameter
 {
-    const ID = 'ref';
+    public const ID = 'ref';
 
     /**
      * Get reference value.
@@ -44,9 +44,12 @@ class Reference extends Parameter
         }
     }
 
+    /**
+     * @return string|array
+     */
     public function getValue()
     {
-        if (null == ($value = parent::getValue()) && count($values = $this->getValues())) {
+        if (null === ($value = parent::getValue()) && count($values = $this->getValues())) {
             $keys = array_keys($values);
             $value = array_shift($keys);
         }
