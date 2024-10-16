@@ -328,6 +328,22 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
     }
 
     /**
+     * Get nearest XML tag from position.
+     *
+     * @return string
+     */
+    protected function getNearestTag($str, $position)
+    {
+        $part = substr($str, 0, $position);
+        if (false !== ($s = $this->getLastTagPos($part, '<', false))) {
+            $part = substr($part, $s);
+            if (false !== ($e = $this->getFirstTagPos($part, [' ', '/', '>'], false))) {
+                return substr($part, 0, $e);
+            }
+        }
+    }
+
+    /**
      * Clean part of string from start to end position.
      *
      * @param string $str
@@ -478,6 +494,11 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
         for ($i = 0; $i < count($vars); $i++) {
             $tag = $this->getTag()->createTag($vars[$i]);
             if (false !== ($p = strpos($this->tempDocumentMainPart, $tag))) {
+                // validate if tag found within image
+                $withinTag = $this->getNearestTag($this->tempDocumentMainPart, $p);
+                if (null === $withinTag || 'wp:docPr' !== $withinTag) {
+                    continue;
+                }
                 $tmplStart = substr($this->tempDocumentMainPart, 0, $p);
                 $tmplEnd = substr($this->tempDocumentMainPart, $p + strlen($tag));
                 $s = $this->getFirstTagPos($tmplStart, '<w:drawing>', false);
