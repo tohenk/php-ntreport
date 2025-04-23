@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014-2024 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2025 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -60,6 +60,7 @@ class RtfTree implements FilerInterface
         if (null === self::$instance) {
             self::$instance = new self();
         }
+
         return self::$instance;
     }
 
@@ -72,6 +73,7 @@ class RtfTree implements FilerInterface
         if (null === $this->script) {
             $this->script = new Script();
         }
+
         return $this->script;
     }
 
@@ -120,7 +122,7 @@ class RtfTree implements FilerInterface
         // process body
         $this->getScript()
             ->setObjects($objects)
-            ->each(function(Script $script, RtfTree $_this) use ($result, $body, $each, $table) {
+            ->each(function (Script $script, RtfTree $_this) use ($result, $body, $each, $table) {
                 $clone = $body->getResult()->cloneTree();
                 $_this
                     ->replaceTag($clone, array_merge(array_keys($each->getRegions()), array_keys($table->getRegions())))
@@ -133,6 +135,7 @@ class RtfTree implements FilerInterface
         ;
         // include footer
         Extractor::copyTree($result, $tree, $body->getEndPos() + 1, count($tree->getMainGroup()->getChildren()) - 1);
+
         return $result;
     }
 
@@ -165,6 +168,7 @@ class RtfTree implements FilerInterface
             }
             $tree->getMainGroup()->replaceTextEx($match, $value);
         }
+
         return $this;
     }
 
@@ -187,7 +191,7 @@ class RtfTree implements FilerInterface
                 $this->getScript()
                     ->pushContext()
                     ->setObjects($objects)
-                    ->each(function(Script $script, RtfTree $_this) use ($result, $body, $eolKey) {
+                    ->each(function (Script $script, RtfTree $_this) use ($result, $body, $eolKey) {
                         $clone = $body->cloneTree();
                         $_this->replaceTag($clone);
                         Extractor::appendTree($result, $clone);
@@ -206,6 +210,7 @@ class RtfTree implements FilerInterface
             // remove tag
             $tree->getMainGroup()->removeChildAt($index);
         }
+
         return $this;
     }
 

@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014-2024 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2025 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -66,6 +66,7 @@ class Propel2 extends Data
         if (null === static::$supported) {
             static::$supported = class_exists('\Propel\Runtime\Propel') && version_compare(\Propel\Runtime\Propel::VERSION, '2.0.0', '>=') >= 0;
         }
+
         return static::$supported;
     }
 
@@ -139,6 +140,7 @@ class Propel2 extends Data
         if ($this->isDistinct()) {
             $query->setDistinct();
         }
+
         return $query->find();
     }
 
@@ -163,6 +165,7 @@ class Propel2 extends Data
             $class = $this->getQueryClass();
             $this->query = $class::create();
         }
+
         return $this->query;
     }
 
@@ -182,9 +185,9 @@ class Propel2 extends Data
     {
         $extra = null;
         if (false !== strpos($column, self::COLUMN_CONCATENATOR)) {
-            list ($column, $extra) = explode(self::COLUMN_CONCATENATOR, $column, 2);
+            list($column, $extra) = explode(self::COLUMN_CONCATENATOR, $column, 2);
             $method = 'use'.$column.'Query';
-        } else if (false !== strpos($method_format, '%s')) {
+        } elseif (false !== strpos($method_format, '%s')) {
             $method = sprintf($method_format, $column);
         } else {
             $method = $method_format;
@@ -195,8 +198,7 @@ class Propel2 extends Data
                         $translatedColumn = $tableMap->translateFieldName($column, $type, TableMap::TYPE_COLNAME);
                         $column = $translatedColumn;
                         break;
-                    }
-                    catch (\Exception $e) {
+                    } catch (\Exception $e) {
                         error_log($e->getMessage());
                     }
                 }
@@ -215,6 +217,7 @@ class Propel2 extends Data
         } else {
             call_user_func_array([$query, $method], $args);
         }
+
         return $this;
     }
 
@@ -233,6 +236,7 @@ class Propel2 extends Data
                 $subquery->endUse();
             }
         }
+
         return $query;
     }
 
@@ -257,6 +261,7 @@ class Propel2 extends Data
             } catch (\Exception $e) {
             }
         }
+
         return $result;
     }
 
@@ -275,12 +280,14 @@ class Propel2 extends Data
         $adapter = \Propel\Runtime\Propel::getAdapter($tableMap::DATABASE_NAME);
         if (DateParameter::DATE === $dateType) {
             $dateValue = date($adapter->getDateFormatter(), $dateValue);
-        } else if (DateParameter::MONTH === $dateType) {
+        } elseif (DateParameter::MONTH === $dateType) {
             $dateValue = date('Y-m', $dateValue);
-        } else if (DateParameter::YEAR === $dateType) {
+        } elseif (DateParameter::YEAR === $dateType) {
             $dateValue = date('Y', $dateValue);
         }
-        return sprintf('%1$s %2$s %4$s%3$s%4$s',
+
+        return sprintf(
+            '%1$s %2$s %4$s%3$s%4$s',
             $adapter->subString($column, 1, strlen($dateValue)),
             $operator ? $operator : Criteria::EQUAL,
             $dateValue,
@@ -297,13 +304,12 @@ class Propel2 extends Data
         $column = $parameter->getColumn();
         $operator = $parameter->getOperator();
         $value = $parameter->getCurrentValue();
-        switch ($parameter->getType())
-        {
+        switch ($parameter->getType()) {
             case StaticParameter::ID:
                 if ($value === 'NULL') {
                     $operator = Criteria::ISNULL;
                     $value = null;
-                } else if ($value === 'NOT_NULL') {
+                } elseif ($value === 'NOT_NULL') {
                     $operator = Criteria::ISNOTNULL;
                     $value = null;
                 }
@@ -318,7 +324,8 @@ class Propel2 extends Data
                 break;
             case DateRangeParameter::ID:
                 /** @var \NTLAB\Report\Parameter\DateRange $parameter */
-                $value = sprintf('(%s AND %s)',
+                $value = sprintf(
+                    '(%s AND %s)',
                     $this->formatDate($parameter->getRealColumn(), $parameter->getDateTypeValue(), $value, '>='),
                     $this->formatDate($parameter->getRealColumn(), $parameter->getDateTypeValue(), $parameter->getCurrentValue2(), '<=')
                 );

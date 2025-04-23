@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014-2024 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2025 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -89,6 +89,7 @@ class Extractor
     {
         $stag = substr(static::TAG_SIGN, 0, 1);
         $etag = strlen(static::TAG_SIGN) > 1 ? substr(static::TAG_SIGN, 1, 1) : $stag;
+
         return [$stag, $etag];
     }
 
@@ -103,6 +104,7 @@ class Extractor
             $tags = static::getTags();
             static::$re = sprintf('/%1$s([^%1$s]+)%2$s/', $tags[0], $tags[1]);
         }
+
         return static::$re;
     }
 
@@ -115,13 +117,14 @@ class Extractor
     public static function createTag($tag)
     {
         $tags = static::getTags();
+
         return $tags[0].$tag.$tags[1];
     }
 
     /**
      * Find tag in the tree.
      *
-     * @param \NTLAB\RtfTree\Node\Tree $tree  The tree 
+     * @param \NTLAB\RtfTree\Node\Tree $tree  The tree
      * @param string $tag  Tag to find
      * @param int $size  The nodes size found for matched tag
      * @param int $start  Start position
@@ -142,6 +145,7 @@ class Extractor
             // tag found in single node
             if (false !== mb_strpos($plain, $tag)) {
                 $size = 1;
+
                 return $i;
             }
             // check for combined text
@@ -162,6 +166,7 @@ class Extractor
                 }
             }
         }
+
         return false;
     }
 
@@ -174,6 +179,7 @@ class Extractor
     {
         $tree = new Tree();
         $tree->addMainGroup();
+
         return $tree;
     }
 
@@ -195,7 +201,7 @@ class Extractor
 
     /**
      * Append tree nodes to another tree.
-     * 
+     *
      * @param \NTLAB\RtfTree\Node\Tree $dest  Destination tree
      * @param \NTLAB\RtfTree\Node\Tree $source  Source tree
      */
@@ -209,7 +215,7 @@ class Extractor
     /**
      * Append tree nodes to another tree by inserting at specified
      * position.
-     * 
+     *
      * @param \NTLAB\RtfTree\Node\Tree $dest  Destination tree
      * @param \NTLAB\RtfTree\Node\Tree $source  Source tree
      * @param int $position  Start position
@@ -254,7 +260,7 @@ class Extractor
 
     /**
      * Get result regions.
-     * 
+     *
      * @return array
      */
     public function getRegions()
@@ -304,6 +310,7 @@ class Extractor
             // copy all
             $this->copyTree($result, $tree, $this->beginPos, $this->endPos);
         }
+
         return $result;
     }
 
@@ -348,6 +355,7 @@ class Extractor
             }
             break;
         }
+
         return $result;
     }
 
@@ -382,6 +390,7 @@ class Extractor
             }
             $position--;
         }
+
         return $this;
     }
 
@@ -416,6 +425,7 @@ class Extractor
             }
             $position++;
         }
+
         return $this;
     }
 
@@ -445,6 +455,7 @@ class Extractor
                 return $i;
             }
         }
+
         return false;
     }
 }

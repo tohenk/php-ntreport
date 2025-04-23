@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014-2024 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2025 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -360,6 +360,7 @@ abstract class Parameter
         if (false === $this->isChangeable()) {
             return true;
         }
+
         return $this->getFormValue($this->fieldCheck);
     }
 
@@ -394,6 +395,7 @@ abstract class Parameter
         if (!in_array($name, $this->widgets)) {
             $this->widgets[] = $name;
         }
+
         return $this;
     }
 
@@ -418,6 +420,7 @@ abstract class Parameter
                 $value = $defaults[$field];
             }
         }
+
         return $value;
     }
 
@@ -444,6 +447,7 @@ abstract class Parameter
                 break;
             }
         }
+
         return $title;
     }
 
@@ -470,6 +474,7 @@ abstract class Parameter
             $script->setContext($var);
             $value = $script->evaluate($this->onValue);
         }
+
         return $value;
     }
 
@@ -514,6 +519,7 @@ abstract class Parameter
                 error_log($e->getMessage());
             }
         }
+
         return $this->values;
     }
 

@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014-2024 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2025 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -309,6 +309,7 @@ abstract class Report
                 if (($class = static::getEngine($type)) && class_exists($class)) {
                     $report = new $class();
                     $report->initialize($doc, $xpath);
+
                     return $report;
                 }
             }
@@ -397,6 +398,7 @@ abstract class Report
         if (null === $this->script) {
             $this->script = new Script();
         }
+
         return $this->script;
     }
 
@@ -419,6 +421,7 @@ abstract class Report
     public function setObject($v)
     {
         $this->object = $v;
+
         return $this;
     }
 
@@ -435,6 +438,7 @@ abstract class Report
         if ($node->hasAttributes() && ($nodettr = $node->attributes->getNamedItem($attr))) {
             return $nodettr->nodeValue;
         }
+
         return $default;
     }
 
@@ -621,6 +625,7 @@ abstract class Report
             }
             $this->data = $data;
         }
+
         return $this->data;
     }
 
@@ -636,6 +641,7 @@ abstract class Report
         if (null === $this->form) {
             $this->buildForm($defaults);
         }
+
         return $this->form;
     }
 
@@ -697,6 +703,7 @@ abstract class Report
     public function clearSymbols()
     {
         $this->symbols = [];
+
         return $this;
     }
 
@@ -711,6 +718,7 @@ abstract class Report
         if (!in_array($symbol, $this->symbols)) {
             $this->symbols[] = $symbol;
         }
+
         return Script::asFunc('sym', array_search($symbol, $this->symbols));
     }
 
@@ -758,6 +766,7 @@ abstract class Report
                 $handler->flush($object);
             }
         }
+
         return $this;
     }
 
@@ -778,7 +787,7 @@ abstract class Report
      */
     public function getError()
     {
-      return $this->error;
+        return $this->error;
     }
 
     /**
@@ -800,6 +809,7 @@ abstract class Report
     public function setTemplateContent($content)
     {
         $this->templateContent->setContent($content);
+
         return $this;
     }
 
@@ -840,6 +850,7 @@ abstract class Report
                 $data->addOrder($order[0], $order[1], $order[2]);
             }
             $data->setDistinct($this->distinct);
+
             return $data->fetch();
         }
     }
@@ -881,6 +892,7 @@ abstract class Report
     public function generate()
     {
         $this->result = null;
+
         return $this->generateFromObjects($this->fetchResult());
     }
 
@@ -901,10 +913,10 @@ abstract class Report
             try {
                 if (null !== ($content = $this->build())) {
                     $this->status = static::STATUS_OK;
+
                     return $content;
                 }
-            }
-            catch (\Exception $e) {
+            } catch (\Exception $e) {
                 $this->error = $e;
                 error_log($this->getExceptionMessage($e));
             }
@@ -931,6 +943,7 @@ abstract class Report
             }
             $exception = $exception->getPrevious();
         }
+
         return $message;
     }
 
@@ -946,6 +959,7 @@ abstract class Report
                 return false;
             }
         }
+
         return true;
     }
 
@@ -959,6 +973,7 @@ abstract class Report
         foreach ($this->configs as $config) {
             $config->updateConfigValue();
         }
+
         return $this;
     }
 }

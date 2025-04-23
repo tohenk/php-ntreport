@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014-2024 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2025 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -49,6 +49,7 @@ class ReportExcel extends Module
         if ($text) {
             $text = RichText::tag(RichText::TAG_BOLD, $text);
         }
+
         return $text;
     }
 
@@ -64,6 +65,7 @@ class ReportExcel extends Module
         if ($text) {
             $text = RichText::tag(RichText::TAG_ITALIC, $text);
         }
+
         return $text;
     }
 
@@ -79,6 +81,7 @@ class ReportExcel extends Module
         if ($text) {
             $text = RichText::tag(RichText::TAG_UNDERLINE, $text);
         }
+
         return $text;
     }
 
@@ -94,6 +97,7 @@ class ReportExcel extends Module
         if ($text) {
             $text = RichText::tag(RichText::TAG_STRIKETHROUGH, $text);
         }
+
         return $text;
     }
 
@@ -108,6 +112,7 @@ class ReportExcel extends Module
         if ($text) {
             $text = RichText::tag(RichText::TAG_SUBSCRIPT, $text);
         }
+
         return $text;
     }
 
@@ -123,6 +128,7 @@ class ReportExcel extends Module
         if ($text) {
             $text = RichText::tag(RichText::TAG_SUPERSCRIPT, $text);
         }
+
         return $text;
     }
 
@@ -140,6 +146,7 @@ class ReportExcel extends Module
         if ($text) {
             $text = RichText::tag(RichText::TAG_SIZE, $text, $size);
         }
+
         return $text;
     }
 
@@ -156,6 +163,7 @@ class ReportExcel extends Module
         if ($text) {
             $text = RichText::tag(RichText::TAG_COLOR, $text, $color);
         }
+
         return $text;
     }
 }

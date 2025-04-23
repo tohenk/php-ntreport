@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014-2024 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2025 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -227,27 +227,30 @@ class RichText
     protected static function tagOffset($text)
     {
         $offsets = [];
-        foreach (self::$tags as $tag) {
-            $matches = null;
-            $regex = self::tagRegex($tag);
-            if (preg_match_all($regex, $text, $matches, PREG_OFFSET_CAPTURE)) {
-                for ($i = 0; $i < count($matches[0]); $i++) {
-                    $offset = $matches[0][$i][1];
-                    $match = $matches[0][$i][0];
-                    $extra = $matches[2][$i][0];
-                    $inner = $matches[3][$i][0];
-                    $offsets[$offset] = [
-                        'tag' => $tag,
-                        'match' => $match,
-                        'ofs' => $offset,
-                        'len' => strlen($match),
-                        'extra' => $extra,
-                        'inner' => $inner
-                    ];
+        if (is_string($text)) {
+            foreach (self::$tags as $tag) {
+                $matches = null;
+                $regex = self::tagRegex($tag);
+                if (preg_match_all($regex, $text, $matches, PREG_OFFSET_CAPTURE)) {
+                    for ($i = 0; $i < count($matches[0]); $i++) {
+                        $offset = $matches[0][$i][1];
+                        $match = $matches[0][$i][0];
+                        $extra = $matches[2][$i][0];
+                        $inner = $matches[3][$i][0];
+                        $offsets[$offset] = [
+                            'tag' => $tag,
+                            'match' => $match,
+                            'ofs' => $offset,
+                            'len' => strlen($match),
+                            'extra' => $extra,
+                            'inner' => $inner
+                        ];
+                    }
                 }
             }
+            ksort($offsets);
         }
-        ksort($offsets);
+
         return $offsets;
     }
 
@@ -270,6 +273,7 @@ class RichText
                 }
                 $result[] = $data;
             }
+
             return $result;
         } else {
             return $offsets;
@@ -346,13 +350,13 @@ class RichText
                             $trun->getFont()
                                 ->getColor()
                                 ->setARGB($color);
-                        }
-                        catch (\Exception $e) {
+                        } catch (\Exception $e) {
                         }
                     }
                     break;
             }
         }
+
         return $trun;
     }
 
@@ -386,8 +390,10 @@ class RichText
             if ($pos < strlen($text)) {
                 $richText->createText(substr($text, $pos));
             }
+
             return $richText;
         }
+
         return $text;
     }
 

@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014-2024 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2025 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -72,6 +72,7 @@ class Pdo extends Data
         if (null === static::$supported) {
             static::$supported = extension_loaded('pdo');
         }
+
         return static::$supported;
     }
 
@@ -132,6 +133,7 @@ class Pdo extends Data
             '%ORDER%' => count($this->orders) ? 'ORDER BY '.implode(', ', $this->orders) : '',
         ]);
         $sql = $this->report->getScript()->evaluate($sql);
+
         return PdoQuery::getInstance()->query($sql, $this->params);
     }
 
@@ -148,12 +150,14 @@ class Pdo extends Data
     {
         if (DateParameter::DATE === $dateType) {
             $dateValue = date('Y-m-d', $dateValue);
-        } else if (DateParameter::MONTH === $dateType) {
+        } elseif (DateParameter::MONTH === $dateType) {
             $dateValue = date('Y-m', $dateValue);
-        } else if (DateParameter::YEAR === $dateType) {
+        } elseif (DateParameter::YEAR === $dateType) {
             $dateValue = date('Y', $dateValue);
         }
-        return sprintf('%1$s %2$s %4$s%3$s%4$s',
+
+        return sprintf(
+            '%1$s %2$s %4$s%3$s%4$s',
             sprintf('SUBSTRING(%s, %d, %d)', $column, 1, strlen($dateValue)),
             $operator ? $operator : '=',
             $dateValue,
@@ -171,14 +175,13 @@ class Pdo extends Data
         $operator = $parameter->getOperator();
         $value = $parameter->getCurrentValue();
         // convert parameter to SQL
-        switch ($parameter->getType())
-        {
+        switch ($parameter->getType()) {
             case StaticParameter::ID:
                 if ($value === 'NULL') {
                     $column = sprintf('%s IS NULL', $column);
                     $operator = null;
                     $value = null;
-                } else if ($value === 'NOT_NULL') {
+                } elseif ($value === 'NOT_NULL') {
                     $column = sprintf('%s IS NOT NULL', $column);
                     $operator = null;
                     $value = null;
@@ -193,7 +196,8 @@ class Pdo extends Data
                 $value = null;
                 break;
             case DateRangeParameter::ID:
-                $column = sprintf('(%s AND %s)',
+                $column = sprintf(
+                    '(%s AND %s)',
                     $this->formatDate($parameter->getRealColumn(), $parameter->getDateTypeValue(), $value, '>='),
                     $this->formatDate($parameter->getRealColumn(), $parameter->getDateTypeValue(), $parameter->getCurrentValue2(), '<=')
                 );

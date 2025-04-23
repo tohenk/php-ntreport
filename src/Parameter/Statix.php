@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014-2024 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2025 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -28,7 +28,7 @@ namespace NTLAB\Report\Parameter;
 
 class Statix extends Parameter
 {
-    const ID = 'static';
+    public const ID = 'static';
 
     protected function configure()
     {
@@ -46,6 +46,7 @@ class Statix extends Parameter
         if (false !== strpos((string) $value, '|')) {
             $value = explode('|', $value);
         }
+
         return $value;
     }
 }

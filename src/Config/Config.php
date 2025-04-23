@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014-2024 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2025 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -73,6 +73,7 @@ class Config
     public function setReport(Report $report)
     {
         $this->report = $report;
+
         return $this;
     }
 
@@ -164,6 +165,7 @@ class Config
     public function getFormValue()
     {
         $values = $this->report->getForm()->getValue('config');
+
         return isset($values[$this->column]) ? $values[$this->column] : null;
     }
 
@@ -200,6 +202,7 @@ class Config
             $values[$this->getColumn()] = $value;
             $form->updateValue('config', $values);
         }
+
         return $this;
     }
 }

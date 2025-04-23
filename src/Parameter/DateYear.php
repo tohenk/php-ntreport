@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014-2024 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2025 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -49,6 +49,7 @@ class DateYear extends Date
         if (null !== $value && is_numeric($value)) {
             $value = mktime(0, 0, 0, 1, 1, (int) $value);
         }
+
         return $value;
     }
 }

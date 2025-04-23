@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014-2024 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2025 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -164,6 +164,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
         if (null === $this->script) {
             $this->script = new Script();
         }
+
         return $this->script;
     }
 
@@ -174,6 +175,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
     public function setScript(Script $script)
     {
         $this->script = $script;
+
         return $this;
     }
 
@@ -187,6 +189,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
         if (null === $this->tag) {
             $this->tag = new Tag();
         }
+
         return $this->tag;
     }
 
@@ -211,6 +214,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
             $this->tag->clear();
         }
         $this->cleans = [];
+
         return $this;
     }
 
@@ -280,6 +284,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
                 }
             }
         }
+
         return $text;
     }
 
@@ -302,6 +307,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
                 }
             }
         }
+
         return $pos;
     }
 
@@ -324,6 +330,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
                 }
             }
         }
+
         return $pos;
     }
 
@@ -380,7 +387,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
                     }
                 }
                 break;
-            // check if replacement is empty or symbol
+                // check if replacement is empty or symbol
             case '' === $replacement:
             case $replacement instanceof Symbol && '</w:r>' === substr($replacement, -6):
                 if (null !== ($pos = $this->getLastTagPos($sStart, ['<w:r>', '<w:r ']))) {
@@ -391,6 +398,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
                 }
                 break;
         }
+
         return $sStart.$replacement.$sEnd;
     }
 
@@ -407,6 +415,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
         if (!$this->getScript()->getVar($value, $tag, $this->getScript()->getContext())) {
             $value = $this->getScript()->evaluate($tag);
         }
+
         return $value;
     }
 
@@ -463,21 +472,28 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
                     ($startPos = $this->findContainingXmlBlockForMacro($items[$keys[$i]]['start'])) &&
                     ($endPos = $this->findContainingXmlBlockForMacro($items[$keys[$i]]['end']))
                 ) {
-                    $items[$keys[$i]]['matchStart'] = substr($this->tempDocumentMainPart,
+                    $items[$keys[$i]]['matchStart'] = substr(
+                        $this->tempDocumentMainPart,
                         $startPos['start'],
-                        $startPos['end'] - $startPos['start']);
-                    $items[$keys[$i]]['matchEnd'] = substr($this->tempDocumentMainPart,
+                        $startPos['end'] - $startPos['start']
+                    );
+                    $items[$keys[$i]]['matchEnd'] = substr(
+                        $this->tempDocumentMainPart,
                         $endPos['start'],
-                        $endPos['end'] - $endPos['start']);
-                    $items[$keys[$i]]['content'] = substr($this->tempDocumentMainPart,
+                        $endPos['end'] - $endPos['start']
+                    );
+                    $items[$keys[$i]]['content'] = substr(
+                        $this->tempDocumentMainPart,
                         $startPos['end'],
-                        $endPos['start'] - $startPos['end']);
+                        $endPos['start'] - $startPos['end']
+                    );
                     $this->tempDocumentMainPart = substr($this->tempDocumentMainPart, 0, $startPos['start']).
                         $this->createSubTag($key, $keys[$i]).
                         substr($this->tempDocumentMainPart, $endPos['end']);
                 }
             }
         }
+
         return $items;
     }
 
@@ -516,6 +532,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
         foreach (array_reverse($founds) as $index) {
             unset($vars[$index]);
         }
+
         return $items;
     }
 
@@ -545,8 +562,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
                 error_log(sprintf('Expression "%s" from %s return NULL!', $expr, $this->getScript()->getContext()));
             }
             unset($filer);
-        }
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             $message = null;
             while (null !== $e) {
                 if (null === $message) {
@@ -559,6 +575,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
             error_log($message);
         }
         $this->getScript()->popContext();
+
         return $content;
     }
 
@@ -594,6 +611,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
         $this->restoreTemplateTag($template, static::DOC_SUB_TABLE, $this->tables);
         // replace EACH
         $this->restoreTemplateTag($template, static::DOC_SUB_EACH, $this->eaches);
+
         return $template;
     }
 
@@ -605,6 +623,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
     protected function parse()
     {
         $this->contents[] = $this->parseTemplate($this->tempDocumentMainPart);
+
         return $this;
     }
 
@@ -693,11 +712,12 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
                     $tag = $tag->format(\DateTime::ISO8601);
                 }
                 if (!$tag instanceof Symbol) {
-                    $tag = $this->ensureUtf8Encoded(htmlspecialchars((string) $tag, ENT_NOQUOTES|ENT_SUBSTITUTE));
+                    $tag = $this->ensureUtf8Encoded(htmlspecialchars((string) $tag, ENT_NOQUOTES | ENT_SUBSTITUTE));
                 }
                 $this->replaceText($template, $match, $tag);
             }
         }
+
         return $template;
     }
 
@@ -711,9 +731,9 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
     {
         $extensions = [
             'image/jpeg' => 'jpeg',
-            'image/png'  => 'png',
-            'image/bmp'  => 'bmp',
-            'image/gif'  => 'gif',
+            'image/png' => 'png',
+            'image/bmp' => 'bmp',
+            'image/gif' => 'gif',
         ];
         $imageMime = image_type_to_mime_type($imageType);
         if (isset($extensions[$imageMime])) {
@@ -747,6 +767,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
                     $ctx->contentTypes->documentElement->appendChild($node);
                 }
             }
+
             return $extension;
         }
     }
@@ -784,7 +805,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
             }
         }
         if (null === $relId) {
-            usort($usedIds, function($a, $b) {
+            usort($usedIds, function ($a, $b) {
                 return $a - $b;
             });
             $i = 0;
@@ -805,6 +826,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
         $node->setAttribute('Type', static::IMAGE_RELATIONSHIP_TYPE);
         $node->setAttribute('Target', $imageName);
         $ctx->relations->documentElement->appendChild($node);
+
         return [$relId, $imageName];
     }
 
@@ -841,6 +863,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
                 }
             }
         }
+
         return $this;
     }
 
@@ -876,14 +899,15 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
         foreach ($parts as $part) {
             if ("\t" === $part) {
                 $result[] = '<w:tab/>';
-            } else if (in_array(' ', [substr($part, 0, 1), substr($part, -1)])) {
+            } elseif (in_array(' ', [substr($part, 0, 1), substr($part, -1)])) {
                 $result[] = sprintf('<w:t xml:space="preserve">%s</w:t>', $part);
-            } else if (count($parts) > 1) {
+            } elseif (count($parts) > 1) {
                 $result[] = sprintf('<w:t>%s</w:t>', $part);
             } else {
                 $result[] = $part;
             }
         }
+
         return implode('', $result);
     }
 
@@ -927,6 +951,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
             $result[0] = substr($template, $startRow[1], $endRow[1] + strlen($endRow[0]) - $startRow[1]);
             $result[1] = str_replace($result[0], '%ROWS%', $template);
         }
+
         return $result;
     }
 
@@ -954,6 +979,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
                 break;
         }
         $this->images = $this->findImages($this->vars);
+
         return $this;
     }
 
@@ -984,6 +1010,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
         if ($this->relations) {
             $this->tempDocumentRelations[$this->getMainPartName()] = $this->relations->saveXML();
         }
+
         return $this;
     }
 
@@ -997,11 +1024,12 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
             $this->prepareBuild();
             $this->getScript()
                 ->setObjects($objects)
-                ->each(function(Script $script, DocumentTag $_this) {
+                ->each(function (Script $script, DocumentTag $_this) {
                     $_this->parse();
                 })
             ;
             $this->finishBuild();
+
             return $this->tempDocumentMainPart;
         }
     }
@@ -1016,6 +1044,7 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
     {
         $matches = [];
         preg_match_all($this->getTag()->getTagRegex(), $documentPartXML, $matches);
+
         return $matches[1];
     }
 

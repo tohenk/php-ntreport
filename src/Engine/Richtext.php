@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014-2024 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2025 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -31,7 +31,7 @@ use NTLAB\Report\Filer\Rtf as RtfFiler;
 
 class Richtext extends Report
 {
-    const ID = 'richtext';
+    public const ID = 'richtext';
 
     /**
      * @var \NTLAB\Report\Filer\FilerInterface
@@ -97,6 +97,7 @@ class Richtext extends Report
             $this->filer = new static::$defaultFiler();
             $this->filer->setScript($this->getScript());
         }
+
         return $this->filer;
     }
 
@@ -113,6 +114,7 @@ class Richtext extends Report
         } else {
             $this->status = static::STATUS_ERR_TMPL;
         }
+
         return $content;
     }
 }

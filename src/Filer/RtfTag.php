@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014-2024 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2025 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -105,6 +105,7 @@ class RtfTag implements FilerInterface
         if (null === $this->script) {
             $this->script = new Script();
         }
+
         return $this->script;
     }
 
@@ -115,6 +116,7 @@ class RtfTag implements FilerInterface
     public function setScript(Script $script)
     {
         $this->script = $script;
+
         return $this;
     }
 
@@ -128,6 +130,7 @@ class RtfTag implements FilerInterface
         if (null === $this->tag) {
             $this->tag = new Tag();
         }
+
         return $this->tag;
     }
 
@@ -142,6 +145,7 @@ class RtfTag implements FilerInterface
             $this->tag->clear();
         }
         $this->cleans = [];
+
         return $this;
     }
 
@@ -178,6 +182,7 @@ class RtfTag implements FilerInterface
                 }
             }
         }
+
         return $text;
     }
 
@@ -194,6 +199,7 @@ class RtfTag implements FilerInterface
         if (!$this->getScript()->getVar($value, $tag, $this->getScript()->getContext())) {
             $value = $this->getScript()->evaluate($tag);
         }
+
         return $value;
     }
 
@@ -237,6 +243,7 @@ class RtfTag implements FilerInterface
                 }
             }
         }
+
         return $eachs;
     }
 
@@ -295,6 +302,7 @@ class RtfTag implements FilerInterface
                 }
             }
         }
+
         return $tables;
     }
 
@@ -323,8 +331,7 @@ class RtfTag implements FilerInterface
                 } else {
                     error_log(sprintf('Expression "%s" return NULL!', $expr));
                 }
-            }
-            catch (\Exception $e) {
+            } catch (\Exception $e) {
                 $message = null;
                 while (null !== $e) {
                     if (null === $message) {
@@ -338,6 +345,7 @@ class RtfTag implements FilerInterface
             }
             $this->getScript()->popContext();
         }
+
         return $content;
     }
 
@@ -391,6 +399,7 @@ class RtfTag implements FilerInterface
                 $template = str_replace('%%TBL:'.$tag.'%%', $content, $template);
             }
         }
+
         return $template;
     }
 
@@ -418,6 +427,7 @@ class RtfTag implements FilerInterface
             $header = substr($text, 0, $s);
             $footer = str_replace($endMatch, '', substr($text, $e));
             $body = str_replace($startMatch, '', substr($text, $s, $e - $s));
+
             return [$header, $body, $footer];
         }
     }
@@ -444,7 +454,7 @@ class RtfTag implements FilerInterface
                     }
                 }
                 break;
-            // forward direction
+                // forward direction
             case $dir > 0:
                 $bpos = strpos($text, '{');
                 $epos = strpos($text, '}');
@@ -473,8 +483,10 @@ class RtfTag implements FilerInterface
         $pattern = sprintf('/%1$s(.*)(%3$s)(.*)%2$s/', $tags[0], $tags[1], $regex);
         if (preg_match($pattern, $text, $matches, PREG_OFFSET_CAPTURE)) {
             $match = $matches[0][0];
+
             return $matches[0][1];
         }
+
         return false;
     }
 
@@ -486,6 +498,7 @@ class RtfTag implements FilerInterface
     protected function beginDoc()
     {
         $this->content = null;
+
         return $this;
     }
 
@@ -510,6 +523,7 @@ class RtfTag implements FilerInterface
         if ($new) {
             $this->content .= $this->break;
         }
+
         return $this;
     }
 
@@ -521,6 +535,7 @@ class RtfTag implements FilerInterface
     protected function addContent()
     {
         $this->content .= $this->parse($this->template);
+
         return $this;
     }
 
@@ -535,13 +550,14 @@ class RtfTag implements FilerInterface
             $this->beginDoc();
             $this->getScript()
                 ->setObjects($objects)
-                ->each(function(Script $script, RtfTag $_this) {
+                ->each(function (Script $script, RtfTag $_this) {
                     $_this
                         ->addBreak($script->getIterator()->getRecNo() > 1)
                         ->addContent();
                 }, $this->notifyContextChange)
             ;
             $this->endDoc();
+
             return $this->content;
         }
     }

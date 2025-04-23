@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014-2024 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2014-2025 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -79,6 +79,7 @@ class ReportCore extends Module
     public static function getParameter($name)
     {
         $parameters = self::$report->getParameters();
+
         return isset($parameters[$name]) ? $parameters[$name] : null;
     }
 
@@ -103,6 +104,7 @@ class ReportCore extends Module
         if (is_array($keys) && null !== $idx) {
             $keys = $keys[(int) $idx];
         }
+
         return $keys;
     }
 
@@ -117,6 +119,7 @@ class ReportCore extends Module
     {
         $value = null;
         $this->getReport()->getScript()->getVar($value, $column, $this->getReport()->getObject());
+
         return $value;
     }
 
@@ -133,6 +136,7 @@ class ReportCore extends Module
         if ($param = $this->getParameter($name)) {
             $result = $param->isSelected();
         }
+
         return Script::asBool($result);
     }
 
@@ -178,6 +182,7 @@ class ReportCore extends Module
         if (isset($configs[$name])) {
             $value = $configs[$name]->getFormValue();
         }
+
         return $value;
     }
 
@@ -198,6 +203,7 @@ class ReportCore extends Module
             }
             $sym = new Symbol($symbol);
             static::$symbols[] = $sym;
+
             return $sym;
         }
     }
