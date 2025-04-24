@@ -110,7 +110,9 @@ class Richtext extends Report
             if ($objects && $this->single) {
                 $objects = [$objects[0]];
             }
-            $content = $this->getFiler()->build($template, $objects);
+            $content = $this->getFiler()
+                ->setSession($this->session)
+                ->build($template, $objects);
         } else {
             $this->status = static::STATUS_ERR_TMPL;
         }

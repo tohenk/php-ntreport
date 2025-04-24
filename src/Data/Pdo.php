@@ -123,18 +123,38 @@ class Pdo extends Data
 
     /**
      * (non-PHPdoc)
+     * @see \NTLAB\Report\Data\Data::count()
+     */
+    public function count()
+    {
+        if (count($result = PdoQuery::getInstance()->query(
+            sprintf('SELECT COUNT(*) AS CNT FROM (%s)', $this->genSql()),
+            $this->params
+        ))) {
+            return (int) $result[0]->getCnt();
+        }
+
+        return 0;
+    }
+
+    /**
+     * (non-PHPdoc)
      * @see \NTLAB\Report\Data\Data::fetch()
      */
     public function fetch()
+    {
+        return PdoQuery::getInstance()->query($this->genSql(), $this->params);
+    }
+
+    protected function genSql()
     {
         $sql = strtr($this->getSource(), [
             '%COND%' => count($this->conds) ? implode(' AND ', $this->conds) : '1',
             '%GROUP%' => count($this->groups) ? 'GROUP BY '.implode(', ', $this->groups) : '',
             '%ORDER%' => count($this->orders) ? 'ORDER BY '.implode(', ', $this->orders) : '',
         ]);
-        $sql = $this->report->getScript()->evaluate($sql);
 
-        return PdoQuery::getInstance()->query($sql, $this->params);
+        return $this->report->getScript()->evaluate($sql);
     }
 
     /**
@@ -191,11 +211,13 @@ class Pdo extends Data
             case DateOnlyParameter::ID:
             case DateMonthParameter::ID:
             case DateYearParameter::ID:
+                /** @var \NTLAB\Report\Parameter\Date $parameter */
                 $column = $this->formatDate($parameter->getRealColumn(), $parameter->getDateTypeValue(), $value, $operator);
                 $operator = null;
                 $value = null;
                 break;
             case DateRangeParameter::ID:
+                /** @var \NTLAB\Report\Parameter\DateRange $parameter */
                 $column = sprintf(
                     '(%s AND %s)',
                     $this->formatDate($parameter->getRealColumn(), $parameter->getDateTypeValue(), $value, '>='),

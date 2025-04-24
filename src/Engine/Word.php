@@ -28,6 +28,7 @@ namespace NTLAB\Report\Engine;
 
 use NTLAB\Report\Report;
 use NTLAB\Report\Filer\Document as DocumentFiler;
+use NTLAB\Report\Session\Session;
 
 class Word extends Report
 {
@@ -63,39 +64,41 @@ class Word extends Report
         // do nothing
     }
 
-    protected function getTempFile()
-    {
-        $ext = substr($this->template, strrpos($this->template, '.'));
-        $name = substr(sha1(rand(1, 99999)), 0, 8);
-
-        return sys_get_temp_dir().DIRECTORY_SEPARATOR.$name.$ext;
-    }
-
     protected function build()
     {
         $content = null;
         $error = null;
-        if ($template = $this->templateContent->getContent()) {
-            $tempfile = $this->getTempFile();
+        $this->session->load();
+        $template = $this->templateContent->getContent();
+        if (!$tmpl = $this->session->read(Session::TEMPLATE)) {
+            if ($template) {
+                $tmpl = $this->session->getTempFile($this->template);
+                file_put_contents($tmpl, $template);
+                $this->session->store(Session::TEMPLATE, $tmpl);
+            } else {
+                $this->status = static::STATUS_ERR_TMPL;
+            }
+        }
+        if (null === $this->status) {
             try {
-                file_put_contents($tempfile, $template);
+                DocumentFiler::setTempDir($this->session->createWorkDir());
                 $objects = $this->result;
                 // is build for single content?
                 if ($objects && $this->single) {
                     $objects = [$objects[0]];
                 }
-                $filer = new DocumentFiler($tempfile);
-                $content = $filer->build(null, $objects);
+                $filer = new DocumentFiler($tmpl);
+                $content = $filer
+                    ->setSession($this->session)
+                    ->build(null, $objects);
                 unset($filer);
             } catch (\Exception $e) {
                 $error = $e;
             }
-            unlink($tempfile);
+            $this->session->clean();
             if (null !== $error) {
                 throw $error;
             }
-        } else {
-            $this->status = static::STATUS_ERR_TMPL;
         }
 
         return $content;

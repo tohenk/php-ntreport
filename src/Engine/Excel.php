@@ -28,6 +28,7 @@ namespace NTLAB\Report\Engine;
 
 use NTLAB\Report\Report;
 use NTLAB\Report\Filer\Spreadsheet as SpreadsheetFiler;
+use NTLAB\Report\Session\Session;
 
 class Excel extends Report
 {
@@ -80,32 +81,43 @@ class Excel extends Report
         }
     }
 
-    protected function getTempFile()
-    {
-        $ext = substr($this->template, strrpos($this->template, '.'));
-        $name = substr(sha1(rand(1, 99999)), 0, 8);
-
-        return sys_get_temp_dir().DIRECTORY_SEPARATOR.$name.$ext;
-    }
-
     protected function build()
     {
         $content = null;
         $error = null;
-        if ($template = $this->templateContent->getContent()) {
-            $tempfile = $this->getTempFile();
+        $this->session->load();
+        $template = $this->templateContent->getContent();
+        if (!$tmpl = $this->session->read(Session::TEMPLATE)) {
+            if ($template) {
+                $tmpl = $this->session->getTempFile($this->template);
+                file_put_contents($tmpl, $template);
+                $this->session->store(Session::TEMPLATE, $tmpl);
+            } else {
+                $this->status = static::STATUS_ERR_TMPL;
+            }
+        }
+        if (null === $this->status) {
             try {
-                file_put_contents($tempfile, $template);
-                $content = $this->filer->build($tempfile, $this->result);
+                $content = $this->filer
+                    ->setSession($this->session)
+                    ->build($tmpl, $this->result);
             } catch (\Exception $e) {
                 $error = $e;
             }
-            unlink($tempfile);
+            $iterator = $this->getScript()->getIterator();
+            $done = $iterator->getRecNo() === $iterator->getRecCount();
+            if ($done || $error) {
+                $this->session->clean();
+            }
             if (null !== $error) {
                 throw $error;
             }
-        } else {
-            $this->status = static::STATUS_ERR_TMPL;
+            if (!$done) {
+                $this->session
+                    ->store(Session::POS, $iterator->getRecNo() - 1)
+                    ->save();
+                $content = SpreadsheetFiler::PARTIAL;
+            }
         }
 
         return $content;

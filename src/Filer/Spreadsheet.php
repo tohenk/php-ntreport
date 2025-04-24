@@ -26,15 +26,17 @@
 
 namespace NTLAB\Report\Filer;
 
+use NTLAB\Report\Session\Session;
+use NTLAB\Report\Util\Spreadsheet\Style;
+use NTLAB\Report\Util\Spreadsheet\RichText;
+use NTLAB\Script\Context\PartialObject;
 use NTLAB\Script\Core\Script;
-use PhpOffice\PhpSpreadsheet\IOFactory as XlIOFactory;
-use PhpOffice\PhpSpreadsheet\Spreadsheet as XlSpreadsheet;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet as XlWorksheet;
 use PhpOffice\PhpSpreadsheet\Cell\Cell as XlCell;
 use PhpOffice\PhpSpreadsheet\Cell\CellAddress as XlCellAddress;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate as XlCoordinate;
-use NTLAB\Report\Util\Spreadsheet\Style;
-use NTLAB\Report\Util\Spreadsheet\RichText;
+use PhpOffice\PhpSpreadsheet\IOFactory as XlIOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet as XlSpreadsheet;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet as XlWorksheet;
 
 /**
  * Spreadsheet filer using PHPOffice PhpSpreadsheet.
@@ -43,6 +45,8 @@ use NTLAB\Report\Util\Spreadsheet\RichText;
  */
 class Spreadsheet implements FilerInterface
 {
+    use Filer;
+
     public const BAND_TITLE = 'title';
     public const BAND_HEADER = 'header';
     public const BAND_MASTER_DATA = 'master-data';
@@ -79,11 +83,6 @@ class Spreadsheet implements FilerInterface
         self::BAND_FOOTER,
         self::BAND_SUMMARY
     ];
-
-    /**
-     * @var \NTLAB\Script\Core\Script
-     */
-    protected $script = null;
 
     /**
      * @var array
@@ -312,37 +311,10 @@ class Spreadsheet implements FilerInterface
     }
 
     /**
-     * Get script object.
-     *
-     * @return \NTLAB\Script\Core\Script
-     */
-    public function getScript()
-    {
-        if (null === $this->script) {
-            $this->script = new Script();
-        }
-
-        return $this->script;
-    }
-
-    /**
-     * Set the script object.
-     *
-     * @param \NTLAB\Script\Core\Script $script  The script object
-     * @return \NTLAB\Report\Filer\Spreadsheet
-     */
-    public function setScript(Script $script)
-    {
-        $this->script = $script;
-
-        return $this;
-    }
-
-    /**
      * Copy worksheet property.
      *
-     * @param XlWorksheet $source  Source worksheet
-     * @param XlWorksheet $dest  Destination worksheet
+     * @param \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $source  Source worksheet
+     * @param \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $dest  Destination worksheet
      * @return \NTLAB\Report\Filer\Spreadsheet
      */
     protected function copySheetProp(XlWorksheet $source, XlWorksheet $dest)
@@ -358,7 +330,7 @@ class Spreadsheet implements FilerInterface
     /**
      * Get merged cell.
      *
-     * @param XlWorksheet $sheet  The worksheet object
+     * @param \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet  The worksheet object
      * @param string $cell  The cell
      * @return string
      */
@@ -375,7 +347,7 @@ class Spreadsheet implements FilerInterface
     /**
      * Merge cells.
      *
-     * @param XlWorksheet $sheet  The worksheet
+     * @param \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet  The worksheet
      * @param string $cell  The origin cell
      * @param int $width  The number of columns from origin to merge
      * @param int $height  The number of rows from origin to merge
@@ -413,8 +385,8 @@ class Spreadsheet implements FilerInterface
     /**
      * Copy a cell range from a sheet to another.
      *
-     * @param XlWorksheet $source  The source worksheet
-     * @param XlWorksheet $dest  The destination worksheet
+     * @param \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $source  The source worksheet
+     * @param \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $dest  The destination worksheet
      * @param string $range  The source range
      * @param array $anchor  The destination anchor
      * @param bool $replaceTag  True to replace tag before applying value to destination sheet
@@ -425,6 +397,10 @@ class Spreadsheet implements FilerInterface
         list($rangeStart, $rangeEnd) = XlCoordinate::rangeBoundaries($range);
         if (null === $anchor) {
             $anchor = $rangeStart;
+            // apply offset
+            if (($offset = $this->getScript()->getIterator()->getStart()) > 0) {
+                $anchor[1] += $offset;
+            }
         }
         $cols = $rangeEnd[0] - $rangeStart[0];
         $rows = $rangeEnd[1] - $rangeStart[1];
@@ -462,7 +438,7 @@ class Spreadsheet implements FilerInterface
         }
         $ranges = [$anchor, [$anchor[0] + $cols, $anchor[1] + $rows]];
         // increment anchor rows
-        $anchor[1] = $anchor[1] + $rows + 1;
+        $anchor[1] += $rows + 1;
 
         return $ranges;
     }
@@ -470,9 +446,9 @@ class Spreadsheet implements FilerInterface
     /**
      * Fill range for master-data.
      *
-     * @param XlCell $cell  The cell
+     * @param \PhpOffice\PhpSpreadsheet\Cell\Cell $cell  The cell
      * @param string $name  Data name
-     * @param string $value  XlCell value
+     * @param string $value  Cell value
      * @return mixed
      */
     protected function fillData(XlCell $cell, $name, $value)
@@ -509,9 +485,9 @@ class Spreadsheet implements FilerInterface
     /**
      * Fill range for summary.
      *
-     * @param XlCell $cell  The cell
+     * @param \PhpOffice\PhpSpreadsheet\Cell\Cell $cell  The cell
      * @param string $name  Data name
-     * @param string $value  XlCell value
+     * @param string $value  Cell value
      * @return mixed
      */
     protected function fillSummary(XlCell $cell, $name, $value)
@@ -535,7 +511,7 @@ class Spreadsheet implements FilerInterface
      * Every cells in range is checked if
      * it contain field sign.
      *
-     * @param XlWorksheet $sheet  The worksheet
+     * @param \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet  The worksheet
      * @param array $ranges  The data ranges
      * @return \NTLAB\Report\Filer\Spreadsheet
      */
@@ -585,9 +561,9 @@ class Spreadsheet implements FilerInterface
     }
 
     /**
-     * Find and detect bands position from XlWorksheet.
+     * Find and detect bands position from work sheet.
      *
-     * @param XlWorksheet $sheet  The target sheet
+     * @param \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet  The target sheet
      * @return \NTLAB\Report\Filer\Spreadsheet
      */
     protected function findBands($sheet)
@@ -647,45 +623,51 @@ class Spreadsheet implements FilerInterface
     {
         $this->template = $template;
         $this->objects = $objects;
-        if (($tplXls = XlIOFactory::load($this->template)) && ($insheet = $tplXls->getSheetByName($this->sheet))) {
+        if (($tpl = XlIOFactory::load($this->template)) && ($insheet = $tpl->getSheetByName($this->sheet))) {
             $this->getScript()
                 ->setObjects($this->objects)
             ;
             $outsheet = null;
-            $resXls = $this->prepareResult($insheet, $outsheet);
+            if (($output = $this->session->read(Session::OUT)) && is_readable($output)) {
+                $res = XlIOFactory::load($output);
+                $outsheet = $res->getActiveSheet();
+            } else {
+                $res = $this->prepareResult($insheet, $outsheet);
+            }
             $this->findBands($insheet);
             $this->processBands($insheet, $outsheet);
 
-            return $this->createOutput($resXls, $writerClass);
+            return $this->createOutput($res, $writerClass);
         }
     }
 
     /**
      * Prepare result sheet and assign document properties.
      *
-     * @param XlWorksheet $source  Template sheet
-     * @param XlWorksheet $sheet  Output sheet
-     * @return XlSpreadsheet
+     * @param \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $source  Template sheet
+     * @param \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet  Output sheet
+     * @return \PhpOffice\PhpSpreadsheet\Spreadsheet
      */
     protected function prepareResult($source, &$sheet)
     {
-        $excel = new XlSpreadsheet();
-        $sheet = $excel->getActiveSheet();
+        $xls = new XlSpreadsheet();
+        $sheet = $xls->getActiveSheet();
         $this->copySheetProp($source, $sheet);
 
-        return $excel;
+        return $xls;
     }
 
     /**
      * Process report bands.
      *
-     * @param XlWorksheet $insheet  Input worksheet
-     * @param XlWorksheet $outsheet  Output worksheet
+     * @param \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $insheet  Input worksheet
+     * @param \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $outsheet  Output worksheet
      * @return \NTLAB\Report\Filer\Spreadsheet
      */
     protected function processBands($insheet, $outsheet)
     {
         $anchor = null;
+        $iterator = $this->getScript()->getIterator();
         foreach ($this->allBands as $band) {
             if (!isset($this->bands[$band])) {
                 continue;
@@ -701,8 +683,18 @@ class Spreadsheet implements FilerInterface
                     ;
                     break;
                 default:
-                    if (null === $this->getScript()->getContext() && count($this->objects)) {
-                        $this->getScript()->setContext($this->objects[0]);
+                    $first = $iterator->getStart() === 0;
+                    $last = $iterator->getRecNo() === $iterator->getRecCount();
+                    if ($band === static::BAND_TITLE && !$first) {
+                        break;
+                    }
+                    if ($band === static::BAND_SUMMARY && !$last) {
+                        break;
+                    }
+                    $objects = $this->objects instanceof PartialObject ? $this->objects->getObjects() :
+                        $this->objects;
+                    if (null === $this->getScript()->getContext() && count($objects)) {
+                        $this->getScript()->setContext($objects[0]);
                     }
                     $ranges = $this->copyRange($insheet, $outsheet, $bandData, $anchor);
                     // process summary band and figure out the aggregate functions like SUM, AVG
@@ -719,8 +711,8 @@ class Spreadsheet implements FilerInterface
     /**
      * Build detail row.
      *
-     * @param XlWorksheet $insheet  Input sheet
-     * @param XlWorksheet $outsheet  Output sheet
+     * @param \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $insheet  Input sheet
+     * @param \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $outsheet  Output sheet
      * @param string $band  Band range address
      * @param array $anchor  Anchor range
      * @return \NTLAB\Report\Filer\Spreadsheet
@@ -736,7 +728,7 @@ class Spreadsheet implements FilerInterface
     /**
      * Create ouput content from result sheet.
      *
-     * @param XlSpreadsheet $xls  Excel output
+     * @param \PhpOffice\PhpSpreadsheet\Spreadsheet $xls  Excel output
      * @param string $writerClass  Writer class
      * @return string
      */
@@ -753,9 +745,13 @@ class Spreadsheet implements FilerInterface
                     break;
             }
         }
-        $filename = tempnam(dirname($this->template), 'xls');
+        if ('~' === substr($filename = basename($this->template), 0, 1)) {
+            $filename = substr($filename, 1);
+        }
+        $filename = $this->session->createWorkDir().DIRECTORY_SEPARATOR.$filename;
         $writer = XlIOFactory::createWriter($xls, $writerClass);
         $writer->save($filename);
+        $this->session->store(Session::OUT, $filename);
 
         return file_get_contents($filename);
     }

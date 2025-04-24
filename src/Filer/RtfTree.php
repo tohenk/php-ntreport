@@ -26,12 +26,12 @@
 
 namespace NTLAB\Report\Filer;
 
-use NTLAB\Script\Core\Script;
-use NTLAB\RtfTree\Node\Tree;
-use NTLAB\RtfTree\Node\Node;
 use NTLAB\Report\Util\Rtf\Extractor\Extractor;
 use NTLAB\Report\Util\Rtf\Extractor\Paragraph as ParagraphExtractor;
 use NTLAB\Report\Util\Rtf\Extractor\Table as TableExtractor;
+use NTLAB\RtfTree\Node\Tree;
+use NTLAB\RtfTree\Node\Node;
+use NTLAB\Script\Core\Script;
 
 /**
  * Rtf filer which parse richtext document into nodes and do its job.
@@ -40,15 +40,12 @@ use NTLAB\Report\Util\Rtf\Extractor\Table as TableExtractor;
  */
 class RtfTree implements FilerInterface
 {
+    use Filer;
+
     /**
      * @var \NTLAB\Report\Filer\RtfTree
      */
     protected static $instance = null;
-
-    /**
-     * @var \NTLAB\Script\Core\Script
-     */
-    protected $script = null;
 
     /**
      * Get the instance.
@@ -62,30 +59,6 @@ class RtfTree implements FilerInterface
         }
 
         return self::$instance;
-    }
-
-    /**
-     * {@inheritDoc}
-     * @see \NTLAB\Report\Filer\FilerInterface::getScript()
-     */
-    public function getScript()
-    {
-        if (null === $this->script) {
-            $this->script = new Script();
-        }
-
-        return $this->script;
-    }
-
-    /**
-     * {@inheritDoc}
-     * @see \NTLAB\Report\Filer\FilerInterface::setScript()
-     */
-    public function setScript(Script $script)
-    {
-        $this->script = $script;
-
-        return $this;
     }
 
     /**

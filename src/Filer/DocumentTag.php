@@ -32,6 +32,7 @@ use NTLAB\Report\Script\ReportCore;
 use NTLAB\Report\Symbol;
 use NTLAB\Report\Util\Tag;
 use NTLAB\Script\Core\Script;
+use PhpOffice\PhpWord\Settings;
 use PhpOffice\PhpWord\TemplateProcessor;
 
 /**
@@ -41,6 +42,8 @@ use PhpOffice\PhpWord\TemplateProcessor;
  */
 class DocumentTag extends TemplateProcessor implements FilerInterface
 {
+    use Filer;
+
     public const CONTENT_TYPES_NS = 'http://schemas.openxmlformats.org/package/2006/content-types';
     public const RELATIONSHIPS_NS = 'http://schemas.openxmlformats.org/package/2006/relationships';
     public const IMAGE_RELATIONSHIP_TYPE = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/image';
@@ -62,11 +65,6 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
      * @var \NTLAB\Report\Util\Tag
      */
     protected $tag = null;
-
-    /**
-     * @var \NTLAB\Script\Core\Script
-     */
-    protected $script = null;
 
     /**
      * @var int
@@ -153,30 +151,6 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
         if (null !== $documentTemplate) {
             parent::__construct($documentTemplate);
         }
-    }
-
-    /**
-     * {@inheritDoc}
-     * @see \NTLAB\Report\Filer\FilerInterface::getScript()
-     */
-    public function getScript()
-    {
-        if (null === $this->script) {
-            $this->script = new Script();
-        }
-
-        return $this->script;
-    }
-
-    /**
-     * {@inheritDoc}
-     * @see \NTLAB\Report\Filer\FilerInterface::setScript()
-     */
-    public function setScript(Script $script)
-    {
-        $this->script = $script;
-
-        return $this;
     }
 
     /**
@@ -1057,5 +1031,10 @@ class DocumentTag extends TemplateProcessor implements FilerInterface
     protected static function ensureMacroCompleted($macro)
     {
         return $macro;
+    }
+
+    public static function setTempDir($dir)
+    {
+        Settings::setTempDir($dir);
     }
 }

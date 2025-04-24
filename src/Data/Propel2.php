@@ -131,6 +131,21 @@ class Propel2 extends Data
 
     /**
      * (non-PHPdoc)
+     * @see \NTLAB\Report\Data\Data::count()
+     */
+    public function count()
+    {
+        $query = $this->getQuery();
+        // set distinct
+        if ($this->isDistinct()) {
+            $query->setDistinct();
+        }
+
+        return $query->count();
+    }
+
+    /**
+     * (non-PHPdoc)
      * @see \NTLAB\Report\Data\Data::fetch()
      */
     public function fetch()

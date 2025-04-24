@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014-2025 Toha <tohenk@yahoo.com>
+ * Copyright (c) 2025 Toha <tohenk@yahoo.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -29,31 +29,54 @@ namespace NTLAB\Report\Filer;
 use NTLAB\Report\Session\Session;
 use NTLAB\Script\Core\Script;
 
-interface FilerInterface
+trait Filer
 {
-    public const PARTIAL = '__PARTIAL__';
+    /**
+     * @var \NTLAB\Report\Session\Session
+     */
+    protected $session = null;
+
+    /**
+     * @var \NTLAB\Script\Core\Script
+     */
+    protected $script = null;
 
     /**
      * Get session object.
      *
      * @return \NTLAB\Report\Session\Session
      */
-    public function getSession();
+    public function getSession()
+    {
+        return $this->session;
+    }
 
     /**
-     * Set the session object.
+     * Set session object.
      *
      * @param \NTLAB\Report\Session\Session $session  The session object
      * @return \NTLAB\Report\Filer\FilerInterface
      */
-    public function setSession(Session $session);
+    public function setSession(Session $session)
+    {
+        $this->session = $session;
+
+        return $this;
+    }
 
     /**
      * Get script object.
      *
      * @return \NTLAB\Script\Core\Script
      */
-    public function getScript();
+    public function getScript()
+    {
+        if (null === $this->script) {
+            $this->script = new Script();
+        }
+
+        return $this->script;
+    }
 
     /**
      * Set the script object.
@@ -61,14 +84,10 @@ interface FilerInterface
      * @param \NTLAB\Script\Core\Script $script  The script object
      * @return \NTLAB\Report\Filer\FilerInterface
      */
-    public function setScript(Script $script);
+    public function setScript(Script $script)
+    {
+        $this->script = $script;
 
-    /**
-     * Build content from the template.
-     *
-     * @param \NTLAB\Report\Template $template  Template content
-     * @param mixed $objects  The objects
-     * @return string
-     */
-    public function build($template, $objects);
+        return $this;
+    }
 }

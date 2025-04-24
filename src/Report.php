@@ -49,8 +49,10 @@ use NTLAB\Report\Parameter\Statix as StaticParameter;
 use NTLAB\Report\Validator\Validator;
 use NTLAB\Report\Script\ProviderReport;
 use NTLAB\Report\Script\ReportCore;
+use NTLAB\Report\Session\Session;
+use NTLAB\Script\Context\PartialObject;
 use NTLAB\Script\Core\Script;
-use NTLAB\Script\Core\Manager;
+use NTLAB\Script\Core\Manager as ScriptManager;
 
 // register base engines
 CsvEngine::create()->register();
@@ -74,7 +76,7 @@ ReferenceParameter::create()->register();
 StaticParameter::create()->register();
 
 // register report script
-Manager::addProvider(ProviderReport::getInstance());
+ScriptManager::addProvider(ProviderReport::getInstance());
 
 abstract class Report
 {
@@ -200,6 +202,11 @@ abstract class Report
     protected $symbols = [];
 
     /**
+     * @var \NTLAB\Report\Session\Session
+     */
+    protected $session = null;
+
+    /**
      * @var array
      */
     protected static $engines = [];
@@ -220,6 +227,7 @@ abstract class Report
     public function __construct()
     {
         $this->templateContent = new Template($this);
+        $this->session = new Session();
     }
 
     /**
@@ -386,6 +394,26 @@ abstract class Report
      */
     protected function doInitialize()
     {
+    }
+
+    /**
+     * Get report id.
+     *
+     * @return string
+     */
+    public function getId()
+    {
+        return static::ID;
+    }
+
+    /**
+     * Get report session.
+     *
+     * @return \NTLAB\Report\Session\Session
+     */
+    public function getSession()
+    {
+        return $this->session;
     }
 
     /**
@@ -750,7 +778,7 @@ abstract class Report
                 $context = $this->getObject();
             }
             $this->getScript()->getVarContext($context, $var);
-            if ($context && ($handler = Manager::getContextHandler($context))) {
+            if ($context && ($handler = ScriptManager::getContextHandler($context))) {
                 $value = $config->getFormValue();
                 $method = $handler->setMethod($context, $var);
                 if (is_callable($method)) {
@@ -762,7 +790,7 @@ abstract class Report
             }
         }
         foreach ($objects as $object) {
-            if ($handler = Manager::getContextHandler($object)) {
+            if ($handler = ScriptManager::getContextHandler($object)) {
                 $handler->flush($object);
             }
         }
@@ -824,13 +852,13 @@ abstract class Report
     }
 
     /**
-     * Fetch report data.
+     * Prepare report data.
      *
-     * @return array The result
+     * @return \NTLAB\Report\Data\Data
      */
-    protected function fetchResult()
+    protected function prepareReportData()
     {
-        if ($this->form->isValid()) {
+        if (null === $this->data) {
             if (!($data = $this->getReportData())) {
                 throw new \RuntimeException('No report data can handle '.$this->source);
             }
@@ -850,8 +878,21 @@ abstract class Report
                 $data->addOrder($order[0], $order[1], $order[2]);
             }
             $data->setDistinct($this->distinct);
+        }
 
-            return $data->fetch();
+        return $this->data;
+    }
+
+    /**
+     * Fetch report data.
+     *
+     * @return array The result
+     */
+    protected function fetchResult()
+    {
+        if ($this->form->isValid()) {
+            return $this->prepareReportData()
+                ->fetch();
         }
     }
 
@@ -909,7 +950,7 @@ abstract class Report
         $this->error = null;
         $this->status = null;
         $this->result = $objects;
-        if (count($this->result)) {
+        if (count($this->result instanceof PartialObject ? $this->result->getObjects() : $this->result)) {
             try {
                 if (null !== ($content = $this->build())) {
                     $this->status = static::STATUS_OK;

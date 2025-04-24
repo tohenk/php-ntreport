@@ -133,6 +133,13 @@ abstract class Data
     abstract public function addOrder($column, $direction, $format = null);
 
     /**
+     * Get report data count.
+     *
+     * @return int
+     */
+    abstract public function count();
+
+    /**
      * Fetch report data.
      *
      * @return array

@@ -36,15 +36,12 @@ use NTLAB\Script\Core\Script;
  */
 class RtfTag implements FilerInterface
 {
+    use Filer;
+
     /**
      * @var \NTLAB\Report\Util\Tag
      */
     protected $tag = null;
-
-    /**
-     * @var \NTLAB\Script\Core\Script
-     */
-    protected $script = null;
 
     /**
      * @var array
@@ -95,30 +92,6 @@ class RtfTag implements FilerInterface
      * @var boolean
      */
     protected $notifyContextChange = false;
-
-    /**
-     * {@inheritDoc}
-     * @see \NTLAB\Report\Filer\FilerInterface::getScript()
-     */
-    public function getScript()
-    {
-        if (null === $this->script) {
-            $this->script = new Script();
-        }
-
-        return $this->script;
-    }
-
-    /**
-     * {@inheritDoc}
-     * @see \NTLAB\Report\Filer\FilerInterface::setScript()
-     */
-    public function setScript(Script $script)
-    {
-        $this->script = $script;
-
-        return $this;
-    }
 
     /**
      * Get tag.
