@@ -26,7 +26,9 @@
 
 namespace NTLAB\Report\Engine;
 
+use NTLAB\Report\Filer\FilerInterface;
 use NTLAB\Report\Report;
+use NTLAB\Report\Session\Session;
 use NTLAB\Script\Core\Script;
 
 class Csv extends Report
@@ -41,7 +43,17 @@ class Csv extends Report
     /**
      * @var string
      */
-    protected $delimeter = ';';
+    protected $delimiter = ';';
+
+    /**
+     * @var string
+     */
+    protected $enclosure = '"';
+
+    /**
+     * @var string
+     */
+    protected $escape = '\\';
 
     /**
      * @var boolean
@@ -60,6 +72,7 @@ class Csv extends Report
 
     protected function doInitialize()
     {
+        $this->acceptPartialObject = true;
         $this->hasTemplate = false;
     }
 
@@ -80,7 +93,8 @@ class Csv extends Report
     protected function configureParams(\DOMNode $node)
     {
         $this->template = $this->nodeAttr($node, 'name');
-        $this->delimeter = $this->nodeAttr($node, 'delimeter', $this->delimeter);
+        $this->delimiter = $this->nodeAttr($node, 'delimiter', $this->delimiter);
+        $this->delimiter = $this->nodeAttr($node, 'delimeter', $this->delimiter);
         $this->withHeader = (bool) $this->nodeAttr($node, 'header', $this->withHeader);
     }
 
@@ -95,34 +109,60 @@ class Csv extends Report
 
     protected function build()
     {
-        $this->handle = fopen('php://memory', 'r+');
-        $this->header = false;
-        $this->getScript()
-            ->setObjects($this->result)
-            ->each(function (Script $script, Csv $_this) {
-                $_this->doBuild();
-            })
-        ;
+        $content = null;
+        $error = null;
+        $this->session->load();
+        try {
+            $filename = $this->session->createWorkDir().DIRECTORY_SEPARATOR.$this->template;
+            $this->handle = fopen($filename, 'a+');
+            $this->header = false;
+            $this->getScript()
+                ->setObjects($this->result)
+                ->each(function (Script $script, Csv $_this) {
+                    $_this->doBuild();
+                })
+            ;
+        } catch (\Exception $e) {
+            $error = $e;
+        }
+        $iterator = $this->getScript()->getIterator();
+        $done = $iterator->getRecNo() === $iterator->getRecCount();
+        if ($done || $error) {
+            $this->session->clean();
+        }
+        if (null !== $error) {
+            throw $error;
+        }
+        if (!$done) {
+            $this->session
+                ->store(Session::POS, $iterator->getRecNo() - 1)
+                ->save();
+            $content = FilerInterface::PARTIAL;
+        } else {
+            $content = $this->handle;
+        }
 
-        return $this->handle;
+        return $content;
     }
 
     public function doBuild()
     {
         if (is_resource($this->handle)) {
+            $iterator = $this->getScript()->getIterator();
+            $first = $iterator->getStart() === 0;
             $header = [];
             $data = [];
             foreach ($this->columns as $label => $expr) {
-                if (!$this->header) {
+                if ($first && !$this->header) {
                     $header[] = $label;
                 }
                 $data[] = $this->getScript()->evaluate($expr);
             }
-            if ($this->withHeader && !$this->header) {
+            if ($this->withHeader && $first && !$this->header) {
                 $this->header = true;
-                fputcsv($this->handle, $header, $this->delimeter);
+                fputcsv($this->handle, $header, $this->delimiter, $this->enclosure, $this->escape);
             }
-            fputcsv($this->handle, $data, $this->delimeter);
+            fputcsv($this->handle, $data, $this->delimiter, $this->enclosure, $this->escape);
         }
     }
 }

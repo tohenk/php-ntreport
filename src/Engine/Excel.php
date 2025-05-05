@@ -39,6 +39,11 @@ class Excel extends Report
      */
     protected $filer = null;
 
+    protected function doInitialize()
+    {
+        $this->acceptPartialObject = true;
+    }
+
     protected function configure(\DOMNodeList $nodes)
     {
         $this->filer = new SpreadsheetFiler();

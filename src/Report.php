@@ -164,6 +164,11 @@ abstract class Report
     /**
      * @var boolean
      */
+    protected $acceptPartialObject = false;
+
+    /**
+     * @var boolean
+     */
     protected $hasTemplate = true;
 
     /**
@@ -819,7 +824,17 @@ abstract class Report
     }
 
     /**
-     * Is report has template.
+     * Is report can accept partial object?
+     *
+     * @return bool
+     */
+    public function isAcceptPartialObject()
+    {
+        return $this->acceptPartialObject;
+    }
+
+    /**
+     * Is report has template?
      *
      * @return bool
      */
